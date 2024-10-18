@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "36390506656",
+    "project_id": "taksi-c0c76",
+    "storage_bucket": "taksi-c0c76.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36390506656:android:cabeec84ef1225072679c5",
+        "android_client_info": {
+          "package_name": "com.example.taksi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "36390506656-sbkori727kaoal2f46hnr3kl8terappf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.taksi",
+            "certificate_hash": "b61abc8b013ba7e03f4f3f18e0d9d4548ed8e8f5"
+          }
+        },
+        {
+          "client_id": "36390506656-cltbfr1tfpf1h8s3o2md9dt27o6d5869.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwIMiOEJWcGqGrlBa-GcByJaYZd8rVg0U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "36390506656-cltbfr1tfpf1h8s3o2md9dt27o6d5869.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "36390506656-i6frm68no12hba3svlfouukm0clgau3m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.taksi"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

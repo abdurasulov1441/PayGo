@@ -1,0 +1,51 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "com.google.gms.google-services" // Google services plugin for Firebase
+    id "dev.flutter.flutter-gradle-plugin" // Flutter Gradle Plugin
+}
+
+android {
+    namespace = "com.example.taksi"
+    compileSdk 34 // Update to the latest compile SDK version if needed
+    ndkVersion = "21.1.6352462"
+
+    defaultConfig {
+        applicationId "com.example.taksi" // Update with your app's package name
+        minSdk 23
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+flutter {
+    source "../.."
+}
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.1.0') // Firebase BOM
+    implementation 'com.google.firebase:firebase-auth' // Firebase Authentication
+    implementation 'com.google.android.gms:play-services-auth:20.6.0' // Google Sign-In
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.0" // Make sure Kotlin version is up-to-date
+}
+
+apply plugin: 'com.google.gms.google-services' // Apply at the bottom
