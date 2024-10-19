@@ -191,11 +191,9 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
             _buildLocationSelector(
               label: 'Qayerdan',
               location: fromLocation,
-              onTap: (String value) {
-                _showLocationBottomSheet((selectedLocation) {
-                  setState(() {
-                    fromLocation = selectedLocation;
-                  });
+              onSelected: (selectedLocation) {
+                setState(() {
+                  fromLocation = selectedLocation; // Update fromLocation
                 });
               },
             ),
@@ -203,11 +201,9 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
             _buildLocationSelector(
               label: 'Qayerga',
               location: toLocation,
-              onTap: (String value) {
-                _showLocationBottomSheet((selectedLocation) {
-                  setState(() {
-                    toLocation = selectedLocation;
-                  });
+              onSelected: (selectedLocation) {
+                setState(() {
+                  toLocation = selectedLocation; // Update toLocation
                 });
               },
             ),
@@ -255,10 +251,14 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
   Widget _buildLocationSelector({
     required String label,
     required String location,
-    required ValueChanged<String> onTap,
+    required Function(String) onSelected, // Update with callback
   }) {
     return GestureDetector(
-      onTap: () => _showLocationBottomSheet(onTap),
+      onTap: () {
+        _showLocationBottomSheet((selectedLocation) {
+          onSelected(selectedLocation); // Trigger callback to update state
+        });
+      },
       child: Container(
         padding: EdgeInsets.all(16.0),
         decoration: BoxDecoration(
@@ -309,6 +309,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
     );
   }
 
+  // Fetch regions dynamically from Firestore and display in the bottom sheet
   void _showLocationBottomSheet(Function(String) onSelected) {
     showModalBottomSheet(
       context: context,
@@ -316,42 +317,39 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
       ),
       builder: (BuildContext context) {
-        return SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Manzilni tanlang',
-                  style: AppStyle.fontStyle.copyWith(fontSize: 18),
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('regions').snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            final regions =
+                snapshot.data!.docs.map((doc) => doc['region']).toList();
+
+            return SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Manzilni tanlang',
+                      style: AppStyle.fontStyle.copyWith(fontSize: 18),
+                    ),
+                    Divider(),
+                    ...regions.map((location) => ListTile(
+                          title: Text(location, style: AppStyle.fontStyle),
+                          onTap: () {
+                            onSelected(location);
+                            Navigator.pop(context);
+                          },
+                        )),
+                  ],
                 ),
-                Divider(),
-                ...[
-                  'Qoraqalpog\'iston R',
-                  'Andijon',
-                  'Buxoro',
-                  'Jizzax',
-                  'Qashqadaryo',
-                  'Namangan',
-                  'Navoiy',
-                  'Samarqand',
-                  'Surxondaryo',
-                  'Sirdaryo',
-                  'Toshkent sh',
-                  'Toshkent v',
-                  'Farg\'ona',
-                  'Xorazm'
-                ].map((location) => ListTile(
-                      title: Text(location, style: AppStyle.fontStyle),
-                      onTap: () {
-                        onSelected(location);
-                        Navigator.pop(context);
-                      },
-                    )),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

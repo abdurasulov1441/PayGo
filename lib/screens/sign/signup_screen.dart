@@ -76,7 +76,7 @@ class _SignUpScreen extends State<SignUpScreen> {
   Future<void> googleSignIn() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return; // Пользователь отменил вход
+      if (googleUser == null) return; // User canceled the sign-in
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
@@ -86,40 +86,42 @@ class _SignUpScreen extends State<SignUpScreen> {
         idToken: googleAuth.idToken,
       );
 
-      // Вход в Firebase
+      // Firebase sign-in
       final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
       final User? user = userCredential.user;
 
       if (user != null) {
-        // Проверка, существует ли пользователь в Firestore
+        // Check if the user exists in Firestore
         final DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
 
         if (userDoc.exists) {
-          // Если пользователь уже существует, показываем сообщение об ошибке
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("Xatolik"),
-                content:
-                    Text("Bu email bilan foydalanuvchi allaqachon mavjud."),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text("OK"),
-                  ),
-                ],
-              );
-            },
-          );
+          if (mounted) {
+            // If the user already exists, show error dialog
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text("Xatolik"),
+                  content:
+                      Text("Bu email bilan foydalanuvchi allaqachon mavjud."),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("OK"),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
         } else {
-          // Если пользователя нет, создаем запись в Firestore
+          // If the user doesn't exist, create a new record in Firestore
           final userData = {
             'email': user.email,
             'displayName': user.displayName,
@@ -132,18 +134,21 @@ class _SignUpScreen extends State<SignUpScreen> {
               .doc(user.uid)
               .set(userData);
 
-          // Перенаправляем на экран подтверждения email
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => VerifyEmailScreen()),
-          );
+          // Navigate to the email verification screen
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => VerifyEmailScreen()),
+            );
+          }
         }
       }
     } on FirebaseAuthException catch (e) {
-      print("Error during Google Sign-In: ${e.message}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Kirishda xatolik: ${e.message}")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Kirishda xatolik: ${e.message}")),
+        );
+      }
     }
   }
 

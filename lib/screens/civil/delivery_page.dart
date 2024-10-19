@@ -14,29 +14,31 @@ class _DeliveryPageState extends State<DeliveryPage> {
 
   List<DocumentSnapshot> truckDrivers = [];
   List<DocumentSnapshot> allTruckDrivers = []; // Full list of truck drivers
-  List<String> locations = [
-    'Qoraqalpog\'iston R',
-    'Andijon',
-    'Buxoro',
-    'Jizzax',
-    'Qashqadaryo',
-    'Namangan',
-    'Navoiy',
-    'Samarqand',
-    'Surxondaryo',
-    'Sirdaryo',
-    'Toshkent sh',
-    'Toshkent v',
-    'Farg\'ona',
-    'Xorazm'
-  ];
+  List<String> locations = []; // Will be filled with regions from Firestore
+  bool isLoadingRegions = true; // Track loading state for regions
 
   @override
   void initState() {
     super.initState();
-    fetchTruckDrivers();
+    fetchRegions(); // Fetch regions from Firestore
+    fetchTruckDrivers(); // Fetch truck drivers from Firestore
   }
 
+  // Fetch regions from Firestore
+  Future<void> fetchRegions() async {
+    final regionsSnapshot =
+        await FirebaseFirestore.instance.collection('regions').get();
+
+    final fetchedLocations =
+        regionsSnapshot.docs.map((doc) => doc['region'].toString()).toList();
+
+    setState(() {
+      locations = fetchedLocations;
+      isLoadingRegions = false; // Finished loading regions
+    });
+  }
+
+  // Fetch truck drivers from Firestore
   Future<void> fetchTruckDrivers() async {
     final drivers = await FirebaseFirestore.instance
         .collection('driver')
@@ -48,6 +50,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
     });
   }
 
+  // Filter drivers based on selected "Qayerdan" and "Qayerga"
   void filterDrivers() {
     if (selectedFrom != null && selectedTo != null) {
       setState(() {
@@ -64,8 +67,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
       });
     } else {
       setState(() {
-        truckDrivers =
-            allTruckDrivers; // Reset to show all truck drivers if no filters
+        truckDrivers = allTruckDrivers; // Reset to show all truck drivers
       });
     }
   }
@@ -89,61 +91,66 @@ class _DeliveryPageState extends State<DeliveryPage> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                // Dropdown for "Qayerdan"
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'Qayerdan',
-                    labelStyle: TextStyle(color: Colors.teal, fontSize: 16),
-                    fillColor: Colors.grey[200],
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide.none,
+                // Show a loading spinner while regions are being fetched
+                if (isLoadingRegions)
+                  Center(child: CircularProgressIndicator())
+                else ...[
+                  // Dropdown for "Qayerdan"
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Qayerdan',
+                      labelStyle: TextStyle(color: Colors.teal, fontSize: 16),
+                      fillColor: Colors.grey[200],
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
+                    value: selectedFrom,
+                    items: locations.map((String location) {
+                      return DropdownMenuItem<String>(
+                        value: location,
+                        child: Text(location),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedFrom = value;
+                      });
+                      filterDrivers();
+                    },
+                    isExpanded: true, // Full width
                   ),
-                  value: selectedFrom,
-                  items: locations.map((String location) {
-                    return DropdownMenuItem<String>(
-                      value: location,
-                      child: Text(location),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedFrom = value;
-                    });
-                    filterDrivers();
-                  },
-                  isExpanded: true, // Full width
-                ),
-                const SizedBox(height: 10),
-                // Dropdown for "Qayerga"
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'Qayerga',
-                    labelStyle: TextStyle(color: Colors.teal, fontSize: 16),
-                    fillColor: Colors.grey[200],
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide.none,
+                  const SizedBox(height: 10),
+                  // Dropdown for "Qayerga"
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Qayerga',
+                      labelStyle: TextStyle(color: Colors.teal, fontSize: 16),
+                      fillColor: Colors.grey[200],
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
+                    value: selectedTo,
+                    items: locations.map((String location) {
+                      return DropdownMenuItem<String>(
+                        value: location,
+                        child: Text(location),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedTo = value;
+                      });
+                      filterDrivers();
+                    },
+                    isExpanded: true, // Full width
                   ),
-                  value: selectedTo,
-                  items: locations.map((String location) {
-                    return DropdownMenuItem<String>(
-                      value: location,
-                      child: Text(location),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedTo = value;
-                    });
-                    filterDrivers();
-                  },
-                  isExpanded: true, // Full width
-                ),
+                ]
               ],
             ),
           ),
