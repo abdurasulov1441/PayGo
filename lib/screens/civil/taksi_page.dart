@@ -17,6 +17,8 @@ class _TaxiPageState extends State<TaxiPage> {
   List<String> locations = []; // Will be filled with regions from Firestore
   bool isLoadingRegions = true; // To track when regions are being fetched
 
+  Map<String, double> driverRatings = {}; // To store average rating per driver
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +49,41 @@ class _TaxiPageState extends State<TaxiPage> {
     setState(() {
       allDrivers = drivers.docs; // Store the full list of drivers
       taxiDrivers = allDrivers; // Show all drivers initially
+    });
+
+    // Fetch ratings after fetching the drivers
+    fetchDriverRatings();
+  }
+
+  // Fetch driver ratings from Firestore
+  Future<void> fetchDriverRatings() async {
+    final ratingsSnapshot =
+        await FirebaseFirestore.instance.collection('driverRatings').get();
+
+    // Calculate the average rating per driver
+    Map<String, List<double>> ratingData = {}; // Temporarily store ratings
+
+    for (var doc in ratingsSnapshot.docs) {
+      final driverEmail = doc['driverEmail'];
+      final rating = doc['rating'].toDouble();
+
+      if (ratingData.containsKey(driverEmail)) {
+        ratingData[driverEmail]!.add(rating);
+      } else {
+        ratingData[driverEmail] = [rating];
+      }
+    }
+
+    // Calculate the average and store in `driverRatings`
+    Map<String, double> calculatedRatings = {};
+    ratingData.forEach((driverEmail, ratings) {
+      final averageRating =
+          ratings.reduce((a, b) => a + b) / ratings.length; // Calculate average
+      calculatedRatings[driverEmail] = averageRating;
+    });
+
+    setState(() {
+      driverRatings = calculatedRatings;
     });
   }
 
@@ -160,6 +197,14 @@ class _TaxiPageState extends State<TaxiPage> {
               itemCount: taxiDrivers.length,
               itemBuilder: (context, index) {
                 final driver = taxiDrivers[index];
+                final driverEmail =
+                    driver['email']; // Driver's email to find rating
+
+                // Get the driver's average rating, or default to "No ratings yet"
+                final averageRating = driverRatings.containsKey(driverEmail)
+                    ? driverRatings[driverEmail]!.toStringAsFixed(1)
+                    : 'No ratings yet';
+
                 return Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -191,6 +236,8 @@ class _TaxiPageState extends State<TaxiPage> {
                           Text('Mashina raqami: ${driver['carNumber']}'),
                           Text('Qayerdan: ${driver['from']}'),
                           Text('Qayerga: ${driver['to']}'),
+                          Text(
+                              'Rating: $averageRating'), // Display average rating
                         ],
                       ),
                       childrenPadding: EdgeInsets.symmetric(

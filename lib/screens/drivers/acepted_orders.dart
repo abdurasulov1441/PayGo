@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // For formatting date
+import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 import 'package:url_launcher/url_launcher.dart'; // For phone call functionality
 
 class AcceptedOrdersPage extends StatelessWidget {
@@ -9,7 +11,15 @@ class AcceptedOrdersPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Qabul qilingan buyurtmalar')),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: AppColors.taxi,
+          title: Text(
+            'Qabul qilingan buyurtmalar',
+            style: AppStyle.fontStyle.copyWith(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          )),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('orders')
@@ -22,62 +32,23 @@ class AcceptedOrdersPage extends StatelessWidget {
 
           return ListView(
             children: snapshot.data!.docs.map((doc) {
-              return Card(
-                margin: EdgeInsets.all(10),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${doc['fromLocation']} - ${doc['toLocation']}',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 8),
-                      Text('Ismi: ${doc['customerName']}'), // Customer's name
-                      Text(
-                        'Telefon: ${doc['phoneNumber']}', // Passenger's phone number
-                      ),
-                      Text(
-                        'Odamlar soni: ${doc['peopleCount']}', // People count
-                      ),
-                      Text(
-                        'Vaqti: ${_formatDate(doc['orderTime'].toDate())}', // Order time
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () => _returnOrder(doc.id),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Colors.red, // Red for "Return Order"
-                            ),
-                            child: Text('Qaytarish'), // Return Order
-                          ),
-                          ElevatedButton(
-                            onPressed: () => _callPassenger(doc['phoneNumber']),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue, // Blue for "Call"
-                            ),
-                            child: Text('Qo\'ng\'iroq'), // Call
-                          ),
-                          ElevatedButton(
-                            onPressed: () => _completeOrder(doc.id),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Colors.green, // Green for "Complete Order"
-                            ),
-                            child: Text('Tugatish'), // Complete Order
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+              return Dismissible(
+                key: Key(doc.id),
+                background: _buildDismissBackground(Colors.green, Icons.check,
+                    'Tugatish', Alignment.centerLeft),
+                secondaryBackground: _buildDismissBackground(
+                    Colors.red, Icons.undo, 'Qaytarish', Alignment.centerRight),
+                onDismissed: (direction) {
+                  if (direction == DismissDirection.startToEnd) {
+                    _completeOrder(doc.id); // Свайп влево — завершение заказа
+                  } else {
+                    _returnOrder(doc.id); // Свайп вправо — возврат заказа
+                  }
+                },
+                child: InkWell(
+                  onTap: () => _callPassenger(
+                      doc['phoneNumber']), // Нажатие на карточку для звонка
+                  child: _buildOrderCard(doc),
                 ),
               );
             }).toList(),
@@ -87,12 +58,147 @@ class AcceptedOrdersPage extends StatelessWidget {
     );
   }
 
-  // Function to format the order time
-  String _formatDate(DateTime dateTime) {
-    return DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
+  // Функция создания фона для Dismissible
+  Widget _buildDismissBackground(
+      Color color, IconData icon, String label, Alignment alignment) {
+    return Container(
+      color: color,
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      alignment: alignment,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white),
+          SizedBox(width: 8),
+          Text(label,
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
   }
 
-  // Function to return the order
+  // Функция создания карточки заказа с измененным дизайном
+  Widget _buildOrderCard(QueryDocumentSnapshot doc) {
+    final orderNumber = doc['orderNumber'];
+    final fromLocation = doc['fromLocation'];
+    final toLocation = doc['toLocation'];
+    final customerName = doc['customerName'];
+    final phoneNumber = doc['phoneNumber'];
+    final peopleCount = doc['peopleCount'];
+    final orderTime = (doc['orderTime'] as Timestamp).toDate();
+    final arrivalTime = orderTime
+        .add(Duration(hours: 8)); // Добавляем 8 часов для времени прибытия
+
+    return Card(
+      color: Colors.white,
+      margin: EdgeInsets.all(10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Номер заказа и время заказа
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Buyurtma №$orderNumber',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  _formatDate(orderTime),
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            // Имя заказчика
+            Text(
+              customerName,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10),
+            // Откуда и куда
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Qayerdan:',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    Text(
+                      fromLocation,
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      _formatDate(orderTime),
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+                Icon(Icons.arrow_forward, color: Colors.blue),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Qayerga:',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    Text(
+                      toLocation,
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      _formatDate(arrivalTime),
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            // Количество людей
+            Text(
+              'Odamlar soni: $peopleCount',
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Функция для форматирования времени заказа
+  String _formatDate(DateTime dateTime) {
+    return DateFormat('dd.MM.yyyy HH:mm').format(dateTime);
+  }
+
+  // Функция для возврата заказа
   Future<void> _returnOrder(String orderId) async {
     await FirebaseFirestore.instance.collection('orders').doc(orderId).update({
       'status': 'kutish jarayonida', // Set status back to pending
@@ -105,7 +211,7 @@ class AcceptedOrdersPage extends StatelessWidget {
     print('Order returned to pending status.');
   }
 
-  // Function to initiate a phone call to the passenger
+  // Функция для звонка пассажиру
   void _callPassenger(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(phoneUri)) {
@@ -115,7 +221,7 @@ class AcceptedOrdersPage extends StatelessWidget {
     }
   }
 
-  // Function to complete the order
+  // Функция для завершения заказа
   Future<void> _completeOrder(String orderId) async {
     await FirebaseFirestore.instance.collection('orders').doc(orderId).update({
       'status': 'tamomlandi', // Set status to completed

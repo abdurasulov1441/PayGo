@@ -3,7 +3,6 @@ import 'package:taksi/screens/civil/history.dart';
 import 'package:taksi/screens/drivers/account.dart';
 import 'package:taksi/screens/drivers/acepted_orders.dart';
 import 'package:taksi/screens/drivers/history.dart';
-
 import 'package:taksi/screens/drivers/orders.dart';
 
 class DriverPage extends StatefulWidget {
@@ -33,12 +32,10 @@ class _DriverPageState extends State<DriverPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Haydovchi Paneli'),
-        backgroundColor: Colors.teal,
-      ),
+      backgroundColor: Colors.white,
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white, // Цвет фона навбара
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.delivery_dining),
@@ -58,7 +55,21 @@ class _DriverPageState extends State<DriverPage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.teal,
+        selectedItemColor: Colors.teal, // Цвет выбранного элемента
+        unselectedItemColor: Colors.grey[600], // Цвет невыбранных элементов
+        selectedLabelStyle: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.teal,
+        ), // Стиль текста для выбранного элемента
+        unselectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: Colors.grey[600],
+        ), // Стиль текста для невыбранных элементов
+        iconSize: 26, // Размер иконок
+        type:
+            BottomNavigationBarType.fixed, // Тип (фиксированный или плавающий)
         onTap: _onItemTapped,
       ),
     );

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth to get the current user
 
 class CreateOrderTruck extends StatefulWidget {
   const CreateOrderTruck({super.key});
@@ -28,21 +29,27 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
   @override
   void initState() {
     super.initState();
-    _fetchUserPhone();
+    _fetchUserPhone(); // Fetch the user phone from Firestore based on the logged-in user
   }
 
+  // Fetch the current user's phone number dynamically from Firestore using FirebaseAuth
   Future<void> _fetchUserPhone() async {
-    final email = 'abdurasulov2048@gmail.com';
-    final snapshot = await FirebaseFirestore.instance
-        .collection('user')
-        .where('email', isEqualTo: email)
-        .get();
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final email = user.email; // Get the current logged-in user's email
+      if (email != null) {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('user')
+            .where('email', isEqualTo: email)
+            .get();
 
-    if (snapshot.docs.isNotEmpty) {
-      final userData = snapshot.docs.first.data();
-      setState(() {
-        _phoneController.text = userData['phoneNumber'] ?? '+998 ';
-      });
+        if (snapshot.docs.isNotEmpty) {
+          final userData = snapshot.docs.first.data();
+          setState(() {
+            _phoneController.text = userData['phoneNumber'] ?? '+998 ';
+          });
+        }
+      }
     }
   }
 
@@ -52,7 +59,11 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
       return;
     }
 
+    // Получаем номер заказа
+    int orderNumber = await _getNextOrderNumber();
+
     final orderData = {
+      'orderNumber': orderNumber, // Сохраняем номер заказа
       'fromLocation': fromLocation,
       'toLocation': toLocation,
       'phoneNumber': _phoneController.text,
@@ -65,7 +76,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
 
     await FirebaseFirestore.instance.collection('orders').add(orderData);
 
-    _showSnackBar('Buyurtma yuborildi!');
+    _showSnackBar('Buyurtma №$orderNumber yuborildi!');
     setState(() {
       _cargoNameController.clear();
       _cargoWeightController.clear();
@@ -73,93 +84,29 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
     });
   }
 
-  Future<void> _pickTime(String selectedPeriod) async {
-    DateTime now = DateTime.now();
+  Future<int> _getNextOrderNumber() async {
+    return FirebaseFirestore.instance.runTransaction((transaction) async {
+      // Получаем документ с текущим номером заказа
+      DocumentReference orderNumberDoc =
+          FirebaseFirestore.instance.collection('settings').doc('orderNumbers');
 
-    if (selectedPeriod == 'Hoziroq') {
-      setState(() {
-        _selectedDateTime = now;
-      });
-    } else if (selectedPeriod == 'Bugun') {
-      final TimeOfDay? time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-        builder: (BuildContext context, Widget? child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-            child: child!,
-          );
-        },
-      );
+      DocumentSnapshot snapshot = await transaction.get(orderNumberDoc);
 
-      if (time != null) {
-        setState(() {
-          _selectedDateTime = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            time.hour,
-            time.minute,
-          ).toLocal();
-        });
+      if (!snapshot.exists) {
+        // Если документа не существует, создаем его и устанавливаем orderNumber = 1
+        transaction.set(orderNumberDoc, {'orderNumber': 1});
+        return 1;
       }
-    } else if (selectedPeriod == 'Ertaga') {
-      final TimeOfDay? time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-        builder: (BuildContext context, Widget? child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-            child: child!,
-          );
-        },
-      );
 
-      if (time != null) {
-        setState(() {
-          _selectedDateTime = DateTime(
-            now.year,
-            now.month,
-            now.day + 1,
-            time.hour,
-            time.minute,
-          ).toLocal();
-        });
-      }
-    } else {
-      final DateTime? date = await showDatePicker(
-        context: context,
-        initialDate: now,
-        firstDate: now,
-        lastDate: DateTime(now.year + 1),
-      );
+      // Получаем текущий номер заказа
+      int currentOrderNumber = snapshot['orderNumber'];
 
-      if (date != null) {
-        final TimeOfDay? time = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay.now(),
-          builder: (BuildContext context, Widget? child) {
-            return MediaQuery(
-              data:
-                  MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-              child: child!,
-            );
-          },
-        );
+      // Увеличиваем и сохраняем номер заказа
+      int newOrderNumber = currentOrderNumber + 1;
+      transaction.update(orderNumberDoc, {'orderNumber': newOrderNumber});
 
-        if (time != null) {
-          setState(() {
-            _selectedDateTime = DateTime(
-              date.year,
-              date.month,
-              date.day,
-              time.hour,
-              time.minute,
-            ).toLocal();
-          });
-        }
-      }
-    }
+      return newOrderNumber;
+    });
   }
 
   void _showSnackBar(String message) {
@@ -249,7 +196,6 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
     );
   }
 
-  // Build Location Selector with Firebase Regions
   Widget _buildLocationSelector({
     required String label,
     required String location,
@@ -323,7 +269,6 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
     );
   }
 
-  // Fetch regions dynamically from Firestore and display in the bottom sheet
   void _showLocationBottomSheet(Function(String) onSelected) {
     showModalBottomSheet(
       context: context,
@@ -367,6 +312,95 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
         );
       },
     );
+  }
+
+  Future<void> _pickTime(String selectedPeriod) async {
+    DateTime now = DateTime.now();
+
+    if (selectedPeriod == 'Hoziroq') {
+      setState(() {
+        _selectedDateTime = now;
+      });
+    } else if (selectedPeriod == 'Bugun') {
+      final TimeOfDay? time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (BuildContext context, Widget? child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+            child: child!,
+          );
+        },
+      );
+
+      if (time != null) {
+        setState(() {
+          _selectedDateTime = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            time.hour,
+            time.minute,
+          ).toLocal();
+        });
+      }
+    } else if (selectedPeriod == 'Ertaga') {
+      final TimeOfDay? time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (BuildContext context, Widget? child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+            child: child!,
+          );
+        },
+      );
+
+      if (time != null) {
+        setState(() {
+          _selectedDateTime = DateTime(
+            now.year,
+            now.month,
+            now.day + 1,
+            time.hour,
+            time.minute,
+          ).toLocal();
+        });
+      }
+    } else {
+      final DateTime? date = await showDatePicker(
+        context: context,
+        initialDate: now,
+        firstDate: now,
+        lastDate: DateTime(now.year + 1),
+      );
+
+      if (date != null) {
+        final TimeOfDay? time = await showTimePicker(
+          context: context,
+          initialTime: TimeOfDay.now(),
+          builder: (BuildContext context, Widget? child) {
+            return MediaQuery(
+              data:
+                  MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+              child: child!,
+            );
+          },
+        );
+
+        if (time != null) {
+          setState(() {
+            _selectedDateTime = DateTime(
+              date.year,
+              date.month,
+              date.day,
+              time.hour,
+              time.minute,
+            ).toLocal();
+          });
+        }
+      }
+    }
   }
 
   void _showTimePickerBottomSheet() {
