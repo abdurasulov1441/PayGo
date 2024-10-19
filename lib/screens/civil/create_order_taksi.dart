@@ -16,6 +16,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
   String toLocation = 'Toshkent';
   final TextEditingController _phoneController = TextEditingController();
   String _selectedPeople = '1';
+  String _customerName = ''; // Для хранения имени пользователя
   DateTime? _selectedDateTime;
   final List<String> _periodOptions = [
     'Hoziroq',
@@ -27,11 +28,11 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
   @override
   void initState() {
     super.initState();
-    _fetchUserPhone();
+    _fetchUserDetails(); // Загрузка данных пользователя
   }
 
-  Future<void> _fetchUserPhone() async {
-    final email = 'abdurasulov2048@gmail.com';
+  Future<void> _fetchUserDetails() async {
+    final email = 'abdurasulov2048@gmail.com'; // Пример почты пользователя
     final snapshot = await FirebaseFirestore.instance
         .collection('user')
         .where('email', isEqualTo: email)
@@ -41,6 +42,8 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
       final userData = snapshot.docs.first.data();
       setState(() {
         _phoneController.text = userData['phoneNumber'] ?? '+998 ';
+        _customerName =
+            userData['name'] ?? 'Ism mavjud emas'; // Получаем имя пользователя
       });
     }
   }
@@ -55,6 +58,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
       'fromLocation': fromLocation,
       'toLocation': toLocation,
       'phoneNumber': _phoneController.text,
+      'customerName': _customerName, // Добавляем имя заказчика
       'peopleCount': int.parse(_selectedPeople),
       'orderTime': Timestamp.fromDate(_selectedDateTime!),
       'status': 'kutish jarayonida',
@@ -97,7 +101,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
             now.day,
             time.hour,
             time.minute,
-          ).toLocal(); // Преобразуем в локальное время
+          ).toLocal();
         });
       }
     } else if (selectedPeriod == 'Ertaga') {
@@ -117,10 +121,10 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
           _selectedDateTime = DateTime(
             now.year,
             now.month,
-            now.day,
+            now.day + 1,
             time.hour,
             time.minute,
-          ).toLocal(); // Преобразуем в локальное время
+          ).toLocal();
         });
       }
     } else {
@@ -147,12 +151,12 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
         if (time != null) {
           setState(() {
             _selectedDateTime = DateTime(
-              now.year,
-              now.month,
-              now.day,
+              date.year,
+              date.month,
+              date.day,
               time.hour,
               time.minute,
-            ).toLocal(); // Преобразуем в локальное время
+            ).toLocal();
           });
         }
       }
@@ -175,9 +179,9 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
         title: Text('Taksi buyurtmasi berish',
             style:
                 AppStyle.fontStyle.copyWith(color: Colors.white, fontSize: 20)),
-        backgroundColor: AppColors.taxi, // AppBar white background
+        backgroundColor: AppColors.taxi,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white), // Back icon in black
+        iconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: AppStyle.fontStyle.copyWith(color: Colors.black),
       ),
       body: Padding(
@@ -288,7 +292,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
           borderSide: BorderSide(width: 1, color: Colors.black),
         ),
         filled: true,
-        fillColor: Colors.grey[200], // Light background
+        fillColor: Colors.grey[200],
       ),
       value: _selectedPeople,
       onChanged: (String? newValue) {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:taksi/screens/civil/history.dart';
 import 'package:taksi/screens/drivers/account.dart';
-import 'package:taksi/screens/drivers/car_set.dart';
+import 'package:taksi/screens/drivers/acepted_orders.dart';
 import 'package:taksi/screens/drivers/history.dart';
+
 import 'package:taksi/screens/drivers/orders.dart';
 
 class DriverPage extends StatefulWidget {
@@ -14,11 +16,12 @@ class DriverPage extends StatefulWidget {
 class _DriverPageState extends State<DriverPage> {
   int _selectedIndex = 0;
 
+  // Define the pages corresponding to the BottomNavigationBar items
   static const List<Widget> _pages = <Widget>[
-    BuyurtmalarPage(),
-    AvtomobilSozlamalariPage(),
-    OrderHistory(),
-    AkkauntPage(),
+    BuyurtmalarPage(), // Orders
+    AcceptedOrdersPage(), // Accepted Orders
+    DriverOrderHistoryPage(), // History of Orders
+    AkkauntPage(), // Account Page
   ];
 
   void _onItemTapped(int index) {
@@ -43,11 +46,11 @@ class _DriverPageState extends State<DriverPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.car_repair),
-            label: 'Avtomobil sozlamalari',
+            label: 'Qabul qilingan buyurtmalar',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
-            label: 'Buyurtmalar tarixi',
+            label: 'Buyurtma tarixi',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),

@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/driverPage': (context) => const DriverPage(),
         '/civilPage': (context) => const MainCivilPage(),
-         '/historyCivil': (context) => const OrderHistoryPage(),
+        '/historyCivil': (context) => const OrderHistoryPage(),
       },
       initialRoute: '/',
     );
