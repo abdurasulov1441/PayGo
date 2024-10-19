@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:taksi/screens/civil/history.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -159,7 +160,11 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.history,
                         label: 'Sayohat tarixi',
                         onTap: () {
-                          showFeatureInDevelopmentMessage(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => OrderHistoryPage()),
+                          );
                         },
                       ),
                       const Divider(),
@@ -191,7 +196,6 @@ class _AccountScreenState extends State<AccountScreen> {
                           );
                         },
                       ),
-                      
                       const Divider(),
                       buildSettingTile(
                         icon: Icons.delete_forever,

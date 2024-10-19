@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 
 class CreateOrderTaksi extends StatefulWidget {
   const CreateOrderTaksi({super.key});
@@ -28,10 +30,8 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
     _fetchUserPhone();
   }
 
-  // Fetch phone number directly from Firestore based on user's email
   Future<void> _fetchUserPhone() async {
-    final email =
-        'abdurasulov2048@gmail.com'; // User's email (replace accordingly)
+    final email = 'abdurasulov2048@gmail.com';
     final snapshot = await FirebaseFirestore.instance
         .collection('user')
         .where('email', isEqualTo: email)
@@ -97,7 +97,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
             now.day,
             time.hour,
             time.minute,
-          );
+          ).toLocal(); // Преобразуем в локальное время
         });
       }
     } else if (selectedPeriod == 'Ertaga') {
@@ -117,10 +117,10 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
           _selectedDateTime = DateTime(
             now.year,
             now.month,
-            now.day + 1,
+            now.day,
             time.hour,
             time.minute,
-          );
+          ).toLocal(); // Преобразуем в локальное время
         });
       }
     } else {
@@ -147,12 +147,12 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
         if (time != null) {
           setState(() {
             _selectedDateTime = DateTime(
-              date.year,
-              date.month,
-              date.day,
+              now.year,
+              now.month,
+              now.day,
               time.hour,
               time.minute,
-            );
+            ).toLocal(); // Преобразуем в локальное время
           });
         }
       }
@@ -162,7 +162,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: AppStyle.fontStyle),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -171,7 +171,15 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Taksi buyurtmasi berish')),
+      appBar: AppBar(
+        title: Text('Taksi buyurtmasi berish',
+            style:
+                AppStyle.fontStyle.copyWith(color: Colors.white, fontSize: 20)),
+        backgroundColor: AppColors.taxi, // AppBar white background
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white), // Back icon in black
+        titleTextStyle: AppStyle.fontStyle.copyWith(color: Colors.black),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -205,22 +213,34 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
             ElevatedButton(
               onPressed: () => _showTimePickerBottomSheet(),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50), // Full width button
+                backgroundColor: AppColors.taxi,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                minimumSize: Size(double.infinity, 50),
               ),
               child: Text(
                 _selectedDateTime == null
                     ? 'Vaqtni tanlang'
                     : 'Tanlangan vaqt: ${DateFormat('yyyy-MM-dd – HH:mm').format(_selectedDateTime!)}',
+                style: AppStyle.fontStyle.copyWith(color: Colors.white),
               ),
             ),
             SizedBox(height: 20),
+            Spacer(),
             ElevatedButton(
               onPressed: _submitTaxiOrder,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                minimumSize: Size(double.infinity, 50), // Full width button
+                backgroundColor: AppColors.taxi,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                minimumSize: Size(double.infinity, 50),
               ),
-              child: Text('Buyurtma yuborish'),
+              child: Text(
+                'Buyurtma yuborish',
+                style: AppStyle.fontStyle.copyWith(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -239,13 +259,13 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
         padding: EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('$label: $location', style: TextStyle(fontSize: 16)),
-            Icon(Icons.arrow_drop_down),
+            Text('$label: $location', style: AppStyle.fontStyle),
+            Icon(Icons.arrow_drop_down, color: AppColors.taxi),
           ],
         ),
       ),
@@ -255,8 +275,20 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
   Widget _buildPeopleSelector() {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(width: 1, color: Colors.white)),
         labelText: 'Odamlar soni',
-        border: OutlineInputBorder(),
+        labelStyle: AppStyle.fontStyle,
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(width: 1, color: Colors.white)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(width: 1, color: Colors.black),
+        ),
+        filled: true,
+        fillColor: Colors.grey[200], // Light background
       ),
       value: _selectedPeople,
       onChanged: (String? newValue) {
@@ -267,7 +299,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
       items: ['1', '2', '3', '4'].map((String value) {
         return DropdownMenuItem<String>(
           value: value,
-          child: Text(value),
+          child: Text(value, style: AppStyle.fontStyle),
         );
       }).toList(),
     );
@@ -288,7 +320,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
               children: [
                 Text(
                   'Manzilni tanlang',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: AppStyle.fontStyle.copyWith(fontSize: 18),
                 ),
                 Divider(),
                 ...[
@@ -307,11 +339,10 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
                   'Farg\'ona',
                   'Xorazm'
                 ].map((location) => ListTile(
-                      title: Text(location),
+                      title: Text(location, style: AppStyle.fontStyle),
                       onTap: () {
-                        onSelected(
-                            location); // Call the callback with selected location
-                        Navigator.pop(context); // Close the bottom sheet
+                        onSelected(location);
+                        Navigator.pop(context);
                       },
                     )),
               ],
@@ -336,11 +367,11 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
             children: [
               Text(
                 'Vaqtni tanlang',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: AppStyle.fontStyle.copyWith(fontSize: 18),
               ),
               Divider(),
               ..._periodOptions.map((option) => ListTile(
-                    title: Text(option),
+                    title: Text(option, style: AppStyle.fontStyle),
                     onTap: () {
                       Navigator.pop(context);
                       _pickTime(option);
