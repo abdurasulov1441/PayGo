@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:taksi/screens/civil/create_order_taksi.dart';
+import 'package:taksi/screens/civil/create_order_truck.dart';
 import 'package:taksi/screens/civil/delivery_page.dart';
 import 'package:taksi/screens/civil/taksi_page.dart';
 import 'package:taksi/screens/civil/account_screen.dart';
@@ -177,7 +179,7 @@ class MainCivilPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => DeliveryPage()),
+                                builder: (context) => CreateOrderTruck()),
                           );
                         } else {
                           _showLoginDialog(
@@ -195,7 +197,8 @@ class MainCivilPage extends StatelessWidget {
                         if (user != null) {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => TaxiPage()),
+                            MaterialPageRoute(
+                                builder: (context) => CreateOrderTaksi()),
                           );
                         } else {
                           _showLoginDialog(
