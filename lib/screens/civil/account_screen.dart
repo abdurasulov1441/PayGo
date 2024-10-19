@@ -183,7 +183,6 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.directions_car,
                         label: 'Haydovchi sifatida kiring',
                         onTap: () async {
-                          // Delete user data and redirect to /home
                           await changeProfile();
                           Navigator.pushNamedAndRemoveUntil(
                             context,
@@ -192,6 +191,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           );
                         },
                       ),
+                      
                       const Divider(),
                       buildSettingTile(
                         icon: Icons.delete_forever,

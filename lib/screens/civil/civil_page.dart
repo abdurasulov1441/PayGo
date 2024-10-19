@@ -6,6 +6,7 @@ import 'package:taksi/screens/civil/account_screen.dart';
 import 'package:taksi/screens/sign/login_screen.dart';
 
 import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart'; // Assuming AppStyle is in this file
 
 class MainCivilPage extends StatelessWidget {
   const MainCivilPage({super.key});
@@ -64,7 +65,10 @@ class MainCivilPage extends StatelessWidget {
               children: [
                 Text(
                   'Tizimga xush kelibsiz!',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
+                  style: AppStyle.fontStyle.copyWith(
+                    color: Colors.white,
+                    fontSize: 20,
+                  ),
                 ),
                 Container(
                   margin: EdgeInsets.all(8),
@@ -93,7 +97,7 @@ class MainCivilPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     'Barcha transportlar',
-                    style: TextStyle(
+                    style: AppStyle.fontStyle.copyWith(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -123,7 +127,10 @@ class MainCivilPage extends StatelessWidget {
                         }
                       },
                       child: transportCard(
-                          'Yuk mashinasi', Icons.local_shipping, Colors.teal),
+                        'Yuk mashinasi',
+                        Icons.local_shipping,
+                        Colors.teal,
+                      ),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -138,18 +145,71 @@ class MainCivilPage extends StatelessWidget {
                         }
                       },
                       child: transportCard(
-                          'Taksi', Icons.local_taxi, Colors.orange),
+                        'Taksi',
+                        Icons.local_taxi,
+                        Colors.orange,
+                      ),
                     ),
                   ],
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    'Tarix',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    'Buyurtma berish',
+                    style: AppStyle.fontStyle.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                // Additional content or history items go here
+                GridView.count(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.2,
+                  shrinkWrap: true,
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  physics: NeverScrollableScrollPhysics(),
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        if (user != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => DeliveryPage()),
+                          );
+                        } else {
+                          _showLoginDialog(
+                              context); // Show registration dialog if not logged in
+                        }
+                      },
+                      child: transportCard(
+                        'Yuk mashinasi',
+                        Icons.local_shipping,
+                        Colors.teal,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        if (user != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => TaxiPage()),
+                          );
+                        } else {
+                          _showLoginDialog(
+                              context); // Show registration dialog if not logged in
+                        }
+                      },
+                      child: transportCard(
+                        'Taksi',
+                        Icons.local_taxi,
+                        Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -182,7 +242,10 @@ class MainCivilPage extends StatelessWidget {
           SizedBox(height: 10),
           Text(
             title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: AppStyle.fontStyle.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -194,15 +257,28 @@ class MainCivilPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Ro‘yxatdan o‘tishingiz kerak'),
+          title: Text(
+            'Ro‘yxatdan o‘tishingiz kerak',
+            style: AppStyle.fontStyle.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           content: Text(
-              'Ushbu xizmatdan foydalanish uchun tizimga kirishingiz kerak. Ro‘yxatdan o‘tmoqchimisiz?'),
+            'Ushbu xizmatdan foydalanish uchun tizimga kirishingiz kerak. Ro‘yxatdan o‘tmoqchimisiz?',
+            style: AppStyle.fontStyle.copyWith(fontSize: 16),
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('Yo‘q'),
+              child: Text(
+                'Yo‘q',
+                style: AppStyle.fontStyle.copyWith(
+                  fontSize: 16,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -212,7 +288,12 @@ class MainCivilPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => LoginScreen()),
                 );
               },
-              child: Text('Ha'),
+              child: Text(
+                'Ha',
+                style: AppStyle.fontStyle.copyWith(
+                  fontSize: 16,
+                ),
+              ),
             ),
           ],
         );
