@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -172,6 +173,45 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
   }
 }
 
+class RoleCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const RoleCard({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 120,
+        height: 120,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 50, color: AppColors.taxi),
+            const SizedBox(height: 10),
+            Text(label,
+                style: AppStyle.fontStyle.copyWith(color: Colors.black)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class RoleForm extends StatefulWidget {
   final bool isDriver;
   final Function(Map<String, String>) onSave;
@@ -201,27 +241,59 @@ class _RoleFormState extends State<RoleForm> {
     'Qayerdan': TextEditingController(),
     'Qayerga': TextEditingController(),
   };
+  Future<void> showAreaCodeBottomSheet(BuildContext context) async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ListView(
+          children: areaCodes.entries.map((entry) {
+            return ListTile(
+              title: Text('${entry.key} - ${entry.value}',
+                  style: AppStyle.fontStyle),
+              onTap: () {
+                setState(() {
+                  _controllers['Area Code']!.text = entry.key;
+                });
+                Navigator.pop(context);
+              },
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  final Map<String, String> areaCodes = {
+    '01': 'Toshkent sh',
+    '10': 'Toshkent v',
+    '20': 'Sirdaryo',
+    '25': 'Jizzax',
+    '30': 'Samarqand',
+    '40': 'Farg\'ona',
+    '50': 'Namangan',
+    '60': 'Andijon',
+    '70': 'Qashqadaryo',
+    '75': 'Surxondaryo',
+    '80': 'Buxoro',
+    '85': 'Navoiy',
+    '90': 'Xorazm',
+    '95': 'Qoraqalpog\'iston R',
+  };
 
   List<String> regions = [];
-  bool isLoadingRegions = true;
 
   @override
   void initState() {
     super.initState();
-    fetchRegions(); // Fetch regions from Firestore
+    fetchRegionsFromFirestore();
   }
 
-  // Fetch regions from Firestore
-  Future<void> fetchRegions() async {
-    final regionsSnapshot =
+  Future<void> fetchRegionsFromFirestore() async {
+    QuerySnapshot snapshot =
         await FirebaseFirestore.instance.collection('regions').get();
 
-    final fetchedRegions =
-        regionsSnapshot.docs.map((doc) => doc['region'].toString()).toList();
-
     setState(() {
-      regions = fetchedRegions;
-      isLoadingRegions = false;
+      regions = snapshot.docs.map((doc) => doc['region'] as String).toList();
     });
   }
 
@@ -235,7 +307,10 @@ class _RoleFormState extends State<RoleForm> {
           const SizedBox(height: 15),
           buildTextField(_controllers['Familiya']!, 'Familiya'),
           const SizedBox(height: 15),
-          buildPhoneNumberField(),
+          PhoneNumberField(
+            controller: _controllers['Telefon raqami']!,
+            formatter: _phoneNumberFormatter,
+          ),
           if (widget.isDriver) ...[
             const SizedBox(height: 15),
             buildBottomSheetField(
@@ -248,15 +323,10 @@ class _RoleFormState extends State<RoleForm> {
             const SizedBox(height: 15),
             buildCarNumberField(),
             const SizedBox(height: 15),
-            isLoadingRegions
-                ? CircularProgressIndicator()
-                : buildBottomSheetField(
-                    _controllers['Qayerdan']!, 'Qayerdan', regions),
+            buildBottomSheetField(
+                _controllers['Qayerdan']!, 'Qayerdan', regions),
             const SizedBox(height: 15),
-            isLoadingRegions
-                ? CircularProgressIndicator()
-                : buildBottomSheetField(
-                    _controllers['Qayerga']!, 'Qayerga', regions),
+            buildBottomSheetField(_controllers['Qayerga']!, 'Qayerga', regions),
           ],
           const SizedBox(height: 20),
           ElevatedButton(
@@ -269,6 +339,17 @@ class _RoleFormState extends State<RoleForm> {
             ),
             onPressed: () {
               if (_formKey.currentState!.validate()) {
+                if (widget.isDriver) {
+                  if (_controllers['Qayerdan']!.text ==
+                      _controllers['Qayerga']!.text) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Qayerdan va Qayerga bir xil bo\'lmasligi kerak!')),
+                    );
+                    return;
+                  }
+                }
                 final data = {
                   for (var entry in _controllers.entries)
                     if (widget.isDriver ||
@@ -294,48 +375,33 @@ class _RoleFormState extends State<RoleForm> {
     );
   }
 
-  Widget buildPhoneNumberField() {
-    return TextFormField(
-      controller: _controllers['Telefon raqami']!,
-      keyboardType: TextInputType.phone,
-      decoration: InputDecoration(
-        labelText: 'Telefon raqami',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
-        ),
-        filled: true,
-        fillColor: Colors.grey[100],
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Iltimos, telefon raqamingizni kiriting';
-        }
-        if (!RegExp(r'^\+998 \(\d{2}\) \d{3} \d{2} \d{2}$').hasMatch(value)) {
-          return 'To\'g\'ri telefon raqamini kiriting';
-        }
-        return null;
-      },
-    );
-  }
-
   Widget buildCarNumberField() {
     return Row(
       children: [
         Expanded(
           flex: 2,
-          child: TextFormField(
-            controller: _controllers['Area Code']!,
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.grey[100],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
+          child: Column(
+            children: [
+              const SizedBox(height: 5),
+              GestureDetector(
+                onTap: () => showAreaCodeBottomSheet(context),
+                child: AbsorbPointer(
+                  child: TextFormField(
+                    controller: _controllers['Area Code']!,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: AppStyle.fontStyle,
+                  ),
+                ),
               ),
-            ),
-            style: AppStyle.fontStyle,
+            ],
           ),
         ),
         const SizedBox(width: 10),
@@ -354,6 +420,7 @@ class _RoleFormState extends State<RoleForm> {
                 borderSide: BorderSide.none,
               ),
             ),
+            inputFormatters: [UpperCaseTextFormatter()],
             style: AppStyle.fontStyle,
           ),
         ),
@@ -373,6 +440,7 @@ class _RoleFormState extends State<RoleForm> {
                 borderSide: BorderSide.none,
               ),
             ),
+            keyboardType: TextInputType.number,
             style: AppStyle.fontStyle,
           ),
         ),
@@ -392,6 +460,7 @@ class _RoleFormState extends State<RoleForm> {
                 borderSide: BorderSide.none,
               ),
             ),
+            inputFormatters: [UpperCaseTextFormatter()],
             style: AppStyle.fontStyle,
           ),
         ),
@@ -475,41 +544,94 @@ class _RoleFormState extends State<RoleForm> {
   }
 }
 
-class RoleCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
+  }
+}
 
-  const RoleCard({
+class PhoneNumberField extends StatelessWidget {
+  final TextEditingController controller;
+  final TextInputFormatter formatter;
+
+  const PhoneNumberField({
     super.key,
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
+    required this.controller,
+    required this.formatter,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 120,
-        height: 120,
-        decoration: BoxDecoration(
-          color: color,
+    return TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.phone,
+      inputFormatters: [formatter],
+      decoration: InputDecoration(
+        labelText: 'Telefon raqami',
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 50, color: AppColors.taxi),
-            const SizedBox(height: 10),
-            Text(label,
-                style: AppStyle.fontStyle.copyWith(color: Colors.black)),
-          ],
-        ),
+        filled: true,
+        fillColor: Colors.grey[100],
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Iltimos, telefon raqamingizni kiriting';
+        }
+        if (!RegExp(r'^\+998 \(\d{2}\) \d{3} \d{2} \d{2}$').hasMatch(value)) {
+          return 'To\'g\'ri telefon raqamini kiriting';
+        }
+        return null;
+      },
     );
   }
 }
+
+final _phoneNumberFormatter = TextInputFormatter.withFunction(
+  (oldValue, newValue) {
+    if (!newValue.text.startsWith('+998 ')) {
+      return oldValue;
+    }
+
+    String text = newValue.text.substring(5).replaceAll(RegExp(r'\D'), '');
+
+    if (text.length > 9) {
+      text = text.substring(0, 9);
+    }
+
+    StringBuffer formatted = StringBuffer('+998 ');
+    int selectionIndex = newValue.selection.baseOffset;
+
+    if (text.isNotEmpty) {
+      formatted.write('(${text.substring(0, min(2, text.length))}');
+    }
+    if (text.length > 2) {
+      formatted.write(') ${text.substring(2, min(5, text.length))}');
+    }
+    if (text.length > 5) {
+      formatted.write(' ${text.substring(5, min(7, text.length))}');
+    }
+    if (text.length > 7) {
+      formatted.write(' ${text.substring(7, text.length)}');
+    }
+
+    selectionIndex = formatted.length;
+
+    if (newValue.selection.baseOffset < 5) {
+      selectionIndex = 5;
+    }
+
+    return TextEditingValue(
+      text: formatted.toString(),
+      selection: TextSelection.collapsed(offset: selectionIndex),
+    );
+  },
+);
