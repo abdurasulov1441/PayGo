@@ -75,6 +75,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
       'from': from,
       'to': to,
       'role': 'Haydovchi',
+      'balance': 0, // Add the balance field with a default value of 0
     };
 
     await FirebaseFirestore.instance

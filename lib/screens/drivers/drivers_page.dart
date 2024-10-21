@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:taksi/screens/civil/history.dart';
 import 'package:taksi/screens/drivers/account.dart';
 import 'package:taksi/screens/drivers/acepted_orders.dart';
+import 'package:taksi/screens/drivers/chat_page.dart';
 import 'package:taksi/screens/drivers/history.dart';
 import 'package:taksi/screens/drivers/orders.dart';
+import 'package:taksi/style/app_colors.dart';
 
 class DriverPage extends StatefulWidget {
   const DriverPage({super.key});
@@ -72,6 +73,22 @@ class _DriverPageState extends State<DriverPage> {
             BottomNavigationBarType.fixed, // Тип (фиксированный или плавающий)
         onTap: _onItemTapped,
       ),
+      floatingActionButton: FloatingActionButton(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+            //side: BorderSide()
+          ),
+          backgroundColor: AppColors.taxi,
+          child: Icon(
+            Icons.chat,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ChatPage()),
+            );
+          }),
     );
   }
 }

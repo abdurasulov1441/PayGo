@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:taksi/screens/civil/history.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth to get the current user
@@ -14,7 +15,7 @@ class CreateOrderTruck extends StatefulWidget {
 
 class _CreateOrderTruckState extends State<CreateOrderTruck> {
   String fromLocation = 'Namangan';
-  String toLocation = 'Toshkent';
+  String toLocation = 'Samarqand';
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _cargoNameController = TextEditingController();
   final TextEditingController _cargoWeightController = TextEditingController();
@@ -59,11 +60,30 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
       return;
     }
 
-    // Получаем номер заказа
+    // Fetch the user's name from Firestore
+    String userName = 'Unknown'; // Default value if the name is not found
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final email = user.email;
+      if (email != null) {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('user')
+            .where('email', isEqualTo: email)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          final userData = snapshot.docs.first.data();
+          userName = userData['name'] ?? 'Unknown'; // Get the user's name
+        }
+      }
+    }
+
+    // Get the order number
     int orderNumber = await _getNextOrderNumber();
 
+    // Create the order data
     final orderData = {
-      'orderNumber': orderNumber, // Сохраняем номер заказа
+      'orderNumber': orderNumber, // Save the order number
       'fromLocation': fromLocation,
       'toLocation': toLocation,
       'phoneNumber': _phoneController.text,
@@ -72,15 +92,22 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
       'orderTime': Timestamp.fromDate(_selectedDateTime!),
       'status': 'kutish jarayonida',
       'orderType': 'truck',
+      'customerName': userName, // Include the passenger's name
     };
 
+    // Add the order to Firestore
     await FirebaseFirestore.instance.collection('orders').add(orderData);
 
+    // Notify the user
     _showSnackBar('Buyurtma №$orderNumber yuborildi!');
     setState(() {
       _cargoNameController.clear();
       _cargoWeightController.clear();
       _selectedDateTime = null;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => OrderHistoryPage()),
+      );
     });
   }
 

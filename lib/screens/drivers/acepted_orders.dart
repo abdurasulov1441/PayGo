@@ -85,10 +85,12 @@ class AcceptedOrdersPage extends StatelessWidget {
     final toLocation = doc['toLocation'];
     final customerName = doc['customerName'];
     final phoneNumber = doc['phoneNumber'];
-    final peopleCount = doc['peopleCount'];
     final orderTime = (doc['orderTime'] as Timestamp).toDate();
     final arrivalTime = orderTime
         .add(Duration(hours: 8)); // Добавляем 8 часов для времени прибытия
+
+    // Определяем тип заказа (такси или грузовик) и отображаем соответствующие данные
+    final orderType = doc['orderType'];
 
     return Card(
       color: Colors.white,
@@ -182,11 +184,22 @@ class AcceptedOrdersPage extends StatelessWidget {
               ],
             ),
             SizedBox(height: 10),
-            // Количество людей
-            Text(
-              'Odamlar soni: $peopleCount',
-              style: TextStyle(fontSize: 16),
-            ),
+            // Проверяем тип заказа и выводим соответствующие данные
+            if (orderType == 'taksi') ...[
+              Text(
+                'Odamlar soni: ${doc['peopleCount'] ?? 'Unknown'}',
+                style: TextStyle(fontSize: 16),
+              ),
+            ] else if (orderType == 'truck') ...[
+              Text(
+                'Yuk nomi: ${doc['cargoName'] ?? 'Unknown'}',
+                style: TextStyle(fontSize: 16),
+              ),
+              Text(
+                'Yuk vazni: ${doc['cargoWeight'] ?? 'Unknown'} kg',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
           ],
         ),
       ),

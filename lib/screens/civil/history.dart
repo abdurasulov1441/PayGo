@@ -85,6 +85,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   }
 
   // Building the order card
+// Building the order card
+
+// Building the order card
   Widget _buildOrderCard(DocumentSnapshot doc) {
     String orderId = doc.id;
 
@@ -94,11 +97,13 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
             ? doc['orderNumber'].toString()
             : 'No Number'; // Default value if 'orderNumber' doesn't exist
 
-    String customerName = doc['customerName'];
+    // Check the type of order and display different fields based on it
+    String orderType = doc['orderType'] ?? 'unknown';
+
+    String customerName; // Use this for both taxi and truck orders
     String fromLocation = doc['fromLocation'];
     String toLocation = doc['toLocation'];
     String orderStatus = doc['status'];
-    int peopleCount = doc['peopleCount'];
     DateTime orderTime = (doc['orderTime'] as Timestamp).toDate();
     DateTime arrivalTime = orderTime.add(Duration(hours: 8));
 
@@ -106,6 +111,63 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         (doc.data() as Map<String, dynamic>).containsKey('driverEmail')
             ? doc['driverEmail']
             : 'N/A'; // Default if driverEmail doesn't exist
+
+    Widget additionalInfo;
+
+    // Fetch 'customerName' field, which should always be available
+    customerName = doc['customerName'] ?? 'Ism mavjud emas';
+
+    // Check if it's a taxi or truck order and display relevant fields
+    if (orderType == 'taksi') {
+      // Taxi order
+      int peopleCount = doc['peopleCount'];
+
+      additionalInfo = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            customerName, // Display the passenger's name for taxi orders
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Odamlar soni: $peopleCount',
+            style: TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+        ],
+      );
+    } else if (orderType == 'truck') {
+      // Truck order
+      double cargoWeight = doc['cargoWeight'] ?? 0.0;
+      String cargoName =
+          doc['cargoName'] ?? 'Yuk nomi mavjud emas'; // Cargo name
+
+      additionalInfo = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            customerName, // Display the passenger's name instead of cargo name
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Yuk vazni: ${cargoWeight.toStringAsFixed(2)} kg', // Cargo weight
+            style: TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Yuk nomi: $cargoName', // Display the cargo name below the weight
+            style: TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+        ],
+      );
+    } else {
+      // If orderType is not recognized, show a default message
+      additionalInfo = Text(
+        'Order type unknown',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      );
+    }
 
     return Card(
       margin: EdgeInsets.only(bottom: 16),
@@ -140,17 +202,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
               ],
             ),
             SizedBox(height: 8),
-            Text(
-              customerName,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            additionalInfo, // Show either customer name or cargo info
             SizedBox(height: 10),
             _buildLocationRow(fromLocation, toLocation, orderTime, arrivalTime),
-            SizedBox(height: 10),
-            Text(
-              'Odamlar soni: $peopleCount',
-              style: TextStyle(fontSize: 14, color: Colors.black54),
-            ),
             SizedBox(height: 10),
             if (orderStatus == 'tamomlandi')
               _buildRatingBar(

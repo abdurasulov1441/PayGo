@@ -52,12 +52,12 @@ class DriverOrderHistoryPage extends StatelessWidget {
 
   // Функция создания карточки заказа
   Widget _buildOrderCard(QueryDocumentSnapshot doc) {
-    final orderNumber = doc['orderNumber'];
-    final customerName = doc['customerName'];
-    final fromLocation = doc['fromLocation'];
-    final toLocation = doc['toLocation'];
+    final orderNumber = doc['orderNumber'] ?? 'Unknown';
+    final customerName = doc['customerName'] ?? 'Unknown';
+    final fromLocation = doc['fromLocation'] ?? 'Unknown';
+    final toLocation = doc['toLocation'] ?? 'Unknown';
     final orderTime = (doc['orderTime'] as Timestamp).toDate();
-    final peopleCount = doc['peopleCount'];
+    final orderType = doc['orderType'] ?? 'Unknown';
 
     // Рассчитаем время прибытия, добавляя 8 часов
     final arrivalTime = orderTime.add(Duration(hours: 8));
@@ -91,7 +91,7 @@ class DriverOrderHistoryPage extends StatelessWidget {
                 ),
                 Spacer(),
                 Text(
-                  '${_formatDate(orderTime)}',
+                  _formatDate(orderTime),
                   style: TextStyle(
                       color: Colors.green, fontWeight: FontWeight.bold),
                 ),
@@ -134,8 +134,22 @@ class DriverOrderHistoryPage extends StatelessWidget {
               ],
             ),
             SizedBox(height: 8),
-            Text('Odamlar soni: $peopleCount',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            // Проверяем тип заказа и выводим соответствующие данные
+            if (orderType == 'taksi') ...[
+              Text(
+                'Odamlar soni: ${doc['peopleCount'] ?? 'Unknown'}',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ] else if (orderType == 'truck') ...[
+              Text(
+                'Yuk nomi: ${doc['cargoName'] ?? 'Unknown'}',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'Yuk vazni: ${doc['cargoWeight'] ?? 'Unknown'} kg',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
           ],
         ),
       ),

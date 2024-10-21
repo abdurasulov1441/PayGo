@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // For Firebase Authentication
 import 'package:intl/intl.dart';
+import 'package:taksi/screens/civil/history.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -14,7 +15,7 @@ class CreateOrderTaksi extends StatefulWidget {
 
 class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
   String fromLocation = 'Namangan';
-  String toLocation = 'Toshkent';
+  String toLocation = 'Samarqand';
   final TextEditingController _phoneController = TextEditingController();
   String _selectedPeople = '1';
   String _customerName = '';
@@ -83,6 +84,10 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
     setState(() {
       _selectedPeople = '1';
       _selectedDateTime = null;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => OrderHistoryPage()),
+      );
     });
   }
 

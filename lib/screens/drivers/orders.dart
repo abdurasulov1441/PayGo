@@ -34,8 +34,8 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
       if (snapshot.docs.isNotEmpty) {
         final driverData = snapshot.docs.first.data();
         setState(() {
-          driverRegion = driverData['to'];
-          driverVehicleType = driverData['vehicleType'];
+          driverRegion = driverData['to']; // Destination region of driver
+          driverVehicleType = driverData['vehicleType']; // Vehicle type
           isLoading = false;
         });
       } else {
@@ -56,13 +56,17 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: AppColors.taxi,
-          title: Text(
-            'Buyurtmalar',
-            style: AppStyle.fontStyle.copyWith(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-          )),
+        centerTitle: true,
+        backgroundColor: AppColors.taxi,
+        title: Text(
+          'Buyurtmalar',
+          style: AppStyle.fontStyle.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+      ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : driverRegion == null || driverVehicleType == null
@@ -104,12 +108,18 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
   }
 
   Widget _buildOrderCard(QueryDocumentSnapshot doc) {
-    final orderNumber = doc['orderNumber'];
-    final customerName = doc['customerName'];
-    final fromLocation = doc['fromLocation'];
-    final toLocation = doc['toLocation'];
+    final orderNumber = doc['orderNumber'] ?? 'Unknown';
+
+    // Check if 'customerName' or 'cargoName' exists and provide default value
+    final customerName =
+        (doc.data() as Map<String, dynamic>).containsKey('customerName')
+            ? doc['customerName']
+            : 'Unknown';
+    final fromLocation = doc['fromLocation'] ?? 'Unknown';
+    final toLocation = doc['toLocation'] ?? 'Unknown';
     final orderTime = (doc['orderTime'] as Timestamp).toDate();
     final arrivalTime = orderTime.add(Duration(hours: 8));
+    final orderType = doc['orderType'] ?? 'Unknown';
 
     return Dismissible(
       key: Key(doc.id),
@@ -158,7 +168,7 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
                 ),
                 Spacer(),
                 Text(
-                  '${_formatDate(orderTime)}',
+                  _formatDate(orderTime),
                   style: TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
@@ -189,7 +199,9 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
                       Text(
                         fromLocation,
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         _formatDate(orderTime),
@@ -210,7 +222,9 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
                       Text(
                         toLocation,
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         _formatDate(arrivalTime),
@@ -222,11 +236,11 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
               ],
             ),
             SizedBox(height: 10),
-            if (doc['orderType'] == 'taksi') ...[
-              Text('Odamlar soni: ${doc['peopleCount']}'),
-            ] else if (doc['orderType'] == 'truck') ...[
-              Text('Yuk nomi: ${doc['cargoName']}'),
-              Text('Yuk vazni: ${doc['cargoWeight']} kg'),
+            if (orderType == 'taksi') ...[
+              Text('Odamlar soni: ${doc['peopleCount'] ?? 'Unknown'}'),
+            ] else if (orderType == 'truck') ...[
+              Text('Yuk nomi: ${doc['cargoName'] ?? 'Unknown'}'),
+              Text('Yuk vazni: ${doc['cargoWeight'] ?? 'Unknown'} kg'),
             ],
           ],
         ),
