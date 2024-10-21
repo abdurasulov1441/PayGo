@@ -28,9 +28,11 @@ class _AkkauntPageState extends State<AkkauntPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text(
           'Akkaunt',
-          style: AppStyle.fontStyle.copyWith(color: Colors.white),
+          style: AppStyle.fontStyle.copyWith(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         backgroundColor: AppColors.taxi,
       ),

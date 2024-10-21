@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart'; // Import connectivity_plus
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:taksi/screens/civil/account_screen.dart';
@@ -15,8 +18,60 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late StreamSubscription<ConnectivityResult> _subscription;
+  bool _isDialogVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Subscribe to connectivity changes
+    _subscription = Connectivity().onConnectivityChanged.listen((result) {
+      if (result == ConnectivityResult.none) {
+        _showNoConnectionDialog();
+      } else {
+        _dismissNoConnectionDialog();
+      }
+    }) as StreamSubscription<ConnectivityResult>;
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel(); // Cancel the subscription when the app is disposed
+    super.dispose();
+  }
+
+  // Show no connection dialog
+  void _showNoConnectionDialog() {
+    if (!_isDialogVisible) {
+      _isDialogVisible = true;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('No Internet Connection'),
+            content: Text('Please check your internet connection.'),
+          );
+        },
+      );
+    }
+  }
+
+  void _dismissNoConnectionDialog() {
+    if (_isDialogVisible) {
+      _isDialogVisible = false;
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

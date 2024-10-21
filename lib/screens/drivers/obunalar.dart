@@ -20,9 +20,19 @@ class _ObunalarPageState extends State<ObunalarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.white,
+            )),
+        centerTitle: true,
         title: Text(
           'Obunalar',
-          style: AppStyle.fontStyle.copyWith(color: Colors.white),
+          style: AppStyle.fontStyle.copyWith(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         backgroundColor: AppColors.taxi,
       ),
