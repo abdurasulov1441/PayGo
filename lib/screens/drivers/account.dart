@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
+import 'package:taksi/screens/drivers/obunalar.dart';
+import 'package:taksi/screens/drivers/payment.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart'; // Import your AppStyle
 
@@ -8,16 +12,7 @@ class AkkauntPage extends StatelessWidget {
   const AkkauntPage({super.key});
 
   Future<void> _signOut(BuildContext context) async {
-    try {
-      await FirebaseAuth.instance.signOut();
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => MainCivilPage()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Xatolik: Chiqishda xatolik yuz berdi')),
-      );
-    }
+    _showLogoutDialog(context); // Show the logout confirmation dialog
   }
 
   @override
@@ -41,46 +36,74 @@ class AkkauntPage extends StatelessWidget {
     );
   }
 
-  // Profile header with avatar and balance display
+  // Profile header with avatar, balance, and full name display
   Widget _buildProfileHeader() {
     final user = FirebaseAuth.instance.currentUser;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.taxi,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundImage: NetworkImage(
-                'https://via.placeholder.com/150'), // Replace with real avatar URL or asset
+
+    return FutureBuilder<DocumentSnapshot>(
+      future:
+          FirebaseFirestore.instance.collection('driver').doc(user?.uid).get(),
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+          return Center(child: Text('Xatolik: Ma\'lumotlar yuklanmadi'));
+        }
+
+        // Fetch user data from Firestore
+        final data = snapshot.data!.data() as Map<String, dynamic>?;
+
+        String firstName = data?['name'] ?? 'Ism kiritilmagan';
+        String lastName = data?['lastName'] ?? 'Familiya kiritilmagan';
+        String fullName = '$firstName $lastName';
+
+        int balance = data?['balance'] ?? 0; // Fetch the balance
+
+        // Format the balance with thousand separators
+        String formattedBalance =
+            NumberFormat('#,###', 'en_US').format(balance).replaceAll(',', ' ');
+
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppColors.taxi,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+            ),
           ),
-          const SizedBox(width: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                user?.displayName ?? 'Ism kiritilmagan',
-                style: AppStyle.fontStyle.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
+              CircleAvatar(
+                radius: 40,
+                backgroundImage: NetworkImage(
+                    'https://via.placeholder.com/150'), // Replace with real avatar URL or asset
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Balans: 0 UZS', // Fetch and display actual balance
-                style: AppStyle.fontStyle
-                    .copyWith(fontSize: 16, color: Colors.white),
+              const SizedBox(width: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fullName,
+                    style: AppStyle.fontStyle.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Balans: $formattedBalance UZS', // Display the formatted balance
+                    style: AppStyle.fontStyle
+                        .copyWith(fontSize: 16, color: Colors.white),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -92,35 +115,37 @@ class AkkauntPage extends StatelessWidget {
         _buildMenuItem(
           context,
           icon: Icons.account_balance_wallet,
-          title: 'Popolnit balans',
+          title: 'Balansni to\'ldirish',
           onTap: () {
-            // Implement balance top-up action
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Popolnit balans selected')),
+            // Navigate to balance top-up page
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => BalanceTopUpPage()),
             );
           },
         ),
         const SizedBox(height: 10),
         _buildMenuItem(
           context,
-          icon: Icons.history,
-          title: 'Tarix',
+          icon: Icons.subscriptions,
+          title: 'Obunalar', // Changed from History to Obunalar
           onTap: () {
-            // Implement history action
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Tarix selected')),
+            // Handle Obunalar logic here
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ObunalarPage()),
             );
           },
         ),
         const SizedBox(height: 10),
         _buildMenuItem(
           context,
-          icon: Icons.settings,
-          title: 'Sozlamalar',
+          icon: Icons.nightlight_round,
+          title: 'Tun rejimi va Til', // Night mode and language settings
           onTap: () {
-            // Implement settings action
+            // Handle night mode and language settings
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Sozlamalar selected')),
+              SnackBar(content: Text('Tun rejimi va Til selected')),
             );
           },
         ),
@@ -128,7 +153,7 @@ class AkkauntPage extends StatelessWidget {
         _buildMenuItem(
           context,
           icon: Icons.logout,
-          title: 'Chiqish',
+          title: 'Chiqish', // Logout
           onTap: () => _signOut(context),
         ),
       ],
@@ -153,6 +178,125 @@ class AkkauntPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       tileColor: Colors.grey[200],
+    );
+  }
+
+  // Logout confirmation dialog
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Red Header
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: AppColors.taxi,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(width: 20),
+                    Icon(Icons.warning, color: Colors.white), // Warning icon
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Siz rostdan ham chiqmoqchimisiz?', // Uzbek header text
+                        style: AppStyle.fontStyle.copyWith(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.white),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                ),
+              ),
+              // White Body
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Agar chiqib ketsangiz, barcha sessiyalar tugatiladi. Davom etasizmi?', // Uzbek message
+                  style: AppStyle.fontStyle.copyWith(
+                    color: Colors.black,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+              Divider(height: 1),
+              SizedBox(height: 10),
+              // Action Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.taxi,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Yo\'q',
+                      style: AppStyle.fontStyle.copyWith(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                      FirebaseAuth.instance.signOut(); // Sign out
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => MainCivilPage()),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.taxi,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Ha',
+                      style: AppStyle.fontStyle.copyWith(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:taksi/screens/drivers/account.dart';
 import 'package:taksi/screens/drivers/acepted_orders.dart';
-import 'package:taksi/screens/drivers/chat/page/chat_page.dart';
+import 'package:taksi/screens/drivers/chat_page.dart';
 import 'package:taksi/screens/drivers/history.dart';
 import 'package:taksi/screens/drivers/orders.dart';
 import 'package:taksi/style/app_colors.dart';

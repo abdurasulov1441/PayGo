@@ -4,13 +4,12 @@ import 'package:flutter_sound/flutter_sound.dart';
 class VoiceMessageWidget extends StatefulWidget {
   final String path; // This will now be a URL
   final int duration;
-  final int fileSize;
+
   final String timeString;
 
   VoiceMessageWidget({
     required this.path,
     required this.duration,
-    required this.fileSize,
     required this.timeString,
   });
 
@@ -61,26 +60,23 @@ class _VoiceMessageWidgetState extends State<VoiceMessageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        IconButton(
-          icon: Icon(
-            _isPlaying ? Icons.pause : Icons.play_arrow,
-            color: Colors.blue,
+    return SizedBox(
+      height: 30,
+      width: 120,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IconButton(
+            icon: Icon(
+              _isPlaying ? Icons.pause : Icons.play_arrow,
+              color: Colors.blue,
+            ),
+            onPressed: _playPauseVoiceMessage,
           ),
-          onPressed: _playPauseVoiceMessage,
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${widget.duration} sekund'),
-              Text(widget.timeString,
-                  style: TextStyle(color: Colors.grey, fontSize: 10)),
-            ],
-          ),
-        ),
-      ],
+          Text('${widget.duration} sekund'),
+        ],
+      ),
     );
   }
 }
