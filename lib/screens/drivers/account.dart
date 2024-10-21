@@ -8,8 +8,17 @@ import 'package:taksi/screens/drivers/payment.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart'; // Import your AppStyle
 
-class AkkauntPage extends StatelessWidget {
+class AkkauntPage extends StatefulWidget {
   const AkkauntPage({super.key});
+
+  @override
+  _AkkauntPageState createState() => _AkkauntPageState();
+}
+
+class _AkkauntPageState extends State<AkkauntPage> {
+  Future<void> _refreshPage() async {
+    setState(() {});
+  }
 
   Future<void> _signOut(BuildContext context) async {
     _showLogoutDialog(context); // Show the logout confirmation dialog
@@ -25,18 +34,23 @@ class AkkauntPage extends StatelessWidget {
         ),
         backgroundColor: AppColors.taxi,
       ),
-      body: Column(
-        children: [
-          _buildProfileHeader(),
-          Expanded(
-            child: _buildMenuItems(context),
+      body: RefreshIndicator(
+        onRefresh: _refreshPage, // This will refresh the page
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(), // Always scrollable
+          child: Column(
+            children: [
+              _buildProfileHeader(),
+              SizedBox(height: 20),
+              _buildMenuItems(context),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // Profile header with avatar, balance, and full name display
+  // Profile header with avatar, balance, full name, subscription plan, and expiration date display
   Widget _buildProfileHeader() {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -65,6 +79,25 @@ class AkkauntPage extends StatelessWidget {
         String formattedBalance =
             NumberFormat('#,###', 'en_US').format(balance).replaceAll(',', ' ');
 
+        // Fetch subscription plan and expiration date (if exists)
+        String? subscriptionPlan = data?['subscription_plan'];
+        Timestamp? expirationTimestamp = data?['expired_date'];
+        String? formattedExpiration;
+
+        if (expirationTimestamp != null) {
+          DateTime expirationDate = expirationTimestamp.toDate();
+          Duration difference = expirationDate.difference(DateTime.now());
+
+          int months = difference.inDays ~/ 30;
+          int days = difference.inDays % 30;
+
+          if (months > 0) {
+            formattedExpiration = '$months oylik, $days kun';
+          } else {
+            formattedExpiration = '$days kun';
+          }
+        }
+
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           decoration: BoxDecoration(
@@ -88,16 +121,37 @@ class AkkauntPage extends StatelessWidget {
                   Text(
                     fullName,
                     style: AppStyle.fontStyle.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Balans: $formattedBalance UZS', // Display the formatted balance
-                    style: AppStyle.fontStyle
-                        .copyWith(fontSize: 16, color: Colors.white),
+                    style: AppStyle.fontStyle.copyWith(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
+                  if (subscriptionPlan != null &&
+                      formattedExpiration != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tarif: $subscriptionPlan',
+                      style: AppStyle.fontStyle.copyWith(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    Text(
+                      'Tugash sanasi: $formattedExpiration',
+                      style: AppStyle.fontStyle.copyWith(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -111,6 +165,8 @@ class AkkauntPage extends StatelessWidget {
   Widget _buildMenuItems(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(), // Disable ListView scroll
       children: [
         _buildMenuItem(
           context,

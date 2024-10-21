@@ -16,6 +16,9 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
   String? driverRegion;
   String? driverVehicleType;
   bool isLoading = true;
+  Future<void> _refreshPage() async {
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -67,11 +70,14 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
           ),
         ),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : driverRegion == null || driverVehicleType == null
-              ? Center(child: Text('No driver data found'))
-              : _buildOrderStream(),
+      body: RefreshIndicator(
+        onRefresh: _refreshPage,
+        child: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : driverRegion == null || driverVehicleType == null
+                ? Center(child: Text('No driver data found'))
+                : _buildOrderStream(),
+      ),
     );
   }
 

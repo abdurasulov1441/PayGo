@@ -1,9 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:taksi/style/app_colors.dart'; // Import your custom colors
 import 'package:taksi/style/app_style.dart'; // Import your custom styles
 
-class ObunalarPage extends StatelessWidget {
+class ObunalarPage extends StatefulWidget {
   const ObunalarPage({super.key});
+
+  @override
+  _ObunalarPageState createState() => _ObunalarPageState();
+}
+
+class _ObunalarPageState extends State<ObunalarPage> {
+  bool isLoading = false; // To track loading status
+  String? selectedPlan; // To track which plan is selected
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +33,7 @@ class ObunalarPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Obunani Tanlang:',
+                'Tanlang Obunani:',
                 style: AppStyle.fontStyle.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -38,14 +49,7 @@ class ObunalarPage extends StatelessWidget {
                 title: '1 Oylik',
                 price: '30 000 UZS',
                 savings: 'Tejash yo‘q',
-                onTap: () {
-                  _subscribe(context, '1 Oylik', 30000);
-                },
-                featureList: [
-                  'Oddiy dizayn',
-                  'Cheklangan buyurtmalar',
-                  'Bildirishnoma funksiyasi yo‘q'
-                ],
+                cost: 30000,
               ),
 
               // 6 Month Subscription (Savings)
@@ -54,14 +58,7 @@ class ObunalarPage extends StatelessWidget {
                 title: '6 Oylik',
                 price: '160 000 UZS',
                 savings: '20 000 UZS tejang',
-                onTap: () {
-                  _subscribe(context, '6 Oylik', 160000);
-                },
-                featureList: [
-                  'Zamonaviy dizayn',
-                  'Cheklangan buyurtmalar',
-                  'Bildirishnoma orqali buyurtmalarni qabul qilish'
-                ],
+                cost: 160000,
               ),
 
               // 12 Month Subscription (Savings)
@@ -70,15 +67,7 @@ class ObunalarPage extends StatelessWidget {
                 title: '1 Yillik',
                 price: '300 000 UZS',
                 savings: '60 000 UZS tejang',
-                onTap: () {
-                  _subscribe(context, '1 Yillik', 300000);
-                },
-                featureList: [
-                  'Eng chiroyli dizayn',
-                  'Barcha hududlardan cheklanmagan buyurtmalar',
-                  'Bildirishnoma orqali buyurtmalarni qabul qilish',
-                  'Qo‘shimcha funksiyalar'
-                ],
+                cost: 300000,
               ),
             ],
           ),
@@ -93,8 +82,7 @@ class ObunalarPage extends StatelessWidget {
     required String title,
     required String price,
     required String savings,
-    required VoidCallback onTap,
-    required List<String> featureList,
+    required int cost, // Cost of the subscription
   }) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -140,36 +128,16 @@ class ObunalarPage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: featureList.map((feature) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                      children: [
-                        Icon(Icons.check, color: Colors.white, size: 16),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            feature,
-                            style: AppStyle.fontStyle.copyWith(
-                              fontSize: 14,
-                              color: Colors.white,
-                            ),
-                            softWrap: true,
-                            maxLines:
-                                2, // Limit the number of lines to prevent overflow
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 20),
               ElevatedButton(
-                onPressed: onTap,
+                onPressed: isLoading
+                    ? null // Disable button while loading
+                    : () {
+                        setState(() {
+                          selectedPlan = title; // Set selected plan
+                          isLoading = true; // Start loading
+                        });
+                        _confirmSubscription(context, title, cost);
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
@@ -177,14 +145,23 @@ class ObunalarPage extends StatelessWidget {
                   ),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 40),
                 ),
-                child: Text(
-                  'TANLASH',
-                  style: AppStyle.fontStyle.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.taxi,
-                  ),
-                ),
+                child: isLoading && selectedPlan == title
+                    ? SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.taxi,
+                        ),
+                      )
+                    : Text(
+                        'TANLASH',
+                        style: AppStyle.fontStyle.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.taxi,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -193,13 +170,80 @@ class ObunalarPage extends StatelessWidget {
     );
   }
 
-  // Simulate the subscription action (later you can integrate actual payment logic)
-  void _subscribe(BuildContext context, String plan, int price) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Siz $plan uchun $price UZS to‘lashni tanladingiz.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  // Confirm subscription by checking balance, checking previous subscription, and updating Firestore
+  Future<void> _confirmSubscription(
+      BuildContext context, String plan, int cost) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          isLoading = false; // Stop loading
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Foydalanuvchi tizimga kirmagan!')),
+        );
+        return;
+      }
+
+      // Fetch user balance and subscription data
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('driver')
+          .doc(user.uid)
+          .get();
+
+      int balance = userDoc['balance'];
+      Timestamp? currentExpiration = userDoc['expired_date'];
+
+      if (balance >= cost) {
+        DateTime newExpirationDate;
+
+        // Check if there's an existing subscription with time left
+        if (currentExpiration != null &&
+            currentExpiration.toDate().isAfter(DateTime.now())) {
+          // Add the new subscription to the remaining time
+          Duration additionalDuration = Duration(
+              days: plan == '1 Oylik' ? 31 : (plan == '6 Oylik' ? 186 : 365));
+          newExpirationDate =
+              currentExpiration.toDate().add(additionalDuration);
+        } else {
+          // Start a fresh subscription from the current date
+          newExpirationDate = DateTime.now().add(Duration(
+              days: plan == '1 Oylik' ? 31 : (plan == '6 Oylik' ? 186 : 365)));
+        }
+
+        // Deduct balance and update subscription info
+        await FirebaseFirestore.instance
+            .collection('driver')
+            .doc(user.uid)
+            .update({
+          'balance': balance - cost,
+          'subscription_plan': plan,
+          'expired_date': newExpirationDate,
+        });
+
+        setState(() {
+          isLoading = false; // Stop loading
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Muvaffaqiyatli obuna bo‘ldingiz!')),
+        );
+      } else {
+        setState(() {
+          isLoading = false; // Stop loading
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Balansingiz yetarli emas!')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false; // Stop loading
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Xatolik yuz berdi: $e')),
+      );
+    }
   }
 }

@@ -5,8 +5,17 @@ import 'package:intl/intl.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart'; // For formatting date
 
-class DriverOrderHistoryPage extends StatelessWidget {
+class DriverOrderHistoryPage extends StatefulWidget {
   const DriverOrderHistoryPage({super.key});
+
+  @override
+  State<DriverOrderHistoryPage> createState() => _DriverOrderHistoryPageState();
+}
+
+class _DriverOrderHistoryPageState extends State<DriverOrderHistoryPage> {
+  Future<void> _refreshPage() async {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,32 +30,36 @@ class DriverOrderHistoryPage extends StatelessWidget {
             style: AppStyle.fontStyle.copyWith(
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
           )),
-      body: currentUserEmail == null
-          ? Center(child: Text('Foydalanuvchi tizimga kirmagan'))
-          : StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('orders')
-                  .where('status', isEqualTo: 'tamomlandi') // Completed orders
-                  .where('driverEmail',
-                      isEqualTo: currentUserEmail) // Logged-in driver filter
-                  .snapshots(),
-              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
-                }
+      body: RefreshIndicator(
+        onRefresh: _refreshPage,
+        child: currentUserEmail == null
+            ? Center(child: Text('Foydalanuvchi tizimga kirmagan'))
+            : StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('orders')
+                    .where('status',
+                        isEqualTo: 'tamomlandi') // Completed orders
+                    .where('driverEmail',
+                        isEqualTo: currentUserEmail) // Logged-in driver filter
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
 
-                if (snapshot.data!.docs.isEmpty) {
-                  return Center(
-                      child: Text('Yakunlangan buyurtmalar mavjud emas.'));
-                }
+                  if (snapshot.data!.docs.isEmpty) {
+                    return Center(
+                        child: Text('Yakunlangan buyurtmalar mavjud emas.'));
+                  }
 
-                return ListView(
-                  children: snapshot.data!.docs.map((doc) {
-                    return _buildOrderCard(doc);
-                  }).toList(),
-                );
-              },
-            ),
+                  return ListView(
+                    children: snapshot.data!.docs.map((doc) {
+                      return _buildOrderCard(doc);
+                    }).toList(),
+                  );
+                },
+              ),
+      ),
     );
   }
 

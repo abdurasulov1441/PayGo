@@ -64,6 +64,10 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
     final carNumber = '$areaCode$letterCode$numberCode$endingCode';
 
+    // Set the current date and calculate 30 days for expired_date
+    DateTime currentDate = DateTime.now();
+    DateTime expiredDate = currentDate.add(Duration(days: 30));
+
     final data = {
       'email': user?.email,
       'name': name,
@@ -76,6 +80,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
       'to': to,
       'role': 'Haydovchi',
       'balance': 0, // Add the balance field with a default value of 0
+      'expired_date': expiredDate, // Add the expired_date field
+      'subscription_plan':
+          'Vaqtinchalik' // Add the tarif field as a trial period
     };
 
     await FirebaseFirestore.instance

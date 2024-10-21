@@ -5,8 +5,17 @@ import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:url_launcher/url_launcher.dart'; // For phone call functionality
 
-class AcceptedOrdersPage extends StatelessWidget {
+class AcceptedOrdersPage extends StatefulWidget {
   const AcceptedOrdersPage({super.key});
+
+  @override
+  State<AcceptedOrdersPage> createState() => _AcceptedOrdersPageState();
+}
+
+class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
+  Future<void> _refreshPage() async {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,40 +29,44 @@ class AcceptedOrdersPage extends StatelessWidget {
             style: AppStyle.fontStyle.copyWith(
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
           )),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('orders')
-            .where('status', isEqualTo: 'qabul qilindi') // Only accepted orders
-            .snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
+      body: RefreshIndicator(
+        onRefresh: _refreshPage,
+        child: StreamBuilder(
+          stream: FirebaseFirestore.instance
+              .collection('orders')
+              .where('status',
+                  isEqualTo: 'qabul qilindi') // Only accepted orders
+              .snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
 
-          return ListView(
-            children: snapshot.data!.docs.map((doc) {
-              return Dismissible(
-                key: Key(doc.id),
-                background: _buildDismissBackground(Colors.green, Icons.check,
-                    'Tugatish', Alignment.centerLeft),
-                secondaryBackground: _buildDismissBackground(
-                    Colors.red, Icons.undo, 'Qaytarish', Alignment.centerRight),
-                onDismissed: (direction) {
-                  if (direction == DismissDirection.startToEnd) {
-                    _completeOrder(doc.id); // Свайп влево — завершение заказа
-                  } else {
-                    _returnOrder(doc.id); // Свайп вправо — возврат заказа
-                  }
-                },
-                child: InkWell(
-                  onTap: () => _callPassenger(
-                      doc['phoneNumber']), // Нажатие на карточку для звонка
-                  child: _buildOrderCard(doc),
-                ),
-              );
-            }).toList(),
-          );
-        },
+            return ListView(
+              children: snapshot.data!.docs.map((doc) {
+                return Dismissible(
+                  key: Key(doc.id),
+                  background: _buildDismissBackground(Colors.green, Icons.check,
+                      'Tugatish', Alignment.centerLeft),
+                  secondaryBackground: _buildDismissBackground(Colors.red,
+                      Icons.undo, 'Qaytarish', Alignment.centerRight),
+                  onDismissed: (direction) {
+                    if (direction == DismissDirection.startToEnd) {
+                      _completeOrder(doc.id); // Свайп влево — завершение заказа
+                    } else {
+                      _returnOrder(doc.id); // Свайп вправо — возврат заказа
+                    }
+                  },
+                  child: InkWell(
+                    onTap: () => _callPassenger(
+                        doc['phoneNumber']), // Нажатие на карточку для звонка
+                    child: _buildOrderCard(doc),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
       ),
     );
   }
