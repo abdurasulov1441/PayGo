@@ -1,8 +1,7 @@
-import 'dart:async';
-
-import 'package:connectivity_plus/connectivity_plus.dart'; // Import connectivity_plus
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; // Import Firebase Messaging
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import Local Notifications
 import 'package:taksi/screens/civil/account_screen.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/civil/history.dart';
@@ -12,9 +11,19 @@ import 'package:taksi/screens/sign/login_screen.dart';
 import 'package:taksi/services/firebase_streem.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+// Background message handler (for handling messages while app is in background)
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('Handling a background message: ${message.messageId}');
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Set the background messaging handler early on, as a named function
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(const MyApp());
 }
 
@@ -26,51 +35,67 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late StreamSubscription<ConnectivityResult> _subscription;
-  bool _isDialogVisible = false;
+  late FirebaseMessaging messaging;
+  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   void initState() {
     super.initState();
+    messaging = FirebaseMessaging.instance;
 
-    // Subscribe to connectivity changes
-    _subscription = Connectivity().onConnectivityChanged.listen((result) {
-      if (result == ConnectivityResult.none) {
-        _showNoConnectionDialog();
-      } else {
-        _dismissNoConnectionDialog();
+    // Request permissions for iOS
+    messaging.requestPermission();
+
+    // Initialize Flutter Local Notifications
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    // Get the device token (for sending notifications to this device)
+    messaging.getToken().then((token) {
+      print('Device Token: $token');
+    });
+
+    // Listen to foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Received message: ${message.notification?.title}');
+      if (message.notification != null) {
+        _showNotification(
+          message.notification!.title ?? '',
+          message.notification!.body ?? '',
+        );
       }
-    }) as StreamSubscription<ConnectivityResult>;
+    });
+
+    // Handle message opened
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Notification opened: ${message.notification?.title}');
+    });
   }
 
-  @override
-  void dispose() {
-    _subscription.cancel(); // Cancel the subscription when the app is disposed
-    super.dispose();
-  }
-
-  // Show no connection dialog
-  void _showNoConnectionDialog() {
-    if (!_isDialogVisible) {
-      _isDialogVisible = true;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('No Internet Connection'),
-            content: Text('Please check your internet connection.'),
-          );
-        },
-      );
-    }
-  }
-
-  void _dismissNoConnectionDialog() {
-    if (_isDialogVisible) {
-      _isDialogVisible = false;
-      Navigator.of(context, rootNavigator: true).pop();
-    }
+  // Function to show local notification
+  Future<void> _showNotification(String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id', // Channel ID
+      'your_channel_name', // Channel Name
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: 'item x',
+    );
   }
 
   @override
