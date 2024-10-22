@@ -44,7 +44,7 @@ class _TaxiPageState extends State<TaxiPage> {
   Future<void> fetchTaxiDrivers() async {
     final drivers = await FirebaseFirestore.instance
         .collection('driver')
-        .where('vehicleType', isEqualTo: 'Mashina')
+        .where('vehicleType', isEqualTo: 'Yengil avtomobil')
         .get();
     setState(() {
       allDrivers = drivers.docs; // Store the full list of drivers

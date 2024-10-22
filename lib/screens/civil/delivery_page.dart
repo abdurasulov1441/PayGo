@@ -42,7 +42,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
   Future<void> fetchTruckDrivers() async {
     final drivers = await FirebaseFirestore.instance
         .collection('driver')
-        .where('vehicleType', isEqualTo: 'Gruzovik')
+        .where('vehicleType', isEqualTo: 'Yuk mashinasi')
         .get();
     setState(() {
       allTruckDrivers = drivers.docs; // Full list of truck drivers

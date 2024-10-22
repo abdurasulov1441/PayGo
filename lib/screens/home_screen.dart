@@ -5,7 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:taksi/screens/admin/home_page.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/drivers/drivers_page.dart';
-import 'package:taksi/screens/new_user_add.dart';
+import 'package:taksi/screens/new_user/role_select_page.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

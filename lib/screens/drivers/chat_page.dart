@@ -93,7 +93,7 @@ class _ChatPageState extends State<ChatPage> {
 
           // Use the vehicle type for group chat separation
           String chatGroupType =
-              (vehicleType == 'Mashina') ? 'taksiGroup' : 'truckGroup';
+              (vehicleType == 'Yengil avtomobil') ? 'taksiGroup' : 'truckGroup';
 
           // Check if a chat group exists for this combination of regions and vehicle type
           QuerySnapshot groupSnapshot = await FirebaseFirestore.instance

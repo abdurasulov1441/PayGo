@@ -87,7 +87,8 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
           .collection('orders')
           .where('status', isEqualTo: 'kutish jarayonida')
           .where('orderType',
-              isEqualTo: driverVehicleType == 'Mashina' ? 'taksi' : 'truck')
+              isEqualTo:
+                  driverVehicleType == 'Yengil avtomobil' ? 'taksi' : 'truck')
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
