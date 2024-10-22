@@ -78,6 +78,7 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
         'firstName': firstName,
         'lastName': lastName,
         'phoneNumber': phoneNumber,
+        'status': 'unchecked',
         'timestamp': FieldValue.serverTimestamp(),
       });
 

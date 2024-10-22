@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:taksi/screens/drivers/drivers_page.dart';
+import 'package:taksi/screens/home_screen.dart';
 import 'package:taksi/screens/new_user/new_user_add.dart';
 import 'package:taksi/services/phone_number_format.dart';
 import 'package:taksi/style/app_colors.dart';
@@ -210,7 +211,7 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
 
         // Навигация после успешного сохранения
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => DriverPage()),
+          MaterialPageRoute(builder: (context) => HomeScreen()),
           (Route<dynamic> route) => false,
         );
       }
