@@ -7,7 +7,7 @@ class VoiceMessageWidget extends StatefulWidget {
 
   final String timeString;
 
-  VoiceMessageWidget({
+  const VoiceMessageWidget({super.key, 
     required this.path,
     required this.duration,
     required this.timeString,

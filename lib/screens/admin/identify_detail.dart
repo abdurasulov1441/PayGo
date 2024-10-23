@@ -6,7 +6,7 @@ import 'package:taksi/style/app_style.dart';
 class DetailPage extends StatelessWidget {
   final String driverId;
 
-  DetailPage(this.driverId);
+  const DetailPage(this.driverId, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +81,7 @@ class DetailPage extends StatelessWidget {
   }
 
   // Функция для создания карточки с информацией о водителе
+  // Функция для создания карточки с информацией о водителе
   Widget _buildInfoCard(Map<String, dynamic> driverData) {
     return SizedBox(
       width: double.infinity,
@@ -99,6 +100,10 @@ class DetailPage extends StatelessWidget {
               _buildTextRow('Familiya', driverData['lastName']),
               _buildTextRow('Telefon', driverData['phoneNumber']),
               _buildTextRow('Mashina turi', driverData['vehicleType']),
+              _buildTextRow(
+                  'Mashina markasi', driverData['carModel']), // Марка машины
+              _buildTextRow(
+                  'Mashina raqami', driverData['carNumber']), // Номер машины
               _buildTextRow('Qayerdan', driverData['from']),
               _buildTextRow('Qayerga', driverData['to']),
             ],
@@ -210,7 +215,7 @@ class DetailPage extends StatelessWidget {
 class FullScreenImagePage extends StatelessWidget {
   final String imageUrl;
 
-  FullScreenImagePage({required this.imageUrl});
+  const FullScreenImagePage({super.key, required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {

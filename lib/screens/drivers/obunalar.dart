@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:taksi/style/app_colors.dart'; // Import your custom colors
 import 'package:taksi/style/app_style.dart'; // Import your custom styles
 

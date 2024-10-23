@@ -24,14 +24,37 @@ class _PassengerRegistrationPageState extends State<PassengerRegistrationPage> {
 
   final _formKey = GlobalKey<FormState>();
 
+  Future<String> _generateUserId() async {
+    // Получаем все документы в коллекции 'user' и сортируем их по 'userId' в обратном порядке
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .orderBy('userId', descending: true)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.docs.isEmpty) {
+      return '000001'; // Если нет пользователей, начинаем с '000001'
+    } else {
+      int lastUserId = int.parse(querySnapshot.docs.first['userId']);
+      int newUserId = lastUserId + 1;
+      return newUserId
+          .toString()
+          .padLeft(6, '0'); // Преобразуем в шестизначное число
+    }
+  }
+
   void savePassengerData() async {
     if (_formKey.currentState!.validate()) {
+      String userId = await _generateUserId(); // Генерация нового userId
+
       final data = {
         'email': user?.email,
         'name': _nameController.text,
         'lastName': _lastNameController.text,
         'phoneNumber': _phoneController.text,
-        'role': 'Yo’lovchi',
+        'userId': userId, // Записываем userId
+        'status': 'active', // Статус по умолчанию
+        'role': 'passenger', // Роль 'passenger'
       };
 
       await FirebaseFirestore.instance

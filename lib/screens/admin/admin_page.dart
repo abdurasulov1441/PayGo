@@ -1,11 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:taksi/screens/admin/balance_check.dart';
 import 'package:taksi/screens/admin/identify_page.dart';
+import 'package:taksi/screens/admin/settings.dart';
 import 'package:taksi/screens/admin/test.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
 class AdminPage extends StatefulWidget {
+  const AdminPage({super.key});
+
   @override
   _AdminPageState createState() => _AdminPageState();
 }

@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:taksi/screens/admin/admin_page.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/drivers/drivers_page.dart';
+import 'package:taksi/screens/drivers_truck/truck_drivers_page.dart';
 import 'package:taksi/screens/new_user/role_select_page.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -12,14 +13,15 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   Future<String?> getUserRole(String uid, String email) async {
-    // Check for admin by email
     if (email == 'abdurasulov1024@gmail.com') {
       return 'admin';
     }
 
-    // Check if the user is in the 'driver' collection
     DocumentSnapshot<Map<String, dynamic>> driverSnapshot =
-        await FirebaseFirestore.instance.collection('driver').doc(uid).get();
+        await FirebaseFirestore.instance
+            .collection('taxidrivers')
+            .doc(uid)
+            .get();
 
     if (driverSnapshot.exists) {
       final driverData = driverSnapshot.data();
@@ -28,18 +30,35 @@ class HomeScreen extends StatelessWidget {
             ? 'Haydovchi_active'
             : 'Haydovchi_unidentified';
       }
-      return 'Haydovchi'; // Default to Haydovchi if no status field
+      return 'Haydovchi';
     }
 
-    // Check if the user is in the 'user' collection
+    DocumentSnapshot<Map<String, dynamic>> truckDriverSnapshot =
+        await FirebaseFirestore.instance
+            .collection('truckdrivers')
+            .doc(uid)
+            .get();
+
+    if (truckDriverSnapshot.exists) {
+      final truckDriverData = truckDriverSnapshot.data();
+      if (truckDriverData != null && truckDriverData.containsKey('status')) {
+        return truckDriverData['status'] == 'active'
+            ? 'TruckDriver_active'
+            : 'TruckDriver_unidentified';
+      }
+      return 'TruckDriver';
+    }
+
     DocumentSnapshot<Map<String, dynamic>> userSnapshot =
         await FirebaseFirestore.instance.collection('user').doc(uid).get();
 
     if (userSnapshot.exists) {
-      return 'Yo’lovchi'; // Passenger
+      final userData = userSnapshot.data();
+      if (userData != null && userData['status'] == 'active') {
+        return 'Yo’lovchi';
+      }
     }
 
-    // No role found, user needs to select a role
     return null;
   }
 
@@ -48,7 +67,6 @@ class HomeScreen extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      // If not logged in, show MainCivilPage
       return MainCivilPage();
     } else {
       return FutureBuilder<String?>(
@@ -61,19 +79,20 @@ class HomeScreen extends StatelessWidget {
               ),
             );
           } else if (snapshot.hasError) {
-            // In case of an error, default to MainCivilPage
             return MainCivilPage();
           } else if (snapshot.data == 'admin') {
-            return AdminPage(); // Admin role goes to AdminPage
+            return AdminPage();
           } else if (snapshot.data == 'Haydovchi_active') {
-            return const DriverPage(); // Driver role goes to DriverPage
+            return const DriverPage();
           } else if (snapshot.data == 'Haydovchi_unidentified') {
-            // Show message if driver status is 'unidentified'
+            return DriverUnidentifiedScreen();
+          } else if (snapshot.data == 'TruckDriver_active') {
+            return const TruckDriversPage();
+          } else if (snapshot.data == 'TruckDriver_unidentified') {
             return DriverUnidentifiedScreen();
           } else if (snapshot.data == 'Yo’lovchi') {
-            return MainCivilPage(); // Passenger role goes to CivilPage
+            return MainCivilPage();
           } else {
-            // No role found, navigate to RoleSelectionPage
             return RoleSelectionPage();
           }
         },
@@ -83,77 +102,46 @@ class HomeScreen extends StatelessWidget {
 }
 
 class DriverUnidentifiedScreen extends StatefulWidget {
+  const DriverUnidentifiedScreen({super.key});
+
   @override
-  _DriverUnidentifiedScreenState createState() =>
+  State<DriverUnidentifiedScreen> createState() =>
       _DriverUnidentifiedScreenState();
 }
 
 class _DriverUnidentifiedScreenState extends State<DriverUnidentifiedScreen> {
-  Future<void> _refreshDriverStatus() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      DocumentSnapshot<Map<String, dynamic>> driverSnapshot =
-          await FirebaseFirestore.instance
-              .collection('driver')
-              .doc(user.uid)
-              .get();
-
-      if (driverSnapshot.exists) {
-        final driverData = driverSnapshot.data();
-        if (driverData != null && driverData.containsKey('status')) {
-          final status = driverData['status'];
-          if (status == 'active') {
-            // Navigate to DriverPage if status is active
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => DriverPage()),
-            );
-          }
-        }
-      }
-    }
+  Future<void> _refreshPage() async {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF6E53B8),
+      backgroundColor: Color(0xFF6E54b8),
       body: RefreshIndicator(
-        onRefresh: _refreshDriverStatus,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(20.0),
-          children: [
-            SizedBox(
-              height: 80,
-            ),
-            Center(
-              child: Text(
-                "Sizning ma'lumotlaringiz hozirda tekshirilmoqda. Iltimos, kuting.",
+        onRefresh: _refreshPage,
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Ma\'lumotlaringiz tekshirilmoqda...',
                 style: AppStyle.fontStyle.copyWith(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 20),
-            LottieBuilder.asset(
-              'assets/lottie/checking.json',
-              width: 250,
-              height: 250,
-            ),
-            const SizedBox(height: 40),
-            Center(
-              child: Text(
-                "Siz ushbu sahifani yangilab turishingiz mumkin.",
-                style: AppStyle.fontStyle.copyWith(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+              SizedBox(
+                height: 50,
               ),
-            ),
-          ],
+              LottieBuilder.asset(
+                'assets/lottie/checking.json',
+                width: 220,
+                height: 220,
+              )
+            ],
+          ),
         ),
       ),
     );

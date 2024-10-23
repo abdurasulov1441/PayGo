@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:u_credit_card/u_credit_card.dart';
 import 'package:taksi/style/app_colors.dart'; // Custom AppColors
 import 'package:taksi/style/app_style.dart'; // Custom AppStyle
-import 'package:intl/intl.dart';
 
 class BalanceTopUpPage extends StatefulWidget {
   const BalanceTopUpPage({super.key});
@@ -209,9 +208,6 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
                   ? Center(child: CircularProgressIndicator())
                   : ElevatedButton(
                       onPressed: _submitTransaction,
-                      child: Text('To\'lovni tasdiqlash',
-                          style:
-                              AppStyle.fontStyle.copyWith(color: Colors.white)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.taxi,
                         padding:
@@ -220,6 +216,9 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
+                      child: Text('To\'lovni tasdiqlash',
+                          style:
+                              AppStyle.fontStyle.copyWith(color: Colors.white)),
                     ),
             ],
           ),

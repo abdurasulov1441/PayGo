@@ -12,6 +12,8 @@ import 'package:taksi/style/app_style.dart';
 import 'package:taksi/screens/drivers/voice_managment.dart';
 
 class ChatPage extends StatefulWidget {
+  const ChatPage({super.key});
+
   @override
   _ChatPageState createState() => _ChatPageState();
 }
@@ -22,7 +24,7 @@ class _ChatPageState extends State<ChatPage> {
   final ScrollController _scrollController = ScrollController();
   bool _isRecording = false;
   String? _filePath;
-  Stopwatch _stopwatch = Stopwatch();
+  final Stopwatch _stopwatch = Stopwatch();
   String? _groupId;
 
   @override

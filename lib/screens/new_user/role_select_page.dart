@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:taksi/screens/new_user/driver_reg.dart';
+import 'package:taksi/screens/new_user/taxi_reg.dart';
 import 'package:taksi/screens/new_user/passanger_reg.dart';
+import 'package:taksi/screens/new_user/truck_reg.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -32,21 +33,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                         .copyWith(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 40),
-                  Row(
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      RoleCard(
-                        icon: Icons.local_shipping,
-                        label: "Haydovchi",
-                        color: Colors.green[50]!,
-                        isSelected: selectedRole == "Haydovchi",
-                        onTap: () {
-                          setState(() {
-                            selectedRole = "Haydovchi";
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 40),
                       RoleCard(
                         icon: Icons.person,
                         label: "Yo’lovchi",
@@ -55,6 +44,30 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                         onTap: () {
                           setState(() {
                             selectedRole = "Yo’lovchi";
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      RoleCard(
+                        icon: Icons.local_taxi,
+                        label: "Taxi haydovchisi",
+                        color: Colors.green[50]!,
+                        isSelected: selectedRole == "Taxi haydovchisi",
+                        onTap: () {
+                          setState(() {
+                            selectedRole = "Taxi haydovchisi";
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      RoleCard(
+                        icon: Icons.local_shipping,
+                        label: "Yuk mashina haydovchisi",
+                        color: Colors.green[50]!,
+                        isSelected: selectedRole == "Yuk mashina haydovchisi",
+                        onTap: () {
+                          setState(() {
+                            selectedRole = "Yuk mashina haydovchisi";
                           });
                         },
                       ),
@@ -72,18 +85,26 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                   ),
                 ),
                 onPressed: () {
-                  if (selectedRole == "Haydovchi") {
+                  if (selectedRole == "Yo’lovchi") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PassengerRegistrationPage(),
+                      ),
+                    );
+                  } else if (selectedRole == "Taxi haydovchisi") {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const DriverRegistrationPage(),
                       ),
                     );
-                  } else if (selectedRole == "Yo’lovchi") {
+                  } else if (selectedRole == "Yuk mashina haydovchisi") {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PassengerRegistrationPage(),
+                        builder: (context) =>
+                            const TruckDriverRegistrationPage(), 
                       ),
                     );
                   } else {
@@ -129,8 +150,9 @@ class RoleCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 150,
-        height: 150,
+        padding: EdgeInsets.only(left: 20),
+        width: double.infinity,
+        height: 70,
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(20),
@@ -138,14 +160,18 @@ class RoleCard extends StatelessWidget {
               ? Border.all(color: AppColors.taxi, width: 4)
               : Border.all(color: Colors.transparent),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Icon(icon, size: 60, color: AppColors.taxi),
-            const SizedBox(height: 15),
-            Text(label,
-                style: AppStyle.fontStyle
-                    .copyWith(color: Colors.black, fontSize: 18)),
+            Icon(icon, size: 50, color: AppColors.taxi),
+            const SizedBox(width: 20),
+            Text(
+              label,
+              style: AppStyle.fontStyle.copyWith(
+                color: Colors.black,
+                fontSize: 18,
+              ),
+            ),
           ],
         ),
       ),
