@@ -5,49 +5,80 @@ import 'package:intl/intl.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart'; // For formatting date
 
-class DriverOrderHistoryPage extends StatefulWidget {
-  const DriverOrderHistoryPage({super.key});
+class TruckOrderHistoryPage extends StatefulWidget {
+  const TruckOrderHistoryPage({super.key});
 
   @override
-  State<DriverOrderHistoryPage> createState() => _DriverOrderHistoryPageState();
+  State<TruckOrderHistoryPage> createState() => _TruckOrderHistoryPageState();
 }
 
-class _DriverOrderHistoryPageState extends State<DriverOrderHistoryPage> {
+class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
+  String? driverEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDriverData();
+  }
+
+  // Функция для получения данных водителя
+  Future<void> _fetchDriverData() async {
+    try {
+      final userEmail = FirebaseAuth.instance.currentUser!.email;
+      if (userEmail != null) {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('truckdrivers')
+            .where('email', isEqualTo: userEmail)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          final driverData = snapshot.docs.first.data();
+          setState(() {
+            driverEmail = driverData['email'];
+          });
+        } else {
+          print('Driver not found');
+        }
+      }
+    } catch (e) {
+      print("Error fetching driver data: $e");
+    }
+  }
+
   Future<void> _refreshPage() async {
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
-
     return Scaffold(
       appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: AppColors.taxi,
-          title: Text(
-            'Buyurtmalar Tarixi',
-            style: AppStyle.fontStyle.copyWith(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-          )),
+        centerTitle: true,
+        backgroundColor: AppColors.taxi,
+        title: Text(
+          'Yuk Buyurtmalar Tarixi',
+          style: AppStyle.fontStyle.copyWith(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: _refreshPage,
-        child: currentUserEmail == null
-            ? Center(child: Text('Foydalanuvchi tizimga kirmagan'))
+        child: driverEmail == null
+            ? Center(
+                child: CircularProgressIndicator()) // Пока данные не загружены
             : StreamBuilder(
                 stream: FirebaseFirestore.instance
-                    .collection('taxi_orders') // Правильная коллекция
-                    .where('status',
-                        isEqualTo: 'tamomlandi') // Только завершенные заказы
+                    .collection('truck_orders')
+                    .where('status', isEqualTo: 'tamomlandi')
                     .where('driverEmail',
-                        isEqualTo: currentUserEmail) // Фильтр по водителю
+                        isEqualTo: driverEmail) // Фильтрация по email водителя
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (!snapshot.hasData) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   }
 
-                  if (snapshot.data!.docs.isEmpty) {
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(
                         child: Text('Yakunlangan buyurtmalar mavjud emas.'));
                   }
@@ -65,13 +96,21 @@ class _DriverOrderHistoryPageState extends State<DriverOrderHistoryPage> {
 
   // Функция создания карточки заказа
   Widget _buildOrderCard(QueryDocumentSnapshot doc) {
-    final orderNumber = doc['orderNumber'] ?? 'Unknown';
-    final customerName = doc['customerName'] ?? 'Unknown';
-    final fromLocation = doc['fromLocation'] ?? 'Unknown';
-    final toLocation = doc['toLocation'] ?? 'Unknown';
-    final orderTime = (doc['orderTime'] as Timestamp).toDate();
+    final data = doc.data() as Map<String, dynamic>?;
 
-    // Рассчитаем время прибытия, добавляя 8 часов
+    if (data == null || !data.containsKey('orderNumber')) {
+      return Text(
+          'Ошибка в данных заказа'); // Если данных нет, отображаем ошибку
+    }
+
+    final orderNumber = data['orderNumber'] ?? 'Unknown';
+    final customerName = data['customerName'] ?? 'Unknown';
+    final fromLocation = data['fromLocation'] ?? 'Unknown';
+    final toLocation = data['toLocation'] ?? 'Unknown';
+    final orderTime = (data['orderTime'] as Timestamp).toDate();
+    final cargoName = data['cargoName'] ?? 'Unknown';
+    final cargoWeight = data['cargoWeight'] ?? 0.0;
+
     final arrivalTime = orderTime.add(Duration(hours: 8));
 
     return Card(
@@ -146,9 +185,12 @@ class _DriverOrderHistoryPageState extends State<DriverOrderHistoryPage> {
               ],
             ),
             SizedBox(height: 8),
-            // Для такси выводим количество людей
             Text(
-              'Odamlar soni: ${doc['peopleCount'] ?? 'Unknown'}',
+              'Yuk nomi: $cargoName',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Yuk vazni: ${cargoWeight.toStringAsFixed(2)} kg',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ],

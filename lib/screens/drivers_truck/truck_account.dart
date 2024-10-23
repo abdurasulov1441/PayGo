@@ -6,22 +6,22 @@ import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/drivers/obunalar.dart';
 import 'package:taksi/screens/drivers/payment.dart';
 import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart'; // Import your AppStyle
+import 'package:taksi/style/app_style.dart';
 
-class AkkauntPage extends StatefulWidget {
-  const AkkauntPage({super.key});
+class TruckDriverAccountPage extends StatefulWidget {
+  const TruckDriverAccountPage({super.key});
 
   @override
-  _AkkauntPageState createState() => _AkkauntPageState();
+  _TruckDriverAccountPageState createState() => _TruckDriverAccountPageState();
 }
 
-class _AkkauntPageState extends State<AkkauntPage> {
+class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
   Future<void> _refreshPage() async {
     setState(() {});
   }
 
   Future<void> _signOut(BuildContext context) async {
-    _showLogoutDialog(context); // Show the logout confirmation dialog
+    _showLogoutDialog(context);
   }
 
   @override
@@ -30,16 +30,16 @@ class _AkkauntPageState extends State<AkkauntPage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Akkaunt',
+          'Akkaunt (Yuk haydovchisi)', // Заголовок для водителей грузовиков
           style: AppStyle.fontStyle.copyWith(
               color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         backgroundColor: AppColors.taxi,
       ),
       body: RefreshIndicator(
-        onRefresh: _refreshPage, // This will refresh the page
+        onRefresh: _refreshPage,
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(), // Always scrollable
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
               _buildProfileHeader(),
@@ -52,15 +52,15 @@ class _AkkauntPageState extends State<AkkauntPage> {
     );
   }
 
-  // Profile header with avatar, balance, full name, subscription plan, and expiration date display
+  // Профиль водителя
   Widget _buildProfileHeader() {
     final user = FirebaseAuth.instance.currentUser;
 
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance
-          .collection('taxidrivers')
+          .collection('truckdrivers') // Коллекция для водителей грузовиков
           .doc(user?.uid)
-          .get(), // Corrected collection
+          .get(),
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -70,20 +70,16 @@ class _AkkauntPageState extends State<AkkauntPage> {
           return Center(child: Text('Xatolik: Ma\'lumotlar yuklanmadi'));
         }
 
-        // Fetch user data from Firestore
         final data = snapshot.data!.data() as Map<String, dynamic>?;
 
         String firstName = data?['name'] ?? 'Ism kiritilmagan';
         String lastName = data?['lastName'] ?? 'Familiya kiritilmagan';
         String fullName = '$firstName $lastName';
 
-        int balance = data?['balance'] ?? 0; // Fetch the balance
-
-        // Format the balance with thousand separators
+        int balance = data?['balance'] ?? 0;
         String formattedBalance =
             NumberFormat('#,###', 'en_US').format(balance).replaceAll(',', ' ');
 
-        // Fetch subscription plan and expiration date (if exists)
         String? subscriptionPlan = data?['subscription_plan'];
         Timestamp? expirationTimestamp = data?['expired_date'];
         String? formattedExpiration;
@@ -116,7 +112,7 @@ class _AkkauntPageState extends State<AkkauntPage> {
               CircleAvatar(
                 radius: 40,
                 backgroundImage: NetworkImage(
-                    'https://via.placeholder.com/150'), // Replace with real avatar URL or asset
+                    'https://via.placeholder.com/150'), // Аватар по умолчанию
               ),
               const SizedBox(width: 20),
               Column(
@@ -132,7 +128,7 @@ class _AkkauntPageState extends State<AkkauntPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Balans: $formattedBalance UZS', // Display the formatted balance
+                    'Balans: $formattedBalance UZS',
                     style: AppStyle.fontStyle.copyWith(
                       fontSize: 16,
                       color: Colors.white,
@@ -165,19 +161,18 @@ class _AkkauntPageState extends State<AkkauntPage> {
     );
   }
 
-  // Menu items for different actions
+  // Элементы меню
   Widget _buildMenuItems(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(), // Disable ListView scroll
+      physics: const NeverScrollableScrollPhysics(),
       children: [
         _buildMenuItem(
           context,
           icon: Icons.account_balance_wallet,
           title: 'Balansni to\'ldirish',
           onTap: () {
-            // Navigate to balance top-up page
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => BalanceTopUpPage()),
@@ -188,9 +183,8 @@ class _AkkauntPageState extends State<AkkauntPage> {
         _buildMenuItem(
           context,
           icon: Icons.subscriptions,
-          title: 'Obunalar', // Changed from History to Obunalar
+          title: 'Obunalar',
           onTap: () {
-            // Handle Obunalar logic here
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ObunalarPage()),
@@ -201,9 +195,8 @@ class _AkkauntPageState extends State<AkkauntPage> {
         _buildMenuItem(
           context,
           icon: Icons.nightlight_round,
-          title: 'Tun rejimi va Til', // Night mode and language settings
+          title: 'Tun rejimi va Til',
           onTap: () {
-            // Handle night mode and language settings
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Tun rejimi va Til selected')),
             );
@@ -213,14 +206,14 @@ class _AkkauntPageState extends State<AkkauntPage> {
         _buildMenuItem(
           context,
           icon: Icons.logout,
-          title: 'Chiqish', // Logout
+          title: 'Chiqish',
           onTap: () => _signOut(context),
         ),
       ],
     );
   }
 
-  // Helper method to build a menu item
+  // Помощник для создания элемента меню
   Widget _buildMenuItem(BuildContext context,
       {required IconData icon,
       required String title,
@@ -241,7 +234,7 @@ class _AkkauntPageState extends State<AkkauntPage> {
     );
   }
 
-  // Logout confirmation dialog
+  // Окно подтверждения выхода
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -253,7 +246,6 @@ class _AkkauntPageState extends State<AkkauntPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Red Header
               Container(
                 height: 50,
                 decoration: BoxDecoration(
@@ -266,11 +258,11 @@ class _AkkauntPageState extends State<AkkauntPage> {
                 child: Row(
                   children: [
                     SizedBox(width: 20),
-                    Icon(Icons.warning, color: Colors.white), // Warning icon
+                    Icon(Icons.warning, color: Colors.white),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Siz rostdan ham chiqmoqchimisiz?', // Uzbek header text
+                        'Siz rostdan ham chiqmoqchimisiz?',
                         style: AppStyle.fontStyle.copyWith(
                           color: Colors.white,
                           fontSize: 12,
@@ -287,11 +279,10 @@ class _AkkauntPageState extends State<AkkauntPage> {
                   ],
                 ),
               ),
-              // White Body
               Padding(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  'Agar chiqib ketsangiz, barcha sessiyalar tugatiladi. Davom etasizmi?', // Uzbek message
+                  'Agar chiqib ketsangiz, barcha sessiyalar tugatiladi. Davom etasizmi?',
                   style: AppStyle.fontStyle.copyWith(
                     color: Colors.black,
                     fontSize: 11,
@@ -300,13 +291,12 @@ class _AkkauntPageState extends State<AkkauntPage> {
               ),
               Divider(height: 1),
               SizedBox(height: 10),
-              // Action Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                     },
                     style: TextButton.styleFrom(
                       backgroundColor: AppColors.taxi,
@@ -326,8 +316,8 @@ class _AkkauntPageState extends State<AkkauntPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
-                      FirebaseAuth.instance.signOut(); // Sign out
+                      Navigator.of(context).pop();
+                      FirebaseAuth.instance.signOut();
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(

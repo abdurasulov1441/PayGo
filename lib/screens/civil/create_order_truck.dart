@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:taksi/screens/civil/history.dart';
+import 'package:taksi/screens/civil/history_truck.dart';
+import 'package:taksi/screens/civil/historytaxi.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth to get the current user
@@ -62,6 +63,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
 
     // Fetch the user's name from Firestore
     String userName = 'Unknown'; // Default value if the name is not found
+    String userId = 'Unknown'; // Default userId value
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final email = user.email;
@@ -74,6 +76,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
         if (snapshot.docs.isNotEmpty) {
           final userData = snapshot.docs.first.data();
           userName = userData['name'] ?? 'Unknown'; // Get the user's name
+          userId = user.uid; // Получаем userId
         }
       }
     }
@@ -83,7 +86,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
 
     // Create the order data
     final orderData = {
-      'orderNumber': orderNumber, // Save the order number
+      'orderNumber': orderNumber,
       'fromLocation': fromLocation,
       'toLocation': toLocation,
       'phoneNumber': _phoneController.text,
@@ -92,11 +95,14 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
       'orderTime': Timestamp.fromDate(_selectedDateTime!),
       'status': 'kutish jarayonida',
       'orderType': 'truck',
-      'customerName': userName, // Include the passenger's name
+      'customerName': userName, // Имя пассажира
+      'userEmail': user?.email, // Почта пользователя
+      'userId': userId, // Добавляем userId
+      'acceptedBy': null, // Заказ пока не принят
     };
 
-    // Add the order to Firestore
-    await FirebaseFirestore.instance.collection('orders').add(orderData);
+    // Add the order to Firestore under 'truck_orders'
+    await FirebaseFirestore.instance.collection('truck_orders').add(orderData);
 
     // Notify the user
     _showSnackBar('Buyurtma №$orderNumber yuborildi!');
@@ -106,7 +112,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
       _selectedDateTime = null;
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => OrderHistoryPage()),
+        MaterialPageRoute(builder: (context) => TruckOrderHistoryPage()),
       );
     });
   }
@@ -114,8 +120,9 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
   Future<int> _getNextOrderNumber() async {
     return FirebaseFirestore.instance.runTransaction((transaction) async {
       // Получаем документ с текущим номером заказа
-      DocumentReference orderNumberDoc =
-          FirebaseFirestore.instance.collection('settings').doc('orderNumbers');
+      DocumentReference orderNumberDoc = FirebaseFirestore.instance
+          .collection('truck_settings')
+          .doc('orderNumbers');
 
       DocumentSnapshot snapshot = await transaction.get(orderNumberDoc);
 
@@ -152,7 +159,8 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
         title: Text('Yuk mashinasi buyurtmasi berish',
             style:
                 AppStyle.fontStyle.copyWith(color: Colors.white, fontSize: 20)),
-        backgroundColor: AppColors.taxi,
+        backgroundColor:
+            AppColors.taxi, // Replace taxi color with truck color if needed
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: AppStyle.fontStyle.copyWith(color: Colors.black),
@@ -188,7 +196,8 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
             ElevatedButton(
               onPressed: () => _showTimePickerBottomSheet(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.taxi,
+                backgroundColor:
+                    AppColors.taxi, // Adjust to truck color if needed
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -206,7 +215,8 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
             ElevatedButton(
               onPressed: _submitTruckOrder,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.taxi,
+                backgroundColor:
+                    AppColors.taxi, // Adjust to truck color if needed
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -240,7 +250,8 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('$label: $location', style: AppStyle.fontStyle),
-            Icon(Icons.arrow_drop_down, color: AppColors.taxi),
+            Icon(Icons.arrow_drop_down,
+                color: AppColors.taxi), // Adjust to truck color
           ],
         ),
       ),
@@ -309,7 +320,6 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
             if (!snapshot.hasData) {
               return Center(child: CircularProgressIndicator());
             }
-
             final regions =
                 snapshot.data!.docs.map((doc) => doc['region']).toList();
 
@@ -343,7 +353,6 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
 
   Future<void> _pickTime(String selectedPeriod) async {
     DateTime now = DateTime.now();
-
     if (selectedPeriod == 'Hoziroq') {
       setState(() {
         _selectedDateTime = now;

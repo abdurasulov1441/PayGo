@@ -57,7 +57,7 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
       // Get user details
       User? user = FirebaseAuth.instance.currentUser;
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('driver')
+          .collection('taxidrivers')
           .doc(user?.uid)
           .get();
 

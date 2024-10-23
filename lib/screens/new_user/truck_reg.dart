@@ -111,8 +111,8 @@ class _TruckDriverRegistrationPageState
           'name': _controllers['Ism']!.text,
           'lastName': _controllers['Familiya']!.text,
           'phoneNumber': _controllers['Telefon raqami']!.text,
-          'carModel': _controllers['Mashina markasi']!.text,
-          'carNumber':
+          'truckModel': _controllers['Mashina markasi']!.text,
+          'TruckNumber':
               '${_controllers['Area Code']!.text}${_controllers['Letter Code']!.text}${_controllers['Number Code']!.text}${_controllers['Ending Code']!.text}',
           'from': _controllers['Qayerdan']!.text,
           'to': _controllers['Qayerga']!.text,

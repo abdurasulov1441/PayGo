@@ -6,29 +6,21 @@ import 'package:rxdart/rxdart.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
-class BuyurtmalarPage extends StatefulWidget {
-  const BuyurtmalarPage({super.key});
+class TruckOrdersPage extends StatefulWidget {
+  const TruckOrdersPage({super.key});
 
   @override
-  _BuyurtmalarPageState createState() => _BuyurtmalarPageState();
+  _TruckOrdersPageState createState() => _TruckOrdersPageState();
 }
 
-class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
+class _TruckOrdersPageState extends State<TruckOrdersPage> {
   String? selectedFromRegion;
   String? selectedToRegion;
   String? driverRegion;
   String? subscriptionPlan;
   List<String> regions = [];
   bool isLoading = true;
-  bool filterToshkentSamarkand = false;
-  bool isReverseFilter = false;
   bool isFilterReversed = false;
-
-  void _toggleFilter() {
-    setState(() {
-      isFilterReversed = !isFilterReversed;
-    });
-  }
 
   @override
   void initState() {
@@ -41,33 +33,35 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
     try {
       final userEmail = FirebaseAuth.instance.currentUser!.email;
       final snapshot = await FirebaseFirestore.instance
-          .collection('taxidrivers')
+          .collection('truckdrivers')
           .where('email', isEqualTo: userEmail)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
         final driverData = snapshot.docs.first.data();
+        print('Данные для обновления заказа: $driverData'); // Отладка
 
         await FirebaseFirestore.instance
-            .collection('taxi_orders')
+            .collection('truck_orders')
             .doc(orderId)
             .update({
           'status': 'qabul qilindi',
           'acceptedBy': driverData['email'],
-          'driverEmail': driverData['email'], // Make sure this is updated
+          'driverEmail': driverData['email'],
           'driverName': driverData['name'],
-          'driverLastName': driverData['lastName'],
           'driverPhoneNumber': driverData['phoneNumber'],
-          'driverCarModel': driverData['carModel'],
-          'driverCarNumber': driverData['carNumber'],
+          'driverTruckModel': driverData['truckModel'],
+          'driverTruckNumber': driverData['truckNumber'],
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Buyurtma qabul qilindi!')),
         );
+      } else {
+        print('Водитель не найден для обновления заказа');
       }
     } catch (e) {
-      print("Error accepting order: $e");
+      print("Ошибка принятия заказа: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Xatolik yuz berdi!')),
       );
@@ -78,21 +72,17 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
     try {
       final userEmail = FirebaseAuth.instance.currentUser!.email;
       final snapshot = await FirebaseFirestore.instance
-          .collection('taxidrivers')
+          .collection('truckdrivers')
           .where('email', isEqualTo: userEmail)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
         final driverData = snapshot.docs.first.data();
         setState(() {
-          driverRegion =
-              driverData['from'] ?? ''; // Use the 'from' region dynamically
-          selectedToRegion =
-              driverData['to'] ?? ''; // Use the 'to' region dynamically
+          driverRegion = driverData['from'] ?? ''; // Регион водителя
+          selectedToRegion = driverData['to'] ?? ''; // Регион назначения
           subscriptionPlan = driverData['subscription_plan'];
         });
-        print(driverData['from']);
-        print(driverData['to']);
       }
     } catch (e) {
       print("Error fetching driver data: $e");
@@ -115,36 +105,13 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
     }
   }
 
-  Widget _buildRegionDropdown({
-    required String label,
-    required String? selectedRegion,
-    required void Function(String?) onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-      value: selectedRegion,
-      items: regions.map((region) {
-        return DropdownMenuItem<String>(
-          value: region,
-          child: Text(region),
-        );
-      }).toList(),
-      onChanged: onChanged,
-    );
-  }
-
   Stream<QuerySnapshot> _fetchOrders() {
     final fromLocation = isFilterReversed ? 'Toshkent sh' : driverRegion!;
     final toLocation = isFilterReversed ? driverRegion! : 'Toshkent sh';
 
     // Fetch orders where fromLocation and toLocation match the required regions
     final fromQuery = FirebaseFirestore.instance
-        .collection('taxi_orders')
+        .collection('truck_orders')
         .where('fromLocation', isEqualTo: fromLocation)
         .where('toLocation', isEqualTo: toLocation)
         .where('status', isEqualTo: 'kutish jarayonida')
@@ -153,20 +120,6 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
 
     return fromQuery;
   }
-
-  Future<List<QueryDocumentSnapshot>> _fetchOrdersByRegion(
-      String fromRegion, String toRegion) async {
-    final fromLocationQuery = await FirebaseFirestore.instance
-        .collection('taxi_orders')
-        .where('status', isEqualTo: 'kutish jarayonida')
-        .where('fromLocation', isEqualTo: fromRegion)
-        .where('toLocation', isEqualTo: toRegion)
-        .get();
-
-    return fromLocationQuery.docs;
-  }
-
-  bool filterReversed = false;
 
   Widget _buildOrderStream() {
     return StreamBuilder(
@@ -194,7 +147,8 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
     final customerName = doc['customerName'] ?? 'Unknown'; // Имя клиента
     final fromLocation = doc['fromLocation'] ?? 'Unknown';
     final toLocation = doc['toLocation'] ?? 'Unknown';
-    final peopleCount = doc['peopleCount'] ?? 0; // Количество людей
+    final cargoWeight = doc['cargoWeight'] ?? 0.0; // Вес груза
+    final cargoName = doc['cargoName'] ?? 'Неизвестно'; // Название груза
     final orderTime = (doc['orderTime'] as Timestamp).toDate();
     final arrivalTime = orderTime.add(Duration(hours: 8));
 
@@ -282,7 +236,9 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
                 ],
               ),
               SizedBox(height: 10),
-              Text('Odamlar soni: $peopleCount'), // Количество людей
+              Text('Yuk nomi: $cargoName'), // Название груза
+              SizedBox(height: 5),
+              Text('Yuk vazni: $cargoWeight kg'), // Вес груза
             ],
           ),
         ),
@@ -308,13 +264,6 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
           ),
         ),
         backgroundColor: AppColors.taxi,
-        actions: [
-          IconButton(
-            icon: Icon(
-                isFilterReversed ? Icons.filter_alt_off : Icons.filter_alt),
-            onPressed: _toggleFilter, // Toggle the filter when pressed
-          ),
-        ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -323,33 +272,6 @@ class _BuyurtmalarPageState extends State<BuyurtmalarPage> {
               child: Column(
                 children: [
                   if (subscriptionPlan != 'Vaqtinchalik') ...[
-                    // Row(
-                    //   children: [
-                    //     Expanded(
-                    //       child: _buildRegionDropdown(
-                    //         label: 'Qayerdan',
-                    //         selectedRegion: selectedFromRegion,
-                    //         onChanged: (value) {
-                    //           setState(() {
-                    //             selectedFromRegion = value;
-                    //           });
-                    //         },
-                    //       ),
-                    //     ),
-                    //     SizedBox(width: 10),
-                    //     Expanded(
-                    //       child: _buildRegionDropdown(
-                    //         label: 'Qayerga',
-                    //         selectedRegion: selectedToRegion,
-                    //         onChanged: (value) {
-                    //           setState(() {
-                    //             selectedToRegion = value;
-                    //           });
-                    //         },
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
                     SizedBox(height: 20),
                   ],
                   Expanded(child: _buildOrderStream()),

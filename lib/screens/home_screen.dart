@@ -87,7 +87,7 @@ class HomeScreen extends StatelessWidget {
           } else if (snapshot.data == 'Haydovchi_unidentified') {
             return DriverUnidentifiedScreen();
           } else if (snapshot.data == 'TruckDriver_active') {
-            return const TruckDriversPage();
+            return const TruckDriverPage();
           } else if (snapshot.data == 'TruckDriver_unidentified') {
             return DriverUnidentifiedScreen();
           } else if (snapshot.data == 'Yo’lovchi') {

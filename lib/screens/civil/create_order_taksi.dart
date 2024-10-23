@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // For Firebase Authentication
 import 'package:intl/intl.dart';
-import 'package:taksi/screens/civil/history.dart';
+import 'package:taksi/screens/civil/historytaxi.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -19,6 +19,7 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
   final TextEditingController _phoneController = TextEditingController();
   String _selectedPeople = '1';
   String _customerName = '';
+  String _userId = '';
   DateTime? _selectedDateTime;
   final List<String> _periodOptions = [
     'Hoziroq',
@@ -53,6 +54,8 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
       setState(() {
         _phoneController.text = userData['phoneNumber'] ?? '+998 ';
         _customerName = userData['name'] ?? 'Ism mavjud emas';
+        // Correctly access the userId from userData
+        _userId = userData['userId'] ?? 'Unknown';
       });
     }
   }
@@ -66,6 +69,16 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
     // Get the next order number
     int orderNumber = await _getNextOrderNumber();
 
+    // Get the current user
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      _showSnackBar('User is not logged in');
+      return;
+    }
+
+    final userEmail = user.email;
+
     final orderData = {
       'orderNumber': orderNumber, // Save the order number
       'fromLocation': fromLocation,
@@ -74,11 +87,14 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
       'customerName': _customerName,
       'peopleCount': int.parse(_selectedPeople),
       'orderTime': Timestamp.fromDate(_selectedDateTime!),
-      'status': 'kutish jarayonida',
+      'status': 'kutish jarayonida', // Initially pending
       'orderType': 'taksi',
+      'acceptedBy': null, // Initially, no driver has accepted the order
+      'userEmail': userEmail, // Store the email of the user placing the order
+      'userId': _userId, // Store the user ID of the user placing the order
     };
 
-    await FirebaseFirestore.instance.collection('orders').add(orderData);
+    await FirebaseFirestore.instance.collection('taxi_orders').add(orderData);
 
     _showSnackBar('Buyurtma №$orderNumber yuborildi!');
     setState(() {
@@ -93,9 +109,10 @@ class _CreateOrderTaksiState extends State<CreateOrderTaksi> {
 
   Future<int> _getNextOrderNumber() async {
     return FirebaseFirestore.instance.runTransaction((transaction) async {
-      // Get the document that tracks the current order number
-      DocumentReference orderNumberDoc =
-          FirebaseFirestore.instance.collection('settings').doc('orderNumbers');
+      // Get the document that tracks the current order number in 'taxi_settings'
+      DocumentReference orderNumberDoc = FirebaseFirestore.instance
+          .collection('taxi_settings')
+          .doc('orderNumbers');
 
       DocumentSnapshot snapshot = await transaction.get(orderNumberDoc);
 

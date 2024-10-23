@@ -6,14 +6,15 @@ import 'package:taksi/style/app_style.dart';
 import 'package:url_launcher/url_launcher.dart'; // For phone call functionality
 import 'package:firebase_auth/firebase_auth.dart'; // To get current driver
 
-class AcceptedOrdersPage extends StatefulWidget {
-  const AcceptedOrdersPage({super.key});
+class TruckAcceptedOrdersPage extends StatefulWidget {
+  const TruckAcceptedOrdersPage({super.key});
 
   @override
-  State<AcceptedOrdersPage> createState() => _AcceptedOrdersPageState();
+  State<TruckAcceptedOrdersPage> createState() =>
+      _TruckAcceptedOrdersPageState();
 }
 
-class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
+class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
   String? driverEmail;
 
   @override
@@ -43,7 +44,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
           centerTitle: true,
           backgroundColor: AppColors.taxi,
           title: Text(
-            'Qabul qilingan buyurtmalar',
+            'Qabul qilingan yuk buyurtmalar',
             style: AppStyle.fontStyle.copyWith(
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
           )),
@@ -55,7 +56,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
               onRefresh: _refreshPage,
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance
-                    .collection('taxi_orders')
+                    .collection('truck_orders')
                     .where('status',
                         isEqualTo: 'qabul qilindi') // Принятые заказы
                     .where('acceptedBy',
@@ -86,7 +87,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
                           }
                         },
                         child: InkWell(
-                          onTap: () => _callPassenger(
+                          onTap: () => _callCustomer(
                               doc['phoneNumber']), // Звонок клиенту при нажатии
                           child: _buildOrderCard(doc),
                         ),
@@ -119,14 +120,15 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
     );
   }
 
-  // Функция создания карточки заказа с измененным дизайном
+  // Функция создания карточки заказа для грузовика
   Widget _buildOrderCard(QueryDocumentSnapshot doc) {
     final orderNumber = doc['orderNumber'];
     final fromLocation = doc['fromLocation'];
     final toLocation = doc['toLocation'];
     final customerName = doc['customerName'];
     final phoneNumber = doc['phoneNumber'];
-    final peopleCount = doc['peopleCount'] ?? 'Unknown'; // Количество людей
+    final cargoName = doc['cargoName'] ?? 'Unknown'; // Название груза
+    final cargoWeight = doc['cargoWeight'] ?? 'Unknown'; // Вес груза
     final orderTime = (doc['orderTime'] as Timestamp).toDate();
     final arrivalTime = orderTime
         .add(Duration(hours: 8)); // Добавляем 8 часов для времени прибытия
@@ -223,9 +225,14 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
               ],
             ),
             SizedBox(height: 10),
-            // Количество людей (только для такси)
+            // Груз и его вес
             Text(
-              'Odamlar soni: $peopleCount',
+              'Yuk nomi: $cargoName',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 5),
+            Text(
+              'Yuk vazni: $cargoWeight kg',
               style: TextStyle(fontSize: 16),
             ),
           ],
@@ -242,14 +249,14 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
   // Функция для возврата заказа
   Future<void> _returnOrder(String orderId) async {
     await FirebaseFirestore.instance
-        .collection('taxi_orders')
+        .collection('truck_orders')
         .doc(orderId)
         .update({
       'status': 'kutish jarayonida', // Set status back to pending
       'driverName': null, // Удаление данных о водителе
       'driverPhoneNumber': null,
-      'driverCarModel': null,
-      'driverCarNumber': null,
+      'driverTruckModel': null,
+      'driverTruckNumber': null,
       'driverEmail': null,
       'driverLastName': null,
       'acceptedBy': null,
@@ -257,8 +264,8 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
     print('Order returned to pending status.');
   }
 
-  // Функция для звонка пассажиру
-  void _callPassenger(String phoneNumber) async {
+  // Функция для звонка клиенту
+  void _callCustomer(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri);
@@ -270,7 +277,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
   // Функция для завершения заказа
   Future<void> _completeOrder(String orderId) async {
     await FirebaseFirestore.instance
-        .collection('taxi_orders')
+        .collection('truck_orders')
         .doc(orderId)
         .update({
       'status': 'tamomlandi', // Set status to completed

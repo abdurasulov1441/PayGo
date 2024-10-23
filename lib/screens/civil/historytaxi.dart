@@ -14,32 +14,28 @@ class OrderHistoryPage extends StatefulWidget {
 }
 
 class _OrderHistoryPageState extends State<OrderHistoryPage> {
-  Map<String, double> orderRatings =
-      {}; // Map to store the rating for each order
-  Map<String, String> ratingDocIds =
-      {}; // Map to store the document ID of the rating
+  Map<String, double> orderRatings = {};
+  Map<String, String> ratingDocIds = {};
 
   @override
   void initState() {
     super.initState();
-    _loadRatings(); // Load previously saved ratings
+    _loadRatings();
   }
 
-  // Fetch saved ratings from Firestore for the current user
   Future<void> _loadRatings() async {
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
 
     if (currentUserEmail != null) {
       QuerySnapshot ratingsSnapshot = await FirebaseFirestore.instance
-          .collection('driverRatings')
+          .collection('taxiDriverRatings')
           .where('ratedBy', isEqualTo: currentUserEmail)
           .get();
 
       setState(() {
         for (var doc in ratingsSnapshot.docs) {
           orderRatings[doc['orderId']] = doc['rating'].toDouble();
-          ratingDocIds[doc['orderId']] =
-              doc.id; // Store the document ID to update later
+          ratingDocIds[doc['orderId']] = doc.id;
         }
       });
     }
@@ -47,6 +43,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userEmail = FirebaseAuth.instance.currentUser?.email;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -67,10 +65,18 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         ),
       ),
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('orders').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('taxi_orders')
+            .where('userEmail',
+                isEqualTo: userEmail) // Filter by userEmail for passenger
+            .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.data!.docs.isEmpty) {
+            return Center(child: Text('No orders found'));
           }
 
           return ListView(
@@ -84,49 +90,29 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     );
   }
 
-  // Building the order card
-// Building the order card
-
-// Building the order card
   Widget _buildOrderCard(DocumentSnapshot doc) {
     String orderId = doc.id;
-
-    // Check if 'orderNumber' field exists and provide a default value
     String orderNumber =
         (doc.data() as Map<String, dynamic>).containsKey('orderNumber')
             ? doc['orderNumber'].toString()
-            : 'No Number'; // Default value if 'orderNumber' doesn't exist
-
-    // Check the type of order and display different fields based on it
+            : 'No Number';
     String orderType = doc['orderType'] ?? 'unknown';
-
-    String customerName; // Use this for both taxi and truck orders
-    String fromLocation = doc['fromLocation'];
-    String toLocation = doc['toLocation'];
-    String orderStatus = doc['status'];
+    String customerName = doc['customerName'] ?? 'Ism mavjud emas';
+    String fromLocation = doc['fromLocation'] ?? 'Unknown';
+    String toLocation = doc['toLocation'] ?? 'Unknown';
+    String orderStatus = doc['status'] ?? 'Unknown';
     DateTime orderTime = (doc['orderTime'] as Timestamp).toDate();
     DateTime arrivalTime = orderTime.add(Duration(hours: 8));
 
-    String driverEmail =
-        (doc.data() as Map<String, dynamic>).containsKey('driverEmail')
-            ? doc['driverEmail']
-            : 'N/A'; // Default if driverEmail doesn't exist
-
     Widget additionalInfo;
 
-    // Fetch 'customerName' field, which should always be available
-    customerName = doc['customerName'] ?? 'Ism mavjud emas';
-
-    // Check if it's a taxi or truck order and display relevant fields
     if (orderType == 'taksi') {
-      // Taxi order
       int peopleCount = doc['peopleCount'];
-
       additionalInfo = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            customerName, // Display the passenger's name for taxi orders
+            customerName,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
@@ -137,32 +123,28 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         ],
       );
     } else if (orderType == 'truck') {
-      // Truck order
       double cargoWeight = doc['cargoWeight'] ?? 0.0;
-      String cargoName =
-          doc['cargoName'] ?? 'Yuk nomi mavjud emas'; // Cargo name
-
+      String cargoName = doc['cargoName'] ?? 'Yuk nomi mavjud emas';
       additionalInfo = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            customerName, // Display the passenger's name instead of cargo name
+            customerName,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
           Text(
-            'Yuk vazni: ${cargoWeight.toStringAsFixed(2)} kg', // Cargo weight
+            'Yuk vazni: ${cargoWeight.toStringAsFixed(2)} kg',
             style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
           SizedBox(height: 8),
           Text(
-            'Yuk nomi: $cargoName', // Display the cargo name below the weight
+            'Yuk nomi: $cargoName',
             style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
         ],
       );
     } else {
-      // If orderType is not recognized, show a default message
       additionalInfo = Text(
         'Order type unknown',
         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -196,26 +178,23 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                       ),
                     ),
                     SizedBox(height: 4),
-                    _buildStatusTag(orderStatus), // Status below the date
+                    _buildStatusTag(orderStatus),
                   ],
                 ),
               ],
             ),
             SizedBox(height: 8),
-            additionalInfo, // Show either customer name or cargo info
+            additionalInfo,
             SizedBox(height: 10),
             _buildLocationRow(fromLocation, toLocation, orderTime, arrivalTime),
             SizedBox(height: 10),
-            if (orderStatus == 'tamomlandi')
-              _buildRatingBar(
-                  orderId, driverEmail), // Star Rating for completed orders
+            if (orderStatus == 'tamomlandi') _buildRatingBar(orderId),
           ],
         ),
       ),
     );
   }
 
-  // Displaying the order number with a tag
   Widget _buildOrderNumberTag(String orderNumber) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
@@ -233,7 +212,6 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     );
   }
 
-  // Displaying the status tag below the date
   Widget _buildStatusTag(String status) {
     Color backgroundColor;
     String displayStatus;
@@ -265,7 +243,6 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     );
   }
 
-  // Building the from-to location row
   Widget _buildLocationRow(String fromLocation, String toLocation,
       DateTime orderTime, DateTime arrivalTime) {
     return Row(
@@ -302,8 +279,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     );
   }
 
-  // Building the rating bar for completed orders
-  Widget _buildRatingBar(String orderId, String driverEmail) {
+  Widget _buildRatingBar(String orderId) {
     double initialRating = orderRatings[orderId] ?? 0.0;
 
     return RatingBar.builder(
@@ -317,37 +293,31 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         setState(() {
           orderRatings[orderId] = rating;
         });
-        _saveOrUpdateRating(orderId, driverEmail, rating);
+        _saveOrUpdateRating(orderId, rating);
       },
     );
   }
 
-  // Function to save or update the rating in Firestore
-  Future<void> _saveOrUpdateRating(
-      String orderId, String driverEmail, double rating) async {
+  Future<void> _saveOrUpdateRating(String orderId, double rating) async {
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
 
     if (currentUserEmail != null) {
-      // Check if the rating already exists in the database
       if (ratingDocIds.containsKey(orderId)) {
-        // Update the existing rating document
         await FirebaseFirestore.instance
-            .collection('driverRatings')
+            .collection('taxiDriverRatings')
             .doc(ratingDocIds[orderId])
             .update({
           'rating': rating,
         });
       } else {
-        // Save a new rating document in Firestore
-        DocumentReference docRef =
-            await FirebaseFirestore.instance.collection('driverRatings').add({
+        DocumentReference docRef = await FirebaseFirestore.instance
+            .collection('taxiDriverRatings')
+            .add({
           'orderId': orderId,
-          'driverEmail': driverEmail,
           'rating': rating,
           'ratedBy': currentUserEmail,
         });
 
-        // Store the new document ID for future updates
         setState(() {
           ratingDocIds[orderId] = docRef.id;
         });
@@ -355,7 +325,6 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     }
   }
 
-  // Function to format the order time
   String _formatDate(DateTime dateTime) {
     return DateFormat('dd.MM.yyyy HH:mm').format(dateTime);
   }
