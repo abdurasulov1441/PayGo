@@ -113,7 +113,7 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
               '${_controllers['Area Code']!.text}${_controllers['Letter Code']!.text}${_controllers['Number Code']!.text}${_controllers['Ending Code']!.text}',
           'from': _controllers['Qayerdan']!.text,
           'to': _controllers['Qayerga']!.text,
-          'status': 'inactive',
+          'status': 'active',
           'balance': 0,
           'expired_date': Timestamp.fromDate(expiredDate),
           'subscription_plan': 'Vaqtinchalik',

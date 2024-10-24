@@ -1,6 +1,9 @@
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // For formatting date
+import 'package:permission_handler/permission_handler.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:url_launcher/url_launcher.dart'; // For phone call functionality
@@ -235,6 +238,18 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
               'Yuk vazni: $cargoWeight kg',
               style: TextStyle(fontSize: 16),
             ),
+            SizedBox(height: 10),
+            // Phone Number Row
+            Row(
+              children: [
+                Icon(Icons.phone, color: AppColors.taxi),
+                SizedBox(width: 8),
+                Text(
+                  'Telefon: $phoneNumber',
+                  style: TextStyle(fontSize: 16, color: AppColors.taxi),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -264,14 +279,28 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
     print('Order returned to pending status.');
   }
 
-  // Функция для звонка клиенту
   void _callCustomer(String phoneNumber) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    } else {
-      print('Could not launch phone call to $phoneNumber');
+    String sanitizedPhoneNumber =
+        phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+
+    final intent = AndroidIntent(
+      action: 'android.intent.action.CALL',
+      data: 'tel:$sanitizedPhoneNumber',
+      flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+    );
+
+    try {
+      await intent.launch();
+    } catch (e) {
+      print('Could not launch phone call to $sanitizedPhoneNumber: $e');
+      _showSnackBar('Call failed. Please check phone settings.');
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   // Функция для завершения заказа

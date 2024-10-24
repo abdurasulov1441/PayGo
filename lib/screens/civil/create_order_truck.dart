@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:taksi/screens/civil/history_truck.dart';
-import 'package:taksi/screens/civil/historytaxi.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth to get the current user
@@ -165,71 +164,80 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
         iconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: AppStyle.fontStyle.copyWith(color: Colors.black),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildLocationSelector(
-              label: 'Qayerdan',
-              location: fromLocation,
-              onSelected: (selectedLocation) {
-                setState(() {
-                  fromLocation = selectedLocation;
-                });
-              },
-            ),
-            SizedBox(height: 10),
-            _buildLocationSelector(
-              label: 'Qayerga',
-              location: toLocation,
-              onSelected: (selectedLocation) {
-                setState(() {
-                  toLocation = selectedLocation;
-                });
-              },
-            ),
-            SizedBox(height: 10),
-            _buildCargoNameField(),
-            SizedBox(height: 10),
-            _buildCargoWeightField(),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () => _showTimePickerBottomSheet(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    AppColors.taxi, // Adjust to truck color if needed
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+      body: LayoutBuilder(builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    _buildLocationSelector(
+                      label: 'Qayerdan',
+                      location: fromLocation,
+                      onSelected: (selectedLocation) {
+                        setState(() {
+                          fromLocation = selectedLocation;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    _buildLocationSelector(
+                      label: 'Qayerga',
+                      location: toLocation,
+                      onSelected: (selectedLocation) {
+                        setState(() {
+                          toLocation = selectedLocation;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    _buildCargoNameField(),
+                    SizedBox(height: 10),
+                    _buildCargoWeightField(),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () => _showTimePickerBottomSheet(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            AppColors.taxi, // Adjust to truck color if needed
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        minimumSize: Size(double.infinity, 50),
+                      ),
+                      child: Text(
+                        _selectedDateTime == null
+                            ? 'Vaqtni tanlang'
+                            : 'Tanlangan vaqt: ${DateFormat('yyyy-MM-dd – HH:mm').format(_selectedDateTime!)}',
+                        style: AppStyle.fontStyle.copyWith(color: Colors.white),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Spacer(),
+                    ElevatedButton(
+                      onPressed: _submitTruckOrder,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            AppColors.taxi, // Adjust to truck color if needed
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        minimumSize: Size(double.infinity, 50),
+                      ),
+                      child: Text(
+                        'Buyurtma yuborish',
+                        style: AppStyle.fontStyle.copyWith(color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
-                minimumSize: Size(double.infinity, 50),
-              ),
-              child: Text(
-                _selectedDateTime == null
-                    ? 'Vaqtni tanlang'
-                    : 'Tanlangan vaqt: ${DateFormat('yyyy-MM-dd – HH:mm').format(_selectedDateTime!)}',
-                style: AppStyle.fontStyle.copyWith(color: Colors.white),
               ),
             ),
-            SizedBox(height: 20),
-            Spacer(),
-            ElevatedButton(
-              onPressed: _submitTruckOrder,
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    AppColors.taxi, // Adjust to truck color if needed
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                minimumSize: Size(double.infinity, 50),
-              ),
-              child: Text(
-                'Buyurtma yuborish',
-                style: AppStyle.fontStyle.copyWith(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }),
     );
   }
 

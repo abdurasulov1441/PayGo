@@ -1,9 +1,13 @@
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TruckOrderHistoryPage extends StatefulWidget {
   const TruckOrderHistoryPage({super.key});
@@ -13,6 +17,65 @@ class TruckOrderHistoryPage extends StatefulWidget {
 }
 
 class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
+  Map<String, double> orderRatings = {};
+  Map<String, String> ratingDocIds = {};
+  Map<String, bool> expandedStates = {}; // Store expanded state for each order
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRatings();
+  }
+
+  Future<void> _loadRatings() async {
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
+
+    if (currentUserEmail != null) {
+      QuerySnapshot ratingsSnapshot = await FirebaseFirestore.instance
+          .collection('driverTruckRatings')
+          .where('ratedBy', isEqualTo: currentUserEmail)
+          .get();
+
+      setState(() {
+        for (var doc in ratingsSnapshot.docs) {
+          orderRatings[doc['orderId']] = doc['rating'].toDouble();
+          ratingDocIds[doc['orderId']] = doc.id;
+        }
+      });
+    }
+  }
+
+  void _callDriver(String phoneNumber) async {
+    // Sanitize the phone number by removing any non-numeric or non-plus characters
+    String sanitizedPhoneNumber =
+        phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+
+    // Create the intent to make a call
+    final intent = AndroidIntent(
+      action: 'android.intent.action.CALL',
+      data: 'tel:$sanitizedPhoneNumber',
+      flags: <int>[
+        Flag.FLAG_ACTIVITY_NEW_TASK
+      ], // Ensure a new task is created for the call
+    );
+
+    try {
+      // Launch the phone call intent
+      await intent.launch();
+    } catch (e) {
+      // Handle any errors that occur when launching the intent
+      print('Could not launch phone call to $sanitizedPhoneNumber: $e');
+      _showSnackBar('Call failed. Please check phone settings.');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    // Display a snackbar with the provided message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userEmail = FirebaseAuth.instance.currentUser?.email;
@@ -38,10 +101,8 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
         ),
         body: StreamBuilder(
           stream: FirebaseFirestore.instance
-              .collection('truck_orders') // Обращаемся к коллекции truck_orders
-              .where('userEmail',
-                  isEqualTo:
-                      userEmail) // Фильтруем заказы по email пользователя
+              .collection('truck_orders')
+              .where('userEmail', isEqualTo: userEmail)
               .snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             if (!snapshot.hasData) {
@@ -55,8 +116,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
             return ListView(
               padding: const EdgeInsets.all(16.0),
               children: snapshot.data!.docs.map((doc) {
-                return _buildTruckOrderCard(
-                    doc); // Строим карточки только для truck_orders
+                return _buildTruckOrderCard(doc);
               }).toList(),
             );
           },
@@ -64,38 +124,80 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
   }
 
   Widget _buildTruckOrderCard(DocumentSnapshot doc) {
-    String orderNumber =
-        (doc.data() as Map<String, dynamic>).containsKey('orderNumber')
-            ? doc['orderNumber'].toString()
-            : 'No Number';
-    String customerName = doc['customerName'] ?? 'Ism mavjud emas';
-    String fromLocation = doc['fromLocation'] ?? 'Unknown';
-    String toLocation = doc['toLocation'] ?? 'Unknown';
-    double cargoWeight = doc['cargoWeight'] ?? 0.0;
-    String cargoName = doc['cargoName'] ?? 'Yuk nomi mavjud emas';
-    String orderStatus = doc['status'] ?? 'Status mavjud emas'; // Статус заказа
-    DateTime orderTime = (doc['orderTime'] as Timestamp).toDate();
-    DateTime arrivalTime = orderTime.add(Duration(hours: 8));
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    // Определение цвета для статуса в зависимости от его значения
+    String orderNumber = data.containsKey('orderNumber')
+        ? data['orderNumber'].toString()
+        : 'No Number';
+    String customerName = data.containsKey('customerName')
+        ? data['customerName'] ?? 'Ism mavjud emas'
+        : 'Ism mavjud emas';
+    String fromLocation = data.containsKey('fromLocation')
+        ? data['fromLocation'] ?? 'Unknown'
+        : 'Unknown';
+    String toLocation = data.containsKey('toLocation')
+        ? data['toLocation'] ?? 'Unknown'
+        : 'Unknown';
+    double cargoWeight = data.containsKey('cargoWeight')
+        ? (data['cargoWeight'] as num).toDouble()
+        : 0.0;
+    String cargoName = data.containsKey('cargoName')
+        ? data['cargoName'] ?? 'Yuk nomi mavjud emas'
+        : 'Yuk nomi mavjud emas';
+    String orderStatus = data.containsKey('status')
+        ? data['status'] ?? 'Status mavjud emas'
+        : 'Status mavjud emas';
+    DateTime orderTime = (data['orderTime'] as Timestamp).toDate();
+    DateTime arrivalTime = orderTime.add(Duration(hours: 8));
+    String orderId = doc.id;
+
+    // Driver Information
+    String driverName = data.containsKey('driverName')
+        ? data['driverName'] ?? 'Ism mavjud emas'
+        : 'Ism mavjud emas';
+    String driverPhoneNumber = data.containsKey('driverPhoneNumber')
+        ? data['driverPhoneNumber'] ?? 'Telefon raqami mavjud emas'
+        : 'Telefon raqami mavjud emas';
+    String driverTruckModel = data.containsKey('driverTruckModel')
+        ? data['driverTruckModel'] ?? 'Mashina mavjud emas'
+        : 'Mashina mavjud emas';
+    String driverTruckNumber = data.containsKey('driverTruckNumber')
+        ? data['driverTruckNumber'] ?? 'Avtomobil raqami mavjud emas'
+        : 'Avtomobil raqami mavjud emas';
+
+    bool isExpanded = expandedStates[orderId] ?? false;
+
+    // Определяем цвет статуса
     Color getStatusColor(String status) {
       if (status == 'qabul qilindi') {
-        return Colors.orange; // Оранжевый цвет для статуса "qabul qilindi"
+        return Colors.orange;
       } else if (status == 'tamomlandi') {
-        return Colors.green; // Зеленый для завершенных заказов
+        return Colors.green;
       } else {
-        return Colors.red; // Красный для остальных статусов
+        return Colors.red;
       }
     }
 
-    return Card(
-      margin: EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 4,
-      child: Padding(
+    return GestureDetector(
+      onTap: () {
+        // Если заказ еще не принят, карточка не расширяется
+        if (orderStatus == 'qabul qilindi') {
+          setState(() {
+            expandedStates[orderId] = !isExpanded; // Переключаем состояние
+          });
+        }
+      },
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        margin: EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(color: Colors.black26, blurRadius: 4, spreadRadius: 1),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -114,12 +216,11 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 4), // Отступ между датой и статусом
+                    SizedBox(height: 4),
                     Container(
                       padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                       decoration: BoxDecoration(
-                        color: getStatusColor(
-                            orderStatus), // Устанавливаем цвет в зависимости от статуса
+                        color: getStatusColor(orderStatus),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -152,6 +253,41 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
               'Yuk vazni: ${cargoWeight.toStringAsFixed(2)} kg',
               style: TextStyle(fontSize: 14, color: Colors.black54),
             ),
+            SizedBox(height: 10),
+            if (orderStatus == 'tamomlandi') _buildRatingBar(orderId),
+
+            // Данные водителя отображаются только если заказ принят и карточка расширена
+            if (orderStatus == 'qabul qilindi' && isExpanded)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Haydovchi: $driverName',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.phone, color: Colors.green),
+                      SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => _callDriver(
+                            driverPhoneNumber), // Call the driver when tapped
+                        child: Text(
+                          'Telefon raqami: $driverPhoneNumber',
+                          style: TextStyle(fontSize: 14, color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4),
+                  Text('Mashina modeli: $driverTruckModel',
+                      style: TextStyle(fontSize: 14, color: Colors.black54)),
+                  SizedBox(height: 4),
+                  Text('Mashina raqami: $driverTruckNumber',
+                      style: TextStyle(fontSize: 14, color: Colors.black54)),
+                ],
+              ),
           ],
         ),
       ),
@@ -209,6 +345,52 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
         ),
       ],
     );
+  }
+
+  Widget _buildRatingBar(String orderId) {
+    double initialRating = orderRatings[orderId] ?? 0.0;
+
+    return RatingBar.builder(
+      initialRating: initialRating,
+      minRating: 1,
+      direction: Axis.horizontal,
+      allowHalfRating: true,
+      itemCount: 5,
+      itemBuilder: (context, _) => Icon(Icons.star, color: Colors.amber),
+      onRatingUpdate: (rating) {
+        setState(() {
+          orderRatings[orderId] = rating;
+        });
+        _saveOrUpdateRating(orderId, rating);
+      },
+    );
+  }
+
+  Future<void> _saveOrUpdateRating(String orderId, double rating) async {
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
+
+    if (currentUserEmail != null) {
+      if (ratingDocIds.containsKey(orderId)) {
+        await FirebaseFirestore.instance
+            .collection('driverTruckRatings')
+            .doc(ratingDocIds[orderId])
+            .update({
+          'rating': rating,
+        });
+      } else {
+        DocumentReference docRef = await FirebaseFirestore.instance
+            .collection('driverTruckRatings')
+            .add({
+          'orderId': orderId,
+          'rating': rating,
+          'ratedBy': currentUserEmail,
+        });
+
+        setState(() {
+          ratingDocIds[orderId] = docRef.id;
+        });
+      }
+    }
   }
 
   String _formatDate(DateTime dateTime) {

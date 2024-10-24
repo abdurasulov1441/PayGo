@@ -30,7 +30,7 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Akkaunt (Yuk haydovchisi)', // Заголовок для водителей грузовиков
+          'Akkaunt', // Заголовок для водителей грузовиков
           style: AppStyle.fontStyle.copyWith(
               color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),

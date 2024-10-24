@@ -1,6 +1,9 @@
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // For formatting date
+import 'package:permission_handler/permission_handler.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:url_launcher/url_launcher.dart'; // For phone call functionality
@@ -22,6 +25,44 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
     _fetchDriverInfo();
   }
 
+  Future<void> _callPassenger(String phoneNumber) async {
+    // Sanitize the phone number by removing spaces, parentheses, and other non-numeric characters
+    String sanitizedPhoneNumber =
+        phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+
+    // Check for phone call permission
+    PermissionStatus permissionStatus = await Permission.phone.status;
+
+    if (permissionStatus.isGranted) {
+      final intent = AndroidIntent(
+        action: 'android.intent.action.CALL',
+        data: Uri.encodeFull('tel:$sanitizedPhoneNumber'),
+        flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+      );
+
+      try {
+        await intent.launch();
+      } catch (e) {
+        _showSnackBar(
+            'Qo\'ng\'iroq amalga oshirilmadi. Iltimos, telefon sozlamalarini tekshiring.');
+      }
+    } else {
+      // Request permission if not granted
+      PermissionStatus status = await Permission.phone.request();
+      if (status.isGranted) {
+        _callPassenger(phoneNumber); // Retry after permission is granted
+      } else {
+        _showSnackBar('Qo\'ng\'iroq qilish uchun telefon ruxsati kerak.');
+      }
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> _fetchDriverInfo() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -32,7 +73,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
   }
 
   Future<void> _refreshPage() async {
-    setState(() {}); // Перезагружаем данные при обновлении страницы
+    setState(() {}); // Refresh page data
   }
 
   @override
@@ -50,16 +91,16 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
       body: driverEmail == null
           ? Center(
               child:
-                  CircularProgressIndicator()) // Пока не получен email водителя
+                  CircularProgressIndicator()) // While driver email is loading
           : RefreshIndicator(
               onRefresh: _refreshPage,
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('taxi_orders')
                     .where('status',
-                        isEqualTo: 'qabul qilindi') // Принятые заказы
+                        isEqualTo: 'qabul qilindi') // Accepted orders
                     .where('acceptedBy',
-                        isEqualTo: driverEmail) // Принятые этим водителем
+                        isEqualTo: driverEmail) // Accepted by this driver
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
@@ -80,14 +121,13 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
                             Icons.undo, 'Qaytarish', Alignment.centerRight),
                         onDismissed: (direction) {
                           if (direction == DismissDirection.startToEnd) {
-                            _completeOrder(doc.id); // Завершение заказа
+                            _completeOrder(doc.id); // Complete the order
                           } else {
-                            _returnOrder(doc.id); // Возвращение заказа
+                            _returnOrder(doc.id); // Return the order
                           }
                         },
                         child: InkWell(
-                          onTap: () => _callPassenger(
-                              doc['phoneNumber']), // Звонок клиенту при нажатии
+                          onTap: () => _callPassenger, // Call passenger on tap
                           child: _buildOrderCard(doc),
                         ),
                       );
@@ -99,7 +139,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
     );
   }
 
-  // Функция создания фона для Dismissible
+  // Function to build the Dismissible background
   Widget _buildDismissBackground(
       Color color, IconData icon, String label, Alignment alignment) {
     return Container(
@@ -119,17 +159,17 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
     );
   }
 
-  // Функция создания карточки заказа с измененным дизайном
+  // Function to build the order card with phone number displayed
   Widget _buildOrderCard(QueryDocumentSnapshot doc) {
     final orderNumber = doc['orderNumber'];
     final fromLocation = doc['fromLocation'];
     final toLocation = doc['toLocation'];
     final customerName = doc['customerName'];
     final phoneNumber = doc['phoneNumber'];
-    final peopleCount = doc['peopleCount'] ?? 'Unknown'; // Количество людей
+    final peopleCount = doc['peopleCount'] ?? 'Unknown'; // Number of people
     final orderTime = (doc['orderTime'] as Timestamp).toDate();
     final arrivalTime = orderTime
-        .add(Duration(hours: 8)); // Добавляем 8 часов для времени прибытия
+        .add(Duration(hours: 8)); // Add 8 hours to order time for arrival
 
     return Card(
       color: Colors.white,
@@ -142,7 +182,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Номер заказа и время заказа
+            // Order number and time
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -170,7 +210,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
               ],
             ),
             SizedBox(height: 8),
-            // Имя заказчика
+            // Customer name
             Text(
               customerName,
               style: TextStyle(
@@ -179,7 +219,7 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
               ),
             ),
             SizedBox(height: 10),
-            // Откуда и куда
+            // Locations
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -223,10 +263,22 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
               ],
             ),
             SizedBox(height: 10),
-            // Количество людей (только для такси)
+            // Number of people (for taxi orders)
             Text(
               'Odamlar soni: $peopleCount',
               style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 10),
+            // Display phone number
+            Row(
+              children: [
+                Icon(Icons.phone, color: AppColors.taxi),
+                SizedBox(width: 8),
+                Text(
+                  'Telefon: $phoneNumber',
+                  style: TextStyle(fontSize: 16, color: AppColors.taxi),
+                ),
+              ],
             ),
           ],
         ),
@@ -234,19 +286,19 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
     );
   }
 
-  // Функция для форматирования времени заказа
+  // Function to format date
   String _formatDate(DateTime dateTime) {
     return DateFormat('dd.MM.yyyy HH:mm').format(dateTime);
   }
 
-  // Функция для возврата заказа
+  // Function to return an order to pending status
   Future<void> _returnOrder(String orderId) async {
     await FirebaseFirestore.instance
         .collection('taxi_orders')
         .doc(orderId)
         .update({
-      'status': 'kutish jarayonida', // Set status back to pending
-      'driverName': null, // Удаление данных о водителе
+      'status': 'kutish jarayonida',
+      'driverName': null,
       'driverPhoneNumber': null,
       'driverCarModel': null,
       'driverCarNumber': null,
@@ -257,23 +309,15 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
     print('Order returned to pending status.');
   }
 
-  // Функция для звонка пассажиру
-  void _callPassenger(String phoneNumber) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    } else {
-      print('Could not launch phone call to $phoneNumber');
-    }
-  }
+  // Function to call the passenger
 
-  // Функция для завершения заказа
+  // Function to complete an order
   Future<void> _completeOrder(String orderId) async {
     await FirebaseFirestore.instance
         .collection('taxi_orders')
         .doc(orderId)
         .update({
-      'status': 'tamomlandi', // Set status to completed
+      'status': 'tamomlandi',
     });
     print('Order marked as completed.');
   }
