@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class TruckOrderHistoryPage extends StatefulWidget {
   const TruckOrderHistoryPage({super.key});

@@ -9,7 +9,6 @@ import 'package:taksi/screens/drivers/drivers_page.dart';
 import 'package:taksi/screens/home_screen.dart';
 import 'package:taksi/screens/sign/login_screen.dart';
 import 'package:taksi/services/firebase_streem.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 // Background message handler (for handling messages while app is in background)
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -107,14 +106,14 @@ class _MyAppState extends State<MyApp> {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
         }),
       ),
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('uz', 'UZ'),
-      ],
-      locale: const Locale('uz', 'UZ'),
+      // localizationsDelegates: const [
+      //   GlobalMaterialLocalizations.delegate,
+      //   GlobalWidgetsLocalizations.delegate,
+      // ],
+      // supportedLocales: const [
+      //   Locale('ru', 'RU'),
+      // ],
+      // locale: const Locale('ru', 'RU'),
       routes: {
         '/': (context) => const FirebaseStream(),
         '/home': (context) => const HomeScreen(),

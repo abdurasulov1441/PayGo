@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:yandex_mapkit_lite/yandex_mapkit_lite.dart';
 
 class DeliveryPage extends StatefulWidget {
+  const DeliveryPage({super.key});
+
   @override
   _DeliveryPageState createState() => _DeliveryPageState();
 }

@@ -6,7 +6,7 @@ import 'package:intl/intl.dart'; // For formatting date
 import 'package:permission_handler/permission_handler.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
-import 'package:url_launcher/url_launcher.dart'; // For phone call functionality
+// For phone call functionality
 import 'package:firebase_auth/firebase_auth.dart'; // To get current driver
 
 class AcceptedOrdersPage extends StatefulWidget {
