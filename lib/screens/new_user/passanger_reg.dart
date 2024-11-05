@@ -72,6 +72,7 @@ class _PassengerRegistrationPageState extends State<PassengerRegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           "Yo’lovchi ma'lumotlari",

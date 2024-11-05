@@ -22,6 +22,7 @@ class _DriverOrderHistoryPageState extends State<DriverOrderHistoryPage> {
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
           centerTitle: true,
           backgroundColor: AppColors.taxi,

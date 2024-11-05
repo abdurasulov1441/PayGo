@@ -93,6 +93,7 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
     try {
       final userEmail = FirebaseAuth.instance.currentUser!.email;
 
+      // Fetch driver data including userId
       final snapshot = await FirebaseFirestore.instance
           .collection('truckdrivers')
           .where('email', isEqualTo: userEmail)
@@ -101,10 +102,12 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
       if (snapshot.docs.isNotEmpty) {
         final driverData = snapshot.docs.first.data();
 
-        // Update order with driver information
+        // Retrieve truck number and userId
         final String truckNumber =
             driverData['TruckNumber'] ?? 'Avtomobil raqami mavjud emas';
+        final String userId = driverData['userId'] ?? 'ID mavjud emas';
 
+        // Update order with driver information, including userId
         await FirebaseFirestore.instance
             .collection('truck_orders')
             .doc(orderId)
@@ -115,7 +118,8 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
           'driverName': driverData['name'],
           'driverPhoneNumber': driverData['phoneNumber'],
           'driverTruckModel': driverData['truckModel'],
-          'driverTruckNumber': truckNumber, // Save truck number
+          'driverTruckNumber': truckNumber,
+          'driverUserId': userId, // Add the driver userId to the order
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -322,6 +326,7 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
         title: Text(

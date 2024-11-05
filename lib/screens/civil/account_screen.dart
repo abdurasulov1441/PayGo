@@ -198,51 +198,6 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const Divider(),
                       buildSettingTile(
-                        icon: Icons.directions_car,
-                        label: 'Haydovchi sifatida kiring',
-                        onTap: () async {
-                          await changeProfile();
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/home',
-                            (Route<dynamic> route) => false,
-                          );
-                        },
-                      ),
-                      const Divider(),
-                      buildSettingTile(
-                        icon: Icons.delete_forever,
-                        label: 'Ma\'lumotlarni o\'chirish',
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: const Text('Tasdiqlash'),
-                                content: const Text(
-                                    'Ma’lumotlaringizni o‘chirib tashlamoqchimisiz?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Bekor qilish'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      deleteUserData();
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('O\'chirish'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
-                      const Divider(),
-                      buildSettingTile(
                         icon: Icons.logout,
                         label: 'Chiqish',
                         onTap: () => signOut(),

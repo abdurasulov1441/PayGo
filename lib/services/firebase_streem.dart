@@ -108,6 +108,7 @@ class _FirebaseStreamState extends State<FirebaseStream> {
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Scaffold(
+              backgroundColor: Colors.white,
               body: Center(child: Text('Что-то пошло не так!')));
         } else if (snapshot.hasData) {
           return const HomeScreen();

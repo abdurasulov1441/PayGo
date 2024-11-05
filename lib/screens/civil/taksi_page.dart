@@ -112,6 +112,7 @@ class _TaxiPageState extends State<TaxiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'Taksi Haydovchilari',

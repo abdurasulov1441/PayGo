@@ -10,6 +10,7 @@ class BalanceDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('So\'rov detali',
             style: AppStyle.fontStyle.copyWith(

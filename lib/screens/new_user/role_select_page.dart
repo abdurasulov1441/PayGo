@@ -13,11 +13,12 @@ class RoleSelectionPage extends StatefulWidget {
 }
 
 class _RoleSelectionPageState extends State<RoleSelectionPage> {
-  String? selectedRole; // Track the selected role
+  String? selectedRole;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -104,7 +105,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            const TruckDriverRegistrationPage(), 
+                            const TruckDriverRegistrationPage(),
                       ),
                     );
                   } else {

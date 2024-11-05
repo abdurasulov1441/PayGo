@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:taksi/screens/home_screen.dart';
 import 'package:taksi/style/app_style.dart';
 
-
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'Sozlamalar',

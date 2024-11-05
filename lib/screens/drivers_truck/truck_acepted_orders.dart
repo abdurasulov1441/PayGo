@@ -261,21 +261,23 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
   }
 
   // Функция для возврата заказа
+// Function to return the order
   Future<void> _returnOrder(String orderId) async {
     await FirebaseFirestore.instance
         .collection('truck_orders')
         .doc(orderId)
         .update({
       'status': 'kutish jarayonida', // Set status back to pending
-      'driverName': null, // Удаление данных о водителе
+      'driverName': null, // Remove driver details
       'driverPhoneNumber': null,
       'driverTruckModel': null,
       'driverTruckNumber': null,
       'driverEmail': null,
       'driverLastName': null,
       'acceptedBy': null,
+      'driverUserId': null, // Remove driver ID as well
     });
-    print('Order returned to pending status.');
+    print('Order returned to pending status and driver details removed.');
   }
 
   void _callCustomer(String phoneNumber) async {

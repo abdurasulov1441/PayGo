@@ -120,7 +120,7 @@ class _TruckDriverRegistrationPageState
           'balance': 0,
           'expired_date': Timestamp.fromDate(expiredDate),
           'subscription_plan': 'Vaqtinchalik',
-          'vehicleType': 'truck', // Default type for truck drivers
+          'vehicleType': 'truck',
           'reports': 0,
           'photo1': '',
           'photo2': '',
@@ -154,6 +154,7 @@ class _TruckDriverRegistrationPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text("Gruz Haydovchi ma'lumotlari",
             style: AppStyle.fontStyle.copyWith(color: Colors.white)),

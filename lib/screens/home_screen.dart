@@ -74,6 +74,7 @@ class HomeScreen extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Scaffold(
+              backgroundColor: Colors.white,
               body: Center(
                 child: LottieBuilder.asset('assets/lottie/loading.json'),
               ),

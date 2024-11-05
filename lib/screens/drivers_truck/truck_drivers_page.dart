@@ -47,12 +47,11 @@ class _TruckDriverPageState extends State<TruckDriverPage> {
   }
 
   void _startLocationUpdates() {
-    _locationUpdateTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
+    _locationUpdateTimer = Timer.periodic(Duration(minutes: 10), (timer) async {
       await _updateDriverLocation(); // Update driver location every 10 seconds
     });
   }
 
-  // Function to get the driver's location and save it to Firestore
   Future<void> _updateDriverLocation() async {
     try {
       // Ensure permissions are granted

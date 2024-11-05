@@ -154,6 +154,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Yuk mashinasi buyurtmasi berish',
             style:

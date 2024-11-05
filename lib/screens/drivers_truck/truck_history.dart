@@ -52,6 +52,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: AppColors.taxi,

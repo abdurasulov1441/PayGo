@@ -46,6 +46,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     final userEmail = FirebaseAuth.instance.currentUser?.email;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {

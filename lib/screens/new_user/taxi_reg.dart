@@ -151,6 +151,7 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text("Haydovchi ma'lumotlari",
             style: AppStyle.fontStyle.copyWith(color: Colors.white)),

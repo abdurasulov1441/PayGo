@@ -45,31 +45,21 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
   }
 
   void _callDriver(String phoneNumber) async {
-    // Sanitize the phone number by removing any non-numeric or non-plus characters
     String sanitizedPhoneNumber =
         phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
-
-    // Create the intent to make a call
     final intent = AndroidIntent(
       action: 'android.intent.action.CALL',
       data: 'tel:$sanitizedPhoneNumber',
-      flags: <int>[
-        Flag.FLAG_ACTIVITY_NEW_TASK
-      ], // Ensure a new task is created for the call
+      flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
     );
-
     try {
-      // Launch the phone call intent
       await intent.launch();
     } catch (e) {
-      // Handle any errors that occur when launching the intent
-      print('Could not launch phone call to $sanitizedPhoneNumber: $e');
       _showSnackBar('Call failed. Please check phone settings.');
     }
   }
 
   void _showSnackBar(String message) {
-    // Display a snackbar with the provided message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
@@ -80,93 +70,168 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
     final userEmail = FirebaseAuth.instance.currentUser?.email;
 
     return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: Icon(
-              Icons.arrow_back_ios,
-              color: Colors.white,
-            ),
-          ),
-          centerTitle: true,
-          backgroundColor: AppColors.taxi,
-          title: Text(
-            'Yuk buyurtmalari tarixi',
-            style: AppStyle.fontStyle.copyWith(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Colors.white,
           ),
         ),
-        body: StreamBuilder(
-          stream: FirebaseFirestore.instance
-              .collection('truck_orders')
-              .where('userEmail', isEqualTo: userEmail)
-              .snapshots(),
-          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            if (!snapshot.hasData) {
-              return Center(child: CircularProgressIndicator());
-            }
+        centerTitle: true,
+        backgroundColor: AppColors.taxi,
+        title: Text(
+          'Yuk buyurtmalari tarixi',
+          style: AppStyle.fontStyle.copyWith(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+      ),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('truck_orders')
+            .where('userEmail', isEqualTo: userEmail)
+            .snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
 
-            if (snapshot.data!.docs.isEmpty) {
-              return Center(child: Text('Buyurtmalar mavjud emas'));
-            }
+          if (snapshot.data!.docs.isEmpty) {
+            return Center(child: Text('Buyurtmalar mavjud emas'));
+          }
 
-            return ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: snapshot.data!.docs.map((doc) {
-                return _buildTruckOrderCard(doc);
-              }).toList(),
-            );
-          },
-        ));
+          return ListView(
+            padding: const EdgeInsets.all(16.0),
+            children: snapshot.data!.docs.map((doc) {
+              return _buildTruckOrderCard(doc);
+            }).toList(),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> checkAndHandleBan(String driverUserId) async {
+    final complaintSnapshot = await FirebaseFirestore.instance
+        .collection('complaints')
+        .where('driverUserId', isEqualTo: driverUserId)
+        .get();
+
+    final uniqueUserEmails =
+        complaintSnapshot.docs.map((doc) => doc['userEmail']).toSet().toList();
+
+    if (uniqueUserEmails.length >= 3) {
+      // If 3 or more unique complaints, set status to inactive
+      await FirebaseFirestore.instance
+          .collection('truckdrivers')
+          .doc(driverUserId)
+          .update({'status': 'inactive'});
+    }
+  }
+
+  Future<void> showComplaintDialog(
+      BuildContext context,
+      String orderId,
+      String driverUserId,
+      String userEmail,
+      String driverName,
+      String driverPhoneNumber) async {
+    TextEditingController complaintController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Please describe your issue"),
+          content: TextField(
+            controller: complaintController,
+            maxLines: 3,
+            decoration: InputDecoration(hintText: "Describe the issue here"),
+          ),
+          actions: [
+            TextButton(
+              child: Text("Submit"),
+              onPressed: () async {
+                final complaintText = complaintController.text;
+                if (complaintText.isNotEmpty) {
+                  await FirebaseFirestore.instance
+                      .collection('complaints')
+                      .add({
+                    'orderId': orderId,
+                    'driverUserId': driverUserId,
+                    'userEmail': userEmail,
+                    'driverName': driverName,
+                    'driverPhoneNumber': driverPhoneNumber,
+                    'complaint': complaintText,
+                    'timestamp': DateTime.now(),
+                  });
+
+                  // Optional: You can call the ban check here if you want immediate processing
+                  await checkAndHandleBan(driverUserId);
+                }
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> showBanConfirmationDialog(
+      BuildContext context, String driverUserId) async {
+    bool confirmBan = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Confirm Ban"),
+          content: Text("Are you sure you want to ban this driver?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text("No"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text("Yes"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmBan == true) {
+      await checkAndHandleBan(driverUserId);
+    }
   }
 
   Widget _buildTruckOrderCard(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    String orderNumber = data.containsKey('orderNumber')
-        ? data['orderNumber'].toString()
-        : 'No Number';
-    String customerName = data.containsKey('customerName')
-        ? data['customerName'] ?? 'Ism mavjud emas'
-        : 'Ism mavjud emas';
-    String fromLocation = data.containsKey('fromLocation')
-        ? data['fromLocation'] ?? 'Unknown'
-        : 'Unknown';
-    String toLocation = data.containsKey('toLocation')
-        ? data['toLocation'] ?? 'Unknown'
-        : 'Unknown';
-    double cargoWeight = data.containsKey('cargoWeight')
-        ? (data['cargoWeight'] as num).toDouble()
-        : 0.0;
-    String cargoName = data.containsKey('cargoName')
-        ? data['cargoName'] ?? 'Yuk nomi mavjud emas'
-        : 'Yuk nomi mavjud emas';
-    String orderStatus = data.containsKey('status')
-        ? data['status'] ?? 'Status mavjud emas'
-        : 'Status mavjud emas';
+    String orderNumber = data['orderNumber']?.toString() ?? 'No Number';
+    String customerName = data['customerName'] ?? 'Ism mavjud emas';
+    String fromLocation = data['fromLocation'] ?? 'Unknown';
+    String toLocation = data['toLocation'] ?? 'Unknown';
+    double cargoWeight = (data['cargoWeight'] as num?)?.toDouble() ?? 0.0;
+    String cargoName = data['cargoName'] ?? 'Yuk nomi mavjud emas';
+    String orderStatus = data['status'] ?? 'Status mavjud emas';
     DateTime orderTime = (data['orderTime'] as Timestamp).toDate();
     DateTime arrivalTime = orderTime.add(Duration(hours: 8));
-    String orderId = doc.id;
+    String driverUserId = data['driverUserId'] ?? 'ID mavjud emas';
 
     // Driver Information
-    String driverName = data.containsKey('driverName')
-        ? data['driverName'] ?? 'Ism mavjud emas'
-        : 'Ism mavjud emas';
-    String driverPhoneNumber = data.containsKey('driverPhoneNumber')
-        ? data['driverPhoneNumber'] ?? 'Telefon raqami mavjud emas'
-        : 'Telefon raqami mavjud emas';
-    String driverTruckModel = data.containsKey('driverTruckModel')
-        ? data['driverTruckModel'] ?? 'Mashina mavjud emas'
-        : 'Mashina mavjud emas';
-    String driverTruckNumber = data.containsKey('driverTruckNumber')
-        ? data['driverTruckNumber'] ?? 'Avtomobil raqami mavjud emas'
-        : 'Avtomobil raqami mavjud emas';
+    String driverName = data['driverName'] ?? 'Ism mavjud emas';
+    String driverPhoneNumber =
+        data['driverPhoneNumber'] ?? 'Telefon raqami mavjud emas';
+    String driverTruckModel = data['driverTruckModel'] ?? 'Mashina mavjud emas';
+    String driverTruckNumber =
+        data['driverTruckNumber'] ?? 'Avtomobil raqami mavjud emas';
 
-    bool isExpanded = expandedStates[orderId] ?? false;
+    bool isExpanded = expandedStates[doc.id] ?? false;
 
-    // Определяем цвет статуса
     Color getStatusColor(String status) {
       if (status == 'qabul qilindi') {
         return Colors.orange;
@@ -179,10 +244,9 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
 
     return GestureDetector(
       onTap: () {
-        // Если заказ еще не принят, карточка не расширяется
         if (orderStatus == 'qabul qilindi') {
           setState(() {
-            expandedStates[orderId] = !isExpanded; // Переключаем состояние
+            expandedStates[doc.id] = !isExpanded;
           });
         }
       },
@@ -252,10 +316,21 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
               'Yuk vazni: ${cargoWeight.toStringAsFixed(2)} kg',
               style: TextStyle(fontSize: 14, color: Colors.black54),
             ),
+            SizedBox(height: 8),
+            Text(
+              'Haydovchi ID: $driverUserId',
+              style: TextStyle(fontSize: 14, color: Colors.black54),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await showBanConfirmationDialog(context, driverUserId);
+              },
+              child: Text("Ban Driver"),
+            ),
             SizedBox(height: 10),
-            if (orderStatus == 'tamomlandi') _buildRatingBar(orderId),
-
-            // Данные водителя отображаются только если заказ принят и карточка расширена
+            if (orderStatus == 'tamomlandi')
+              _buildRatingBar(
+                  doc.id, driverUserId, driverName, driverPhoneNumber),
             if (orderStatus == 'qabul qilindi' && isExpanded)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,8 +345,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
                       Icon(Icons.phone, color: Colors.green),
                       SizedBox(width: 8),
                       GestureDetector(
-                        onTap: () => _callDriver(
-                            driverPhoneNumber), // Call the driver when tapped
+                        onTap: () => _callDriver(driverPhoneNumber),
                         child: Text(
                           'Telefon raqami: $driverPhoneNumber',
                           style: TextStyle(fontSize: 14, color: Colors.blue),
@@ -346,7 +420,8 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
     );
   }
 
-  Widget _buildRatingBar(String orderId) {
+  Widget _buildRatingBar(String orderId, String driverUserId, String driverName,
+      String driverPhoneNumber) {
     double initialRating = orderRatings[orderId] ?? 0.0;
 
     return RatingBar.builder(
@@ -360,36 +435,82 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
         setState(() {
           orderRatings[orderId] = rating;
         });
-        _saveOrUpdateRating(orderId, rating);
+        _saveOrUpdateRating(
+            orderId, rating, driverUserId, driverName, driverPhoneNumber);
       },
     );
   }
 
-  Future<void> _saveOrUpdateRating(String orderId, double rating) async {
+  Future<void> _saveOrUpdateRating(String orderId, double rating,
+      String driverUserId, String driverName, String driverPhoneNumber) async {
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
 
     if (currentUserEmail != null) {
-      if (ratingDocIds.containsKey(orderId)) {
-        await FirebaseFirestore.instance
-            .collection('driverTruckRatings')
-            .doc(ratingDocIds[orderId])
-            .update({
-          'rating': rating,
-        });
+      if (rating <= 1.0) {
+        // Show complaint dialog
+        await _showComplaintDialog(orderId, driverUserId, currentUserEmail,
+            driverName, driverPhoneNumber);
       } else {
-        DocumentReference docRef = await FirebaseFirestore.instance
-            .collection('driverTruckRatings')
-            .add({
-          'orderId': orderId,
-          'rating': rating,
-          'ratedBy': currentUserEmail,
-        });
-
-        setState(() {
-          ratingDocIds[orderId] = docRef.id;
-        });
+        if (ratingDocIds.containsKey(orderId)) {
+          await FirebaseFirestore.instance
+              .collection('driverTruckRatings')
+              .doc(ratingDocIds[orderId])
+              .update({'rating': rating});
+        } else {
+          DocumentReference docRef = await FirebaseFirestore.instance
+              .collection('driverTruckRatings')
+              .add({
+            'orderId': orderId,
+            'rating': rating,
+            'ratedBy': currentUserEmail
+          });
+          setState(() {
+            ratingDocIds[orderId] = docRef.id;
+          });
+        }
       }
     }
+  }
+
+  Future<void> _showComplaintDialog(String orderId, String driverUserId,
+      String userEmail, String driverName, String driverPhoneNumber) async {
+    TextEditingController complaintController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Please describe your issue"),
+          content: TextField(
+            controller: complaintController,
+            maxLines: 3,
+            decoration: InputDecoration(hintText: "Describe the issue here"),
+          ),
+          actions: [
+            TextButton(
+              child: Text("Submit"),
+              onPressed: () async {
+                final complaintText = complaintController.text;
+                if (complaintText.isNotEmpty) {
+                  await FirebaseFirestore.instance
+                      .collection('complaints')
+                      .add({
+                    'orderId': orderId,
+                    'driverUserId': driverUserId,
+                    'userEmail': userEmail,
+                    'driverName': driverName,
+                    'driverPhoneNumber': driverPhoneNumber,
+                    'complaint': complaintText,
+                    'timestamp': DateTime.now(),
+                  });
+                }
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String _formatDate(DateTime dateTime) {
