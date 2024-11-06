@@ -2,11 +2,10 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // For formatting date
+import 'package:intl/intl.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
-// For phone call functionality
-import 'package:firebase_auth/firebase_auth.dart'; // To get current driver
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TruckAcceptedOrdersPage extends StatefulWidget {
   const TruckAcceptedOrdersPage({super.key});
@@ -17,25 +16,32 @@ class TruckAcceptedOrdersPage extends StatefulWidget {
 }
 
 class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
-  String? driverEmail;
+  String? driverId;
 
   @override
   void initState() {
     super.initState();
-    _fetchDriverInfo();
+    _fetchDriverId();
   }
 
-  Future<void> _fetchDriverInfo() async {
+  Future<void> _fetchDriverId() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      setState(() {
-        driverEmail = user.email;
-      });
+      final snapshot = await FirebaseFirestore.instance
+          .collection('truckdrivers')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        setState(() {
+          driverId = snapshot.docs.first.id;
+        });
+      }
     }
   }
 
   Future<void> _refreshPage() async {
-    setState(() {}); // Перезагружаем данные при обновлении страницы
+    setState(() {});
   }
 
   @override
@@ -50,19 +56,15 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
             style: AppStyle.fontStyle.copyWith(
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
           )),
-      body: driverEmail == null
-          ? Center(
-              child:
-                  CircularProgressIndicator()) // Пока не получен email водителя
+      body: driverId == null
+          ? Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _refreshPage,
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('truck_orders')
-                    .where('status',
-                        isEqualTo: 'qabul qilindi') // Принятые заказы
-                    .where('acceptedBy',
-                        isEqualTo: driverEmail) // Принятые этим водителем
+                    .where('status', isEqualTo: 'qabul qilindi')
+                    .where('accepted_by', isEqualTo: driverId)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
@@ -75,24 +77,45 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
 
                   return ListView(
                     children: snapshot.data!.docs.map((doc) {
-                      return Dismissible(
-                        key: Key(doc.id),
-                        background: _buildDismissBackground(Colors.green,
-                            Icons.check, 'Tugatish', Alignment.centerLeft),
-                        secondaryBackground: _buildDismissBackground(Colors.red,
-                            Icons.undo, 'Qaytarish', Alignment.centerRight),
-                        onDismissed: (direction) {
-                          if (direction == DismissDirection.startToEnd) {
-                            _completeOrder(doc.id); // Завершение заказа
-                          } else {
-                            _returnOrder(doc.id); // Возвращение заказа
+                      return FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('user')
+                            .doc(doc['user_id'])
+                            .get(),
+                        builder: (context, passengerSnapshot) {
+                          if (!passengerSnapshot.hasData) {
+                            return Center(child: CircularProgressIndicator());
                           }
+
+                          final passengerData = passengerSnapshot.data;
+                          final passengerName =
+                              passengerData?['name'] ?? 'Unknown';
+                          final passengerPhone =
+                              passengerData?['phone_number'] ?? 'Unknown';
+
+                          return Dismissible(
+                            key: Key(doc.id),
+                            background: _buildDismissBackground(Colors.green,
+                                Icons.check, 'Tugatish', Alignment.centerLeft),
+                            secondaryBackground: _buildDismissBackground(
+                                Colors.red,
+                                Icons.undo,
+                                'Qaytarish',
+                                Alignment.centerRight),
+                            onDismissed: (direction) {
+                              if (direction == DismissDirection.startToEnd) {
+                                _completeOrder(doc.id);
+                              } else {
+                                _returnOrder(doc.id);
+                              }
+                            },
+                            child: InkWell(
+                              onTap: () => _callCustomer(passengerPhone),
+                              child: _buildOrderCard(
+                                  doc, passengerName, passengerPhone),
+                            ),
+                          );
                         },
-                        child: InkWell(
-                          onTap: () => _callCustomer(
-                              doc['phoneNumber']), // Звонок клиенту при нажатии
-                          child: _buildOrderCard(doc),
-                        ),
                       );
                     }).toList(),
                   );
@@ -102,7 +125,6 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
     );
   }
 
-  // Функция создания фона для Dismissible
   Widget _buildDismissBackground(
       Color color, IconData icon, String label, Alignment alignment) {
     return Container(
@@ -122,18 +144,14 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
     );
   }
 
-  // Функция создания карточки заказа для грузовика
-  Widget _buildOrderCard(QueryDocumentSnapshot doc) {
-    final orderNumber = doc['orderNumber'];
-    final fromLocation = doc['fromLocation'];
-    final toLocation = doc['toLocation'];
-    final customerName = doc['customerName'];
-    final phoneNumber = doc['phoneNumber'];
-    final cargoName = doc['cargoName'] ?? 'Unknown'; // Название груза
-    final cargoWeight = doc['cargoWeight'] ?? 'Unknown'; // Вес груза
-    final orderTime = (doc['orderTime'] as Timestamp).toDate();
-    final arrivalTime = orderTime
-        .add(Duration(hours: 8)); // Добавляем 8 часов для времени прибытия
+  Widget _buildOrderCard(
+      QueryDocumentSnapshot doc, String passengerName, String passengerPhone) {
+    final orderNumber = doc.id;
+    final fromLocation = doc['from'];
+    final toLocation = doc['to'];
+    final cargoName = doc['cargo_name'] ?? 'Unknown';
+    final cargoWeight = doc['cargo_weight'] ?? 'Unknown';
+    final orderTime = (doc['accept_time'] as Timestamp).toDate();
 
     return Card(
       color: Colors.white,
@@ -146,7 +164,6 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Номер заказа и время заказа
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -174,16 +191,22 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
               ],
             ),
             SizedBox(height: 8),
-            // Имя заказчика
             Text(
-              customerName,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              'Yo\'lovchi: $passengerName',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 5),
+            Row(
+              children: [
+                Icon(Icons.phone, color: AppColors.taxi),
+                SizedBox(width: 8),
+                Text(
+                  'Telefon: $passengerPhone',
+                  style: TextStyle(fontSize: 16, color: AppColors.taxi),
+                ),
+              ],
             ),
             SizedBox(height: 10),
-            // Откуда и куда
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -198,10 +221,6 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
                       fromLocation,
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      _formatDate(orderTime),
-                      style: TextStyle(color: Colors.grey),
                     ),
                   ],
                 ),
@@ -218,16 +237,11 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    Text(
-                      _formatDate(arrivalTime),
-                      style: TextStyle(color: Colors.grey),
-                    ),
                   ],
                 ),
               ],
             ),
             SizedBox(height: 10),
-            // Груз и его вес
             Text(
               'Yuk nomi: $cargoName',
               style: TextStyle(fontSize: 16),
@@ -237,47 +251,24 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
               'Yuk vazni: $cargoWeight kg',
               style: TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 10),
-            // Phone Number Row
-            Row(
-              children: [
-                Icon(Icons.phone, color: AppColors.taxi),
-                SizedBox(width: 8),
-                Text(
-                  'Telefon: $phoneNumber',
-                  style: TextStyle(fontSize: 16, color: AppColors.taxi),
-                ),
-              ],
-            ),
           ],
         ),
       ),
     );
   }
 
-  // Функция для форматирования времени заказа
   String _formatDate(DateTime dateTime) {
     return DateFormat('dd.MM.yyyy HH:mm').format(dateTime);
   }
 
-  // Функция для возврата заказа
-// Function to return the order
   Future<void> _returnOrder(String orderId) async {
     await FirebaseFirestore.instance
         .collection('truck_orders')
         .doc(orderId)
         .update({
-      'status': 'kutish jarayonida', // Set status back to pending
-      'driverName': null, // Remove driver details
-      'driverPhoneNumber': null,
-      'driverTruckModel': null,
-      'driverTruckNumber': null,
-      'driverEmail': null,
-      'driverLastName': null,
-      'acceptedBy': null,
-      'driverUserId': null, // Remove driver ID as well
+      'status': 'kutish jarayonida',
+      'accepted_by': null,
     });
-    print('Order returned to pending status and driver details removed.');
   }
 
   void _callCustomer(String phoneNumber) async {
@@ -293,7 +284,6 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
     try {
       await intent.launch();
     } catch (e) {
-      print('Could not launch phone call to $sanitizedPhoneNumber: $e');
       _showSnackBar('Call failed. Please check phone settings.');
     }
   }
@@ -304,14 +294,12 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
     );
   }
 
-  // Функция для завершения заказа
   Future<void> _completeOrder(String orderId) async {
     await FirebaseFirestore.instance
         .collection('truck_orders')
         .doc(orderId)
         .update({
-      'status': 'tamomlandi', // Set status to completed
+      'status': 'tamomlandi',
     });
-    print('Order marked as completed.');
   }
 }

@@ -15,8 +15,6 @@ class TruckOrdersPage extends StatefulWidget {
 class _TruckOrdersPageState extends State<TruckOrdersPage> {
   String? selectedFromRegion;
   String? selectedToRegion;
-  String? driverRegion;
-  String? subscriptionPlan;
   bool hasActiveOrder = false; // To check if the driver has an active order
   List<String> regions = [];
   bool isLoading = true;
@@ -24,18 +22,18 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
   @override
   void initState() {
     super.initState();
-    _fetchDriverData();
+    _checkActiveOrder();
     _fetchRegions();
   }
 
-  Future<void> _fetchDriverData() async {
+  Future<void> _checkActiveOrder() async {
     try {
       final userEmail = FirebaseAuth.instance.currentUser!.email;
 
-      // Check if the driver has any active orders
+      // Проверка наличия активного заказа у водителя
       final activeOrdersSnapshot = await FirebaseFirestore.instance
           .collection('truck_orders')
-          .where('driverEmail', isEqualTo: userEmail)
+          .where('accepted_by', isEqualTo: userEmail)
           .where('status', isEqualTo: 'qabul qilindi')
           .get();
 
@@ -44,33 +42,23 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
           hasActiveOrder = true;
         });
       }
-
-      final snapshot = await FirebaseFirestore.instance
-          .collection('truckdrivers')
-          .where('email', isEqualTo: userEmail)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        final driverData = snapshot.docs.first.data();
-        setState(() {
-          driverRegion = driverData['from'] ?? '';
-          selectedToRegion = null; // Reset selected region
-          subscriptionPlan = driverData['subscription_plan'];
-        });
-      }
     } catch (e) {
-      print("Error fetching driver data: $e");
+      print("Error checking active order: $e");
     }
   }
 
   Future<void> _fetchRegions() async {
     try {
-      final snapshot =
-          await FirebaseFirestore.instance.collection('regions').get();
-      setState(() {
-        regions = snapshot.docs.map((doc) => doc['region'].toString()).toList();
-        isLoading = false;
-      });
+      final snapshot = await FirebaseFirestore.instance
+          .collection('data')
+          .doc('regions')
+          .get();
+      if (snapshot.exists) {
+        setState(() {
+          regions = List<String>.from(snapshot['regions']);
+          isLoading = false;
+        });
+      }
     } catch (e) {
       print("Error fetching regions: $e");
       setState(() {
@@ -93,33 +81,22 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
     try {
       final userEmail = FirebaseAuth.instance.currentUser!.email;
 
-      // Fetch driver data including userId
+      // Получаем userId водителя по его email
       final snapshot = await FirebaseFirestore.instance
           .collection('truckdrivers')
           .where('email', isEqualTo: userEmail)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
-        final driverData = snapshot.docs.first.data();
+        final String userId = snapshot.docs.first.id;
 
-        // Retrieve truck number and userId
-        final String truckNumber =
-            driverData['TruckNumber'] ?? 'Avtomobil raqami mavjud emas';
-        final String userId = driverData['userId'] ?? 'ID mavjud emas';
-
-        // Update order with driver information, including userId
+        // Обновляем только поля `accepted_by` и `status` в заказе
         await FirebaseFirestore.instance
             .collection('truck_orders')
             .doc(orderId)
             .update({
           'status': 'qabul qilindi',
-          'acceptedBy': driverData['email'],
-          'driverEmail': driverData['email'],
-          'driverName': driverData['name'],
-          'driverPhoneNumber': driverData['phoneNumber'],
-          'driverTruckModel': driverData['truckModel'],
-          'driverTruckNumber': truckNumber,
-          'driverUserId': userId, // Add the driver userId to the order
+          'accepted_by': userId, // Присваиваем userId водителя
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,10 +104,13 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
         );
 
         setState(() {
-          hasActiveOrder = true; // Mark active order status
+          hasActiveOrder = true; // Обновляем статус активного заказа
         });
       } else {
         print('Driver not found');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Haydovchi topilmadi!')),
+        );
       }
     } catch (e) {
       print("Error accepting order: $e");
@@ -146,10 +126,10 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
         .where('status', isEqualTo: 'kutish jarayonida');
 
     if (selectedFromRegion != null && selectedFromRegion!.isNotEmpty) {
-      query = query.where('fromLocation', isEqualTo: selectedFromRegion);
+      query = query.where('from', isEqualTo: selectedFromRegion);
     }
     if (selectedToRegion != null && selectedToRegion!.isNotEmpty) {
-      query = query.where('toLocation', isEqualTo: selectedToRegion);
+      query = query.where('to', isEqualTo: selectedToRegion);
     }
 
     return query.snapshots();
@@ -177,38 +157,29 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
   }
 
   Widget _buildOrderCard(QueryDocumentSnapshot doc) {
-    final orderNumber = doc['orderNumber'] ?? 'Unknown';
-    final customerName = doc['customerName'] ?? 'Unknown';
-    final fromLocation = doc['fromLocation'] ?? 'Unknown';
-    final toLocation = doc['toLocation'] ?? 'Unknown';
-    final cargoWeight = doc['cargoWeight'] ?? 0.0;
-    final cargoName = doc['cargoName'] ?? 'Unknown';
-    final orderTime = (doc['orderTime'] as Timestamp).toDate();
-    final arrivalTime = orderTime.add(Duration(hours: 8));
+    final orderNumber = doc.id; // Используем ID документа как номер заказа
+    final fromLocation = doc['from'] ?? 'Unknown';
+    final toLocation = doc['to'] ?? 'Unknown';
+    final cargoWeight = doc['cargo_weight'] ?? 0.0;
+    final cargoName = doc['cargo_name'] ?? 'Unknown';
+    final orderTime = (doc['accept_time'] as Timestamp).toDate();
 
     return Card(
       margin: EdgeInsets.all(10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
       child: hasActiveOrder
-          ? _buildOrderCardContent(orderNumber, customerName, fromLocation,
-              toLocation, cargoWeight, cargoName, orderTime, arrivalTime)
+          ? _buildOrderCardContent(orderNumber, fromLocation, toLocation,
+              cargoWeight, cargoName, orderTime)
           : Dismissible(
               key: Key(doc.id),
               direction: DismissDirection.startToEnd,
               background: _buildSwipeActionBackground(),
               onDismissed: (direction) {
-                _acceptOrder(doc.id); // Accept the order on swipe
+                _acceptOrder(doc.id);
               },
-              child: _buildOrderCardContent(
-                  orderNumber,
-                  customerName,
-                  fromLocation,
-                  toLocation,
-                  cargoWeight,
-                  cargoName,
-                  orderTime,
-                  arrivalTime),
+              child: _buildOrderCardContent(orderNumber, fromLocation,
+                  toLocation, cargoWeight, cargoName, orderTime),
             ),
     );
   }
@@ -235,14 +206,12 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
   }
 
   Widget _buildOrderCardContent(
-      int orderNumber,
-      String customerName,
+      String orderNumber,
       String fromLocation,
       String toLocation,
       double cargoWeight,
       String cargoName,
-      DateTime orderTime,
-      DateTime arrivalTime) {
+      DateTime orderTime) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -271,11 +240,6 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
             ],
           ),
           SizedBox(height: 10),
-          Text(
-            customerName,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -288,8 +252,6 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
                     Text(fromLocation,
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(_formatDate(orderTime),
-                        style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),
@@ -303,8 +265,6 @@ class _TruckOrdersPageState extends State<TruckOrdersPage> {
                     Text(toLocation,
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(_formatDate(arrivalTime),
-                        style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),

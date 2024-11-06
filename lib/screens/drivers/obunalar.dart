@@ -28,7 +28,7 @@ class _ObunalarPageState extends State<ObunalarPage> {
         await FirebaseFirestore.instance.collection('price').get();
     setState(() {
       subscriptionPlans = querySnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
+          .map((doc) => doc.data())
           .toList();
       isLoading = false;
     });

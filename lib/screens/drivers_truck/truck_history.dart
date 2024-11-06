@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart'; // For formatting date
+import 'package:taksi/style/app_style.dart';
 
 class TruckOrderHistoryPage extends StatefulWidget {
   const TruckOrderHistoryPage({super.key});
@@ -13,7 +13,7 @@ class TruckOrderHistoryPage extends StatefulWidget {
 }
 
 class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
-  String? driverEmail;
+  String? driverId;
 
   @override
   void initState() {
@@ -21,7 +21,6 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
     _fetchDriverData();
   }
 
-  // Функция для получения данных водителя
   Future<void> _fetchDriverData() async {
     try {
       final userEmail = FirebaseAuth.instance.currentUser!.email;
@@ -32,9 +31,8 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
             .get();
 
         if (snapshot.docs.isNotEmpty) {
-          final driverData = snapshot.docs.first.data();
           setState(() {
-            driverEmail = driverData['email'];
+            driverId = snapshot.docs.first.id; // Получаем ID водителя
           });
         } else {
           print('Driver not found');
@@ -64,15 +62,16 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
       ),
       body: RefreshIndicator(
         onRefresh: _refreshPage,
-        child: driverEmail == null
-            ? Center(
-                child: CircularProgressIndicator()) // Пока данные не загружены
+        child: driverId == null
+            ? Center(child: CircularProgressIndicator())
             : StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('truck_orders')
-                    .where('status', isEqualTo: 'tamomlandi')
-                    .where('driverEmail',
-                        isEqualTo: driverEmail) // Фильтрация по email водителя
+                    .where('status',
+                        isEqualTo:
+                            'tamomlandi') // Фильтрация по статусу завершённого заказа
+                    .where('accepted_by',
+                        isEqualTo: driverId) // Фильтрация по ID водителя
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -97,22 +96,15 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
 
   // Функция создания карточки заказа
   Widget _buildOrderCard(QueryDocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>?;
+    final data = doc.data() as Map<String, dynamic>;
 
-    if (data == null || !data.containsKey('orderNumber')) {
-      return Text(
-          'Ошибка в данных заказа'); // Если данных нет, отображаем ошибку
-    }
-
-    final orderNumber = data['orderNumber'] ?? 'Unknown';
-    final customerName = data['customerName'] ?? 'Unknown';
-    final fromLocation = data['fromLocation'] ?? 'Unknown';
-    final toLocation = data['toLocation'] ?? 'Unknown';
-    final orderTime = (data['orderTime'] as Timestamp).toDate();
-    final cargoName = data['cargoName'] ?? 'Unknown';
-    final cargoWeight = data['cargoWeight'] ?? 0.0;
-
-    final arrivalTime = orderTime.add(Duration(hours: 8));
+    final orderNumber = doc.id; // Используем ID документа как номер заказа
+    final fromLocation = data['from'] ?? 'Unknown';
+    final toLocation = data['to'] ?? 'Unknown';
+    final cargoName = data['cargo_name'] ?? 'Unknown';
+    final cargoWeight = data['cargo_weight'] ?? 0.0;
+    final orderTime = (data['chosen_time'] as Timestamp).toDate();
+    final arrivalTime = (data['accept_time'] as Timestamp).toDate();
 
     return Card(
       color: Colors.grey.shade300,
@@ -148,11 +140,6 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
                       color: Colors.green, fontWeight: FontWeight.bold),
                 ),
               ],
-            ),
-            SizedBox(height: 8),
-            Text(
-              customerName,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Row(
@@ -200,7 +187,6 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
     );
   }
 
-  // Функция для форматирования времени заказа
   String _formatDate(DateTime dateTime) {
     return DateFormat('dd.MM.yyyy HH:mm').format(dateTime);
   }

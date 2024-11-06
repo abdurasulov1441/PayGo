@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:taksi/screens/civil/history_truck.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth to get the current user
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CreateOrderTruck extends StatefulWidget {
   const CreateOrderTruck({super.key});
@@ -16,7 +16,6 @@ class CreateOrderTruck extends StatefulWidget {
 class _CreateOrderTruckState extends State<CreateOrderTruck> {
   String fromLocation = 'Namangan';
   String toLocation = 'Samarqand';
-  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _cargoNameController = TextEditingController();
   final TextEditingController _cargoWeightController = TextEditingController();
   DateTime? _selectedDateTime;
@@ -27,83 +26,32 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
     'Boshqa vaqt'
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchUserPhone(); // Fetch the user phone from Firestore based on the logged-in user
-  }
-
-  // Fetch the current user's phone number dynamically from Firestore using FirebaseAuth
-  Future<void> _fetchUserPhone() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final email = user.email; // Get the current logged-in user's email
-      if (email != null) {
-        final snapshot = await FirebaseFirestore.instance
-            .collection('user')
-            .where('email', isEqualTo: email)
-            .get();
-
-        if (snapshot.docs.isNotEmpty) {
-          final userData = snapshot.docs.first.data();
-          setState(() {
-            _phoneController.text = userData['phoneNumber'] ?? '+998 ';
-          });
-        }
-      }
-    }
-  }
-
   Future<void> _submitTruckOrder() async {
     if (_selectedDateTime == null) {
       _showSnackBar('Iltimos, vaqtni tanlang');
       return;
     }
 
-    // Fetch the user's name from Firestore
-    String userName = 'Unknown'; // Default value if the name is not found
-    String userId = 'Unknown'; // Default userId value
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final email = user.email;
-      if (email != null) {
-        final snapshot = await FirebaseFirestore.instance
-            .collection('user')
-            .where('email', isEqualTo: email)
-            .get();
-
-        if (snapshot.docs.isNotEmpty) {
-          final userData = snapshot.docs.first.data();
-          userName = userData['name'] ?? 'Unknown'; // Get the user's name
-          userId = user.uid; // Получаем userId
-        }
-      }
-    }
-
-    // Get the order number
+    String userId = await _getUserId();
     int orderNumber = await _getNextOrderNumber();
 
-    // Create the order data
     final orderData = {
-      'orderNumber': orderNumber,
-      'fromLocation': fromLocation,
-      'toLocation': toLocation,
-      'phoneNumber': _phoneController.text,
-      'cargoName': _cargoNameController.text,
-      'cargoWeight': double.tryParse(_cargoWeightController.text) ?? 0.0,
-      'orderTime': Timestamp.fromDate(_selectedDateTime!),
-      'status': 'kutish jarayonida',
-      'orderType': 'truck',
-      'customerName': userName, // Имя пассажира
-      'userEmail': user?.email, // Почта пользователя
-      'userId': userId, // Добавляем userId
-      'acceptedBy': null, // Заказ пока не принят
+      'user_id': userId,
+      'accept_time': Timestamp.now(),
+      'chosen_time': Timestamp.fromDate(_selectedDateTime!),
+      'cargo_weight': double.tryParse(_cargoWeightController.text) ?? 0.0,
+      'cargo_name': _cargoNameController.text,
+      'from': fromLocation,
+      'to': toLocation,
+      'status': 'kutish jarayonida', // Статус по умолчанию
+      'accepted_by': null, // Поле для ID водителя, который примет заказ
     };
 
-    // Add the order to Firestore under 'truck_orders'
-    await FirebaseFirestore.instance.collection('truck_orders').add(orderData);
+    await FirebaseFirestore.instance
+        .collection('truck_orders')
+        .doc(orderNumber.toString())
+        .set(orderData);
 
-    // Notify the user
     _showSnackBar('Buyurtma №$orderNumber yuborildi!');
     setState(() {
       _cargoNameController.clear();
@@ -116,9 +64,27 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
     });
   }
 
+  Future<String> _getUserId() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final email = user.email;
+      if (email != null) {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('user')
+            .where('email', isEqualTo: email)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          return snapshot
+              .docs.first.id; // Возвращаем короткий ID, например, "000001"
+        }
+      }
+    }
+    return 'Unknown';
+  }
+
   Future<int> _getNextOrderNumber() async {
     return FirebaseFirestore.instance.runTransaction((transaction) async {
-      // Получаем документ с текущим номером заказа
       DocumentReference orderNumberDoc = FirebaseFirestore.instance
           .collection('truck_settings')
           .doc('orderNumbers');
@@ -126,15 +92,11 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
       DocumentSnapshot snapshot = await transaction.get(orderNumberDoc);
 
       if (!snapshot.exists) {
-        // Если документа не существует, создаем его и устанавливаем orderNumber = 1
         transaction.set(orderNumberDoc, {'orderNumber': 1});
         return 1;
       }
 
-      // Получаем текущий номер заказа
       int currentOrderNumber = snapshot['orderNumber'];
-
-      // Увеличиваем и сохраняем номер заказа
       int newOrderNumber = currentOrderNumber + 1;
       transaction.update(orderNumberDoc, {'orderNumber': newOrderNumber});
 
@@ -159,11 +121,9 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
         title: Text('Yuk mashinasi buyurtmasi berish',
             style:
                 AppStyle.fontStyle.copyWith(color: Colors.white, fontSize: 20)),
-        backgroundColor:
-            AppColors.taxi, // Replace taxi color with truck color if needed
+        backgroundColor: AppColors.taxi,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: AppStyle.fontStyle.copyWith(color: Colors.black),
       ),
       body: LayoutBuilder(builder: (context, constraints) {
         return SingleChildScrollView(
@@ -201,8 +161,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
                     ElevatedButton(
                       onPressed: () => _showTimePickerBottomSheet(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            AppColors.taxi, // Adjust to truck color if needed
+                        backgroundColor: AppColors.taxi,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -220,8 +179,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
                     ElevatedButton(
                       onPressed: _submitTruckOrder,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            AppColors.taxi, // Adjust to truck color if needed
+                        backgroundColor: AppColors.taxi,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -259,8 +217,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('$label: $location', style: AppStyle.fontStyle),
-            Icon(Icons.arrow_drop_down,
-                color: AppColors.taxi), // Adjust to truck color
+            Icon(Icons.arrow_drop_down, color: AppColors.taxi),
           ],
         ),
       ),
@@ -323,14 +280,16 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
       ),
       builder: (BuildContext context) {
-        return StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('regions').snapshots(),
+        return FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance
+              .collection('data')
+              .doc('regions')
+              .get(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(child: CircularProgressIndicator());
             }
-            final regions =
-                snapshot.data!.docs.map((doc) => doc['region']).toList();
+            final regions = List<String>.from(snapshot.data!['regions']);
 
             return SingleChildScrollView(
               child: Container(
@@ -338,10 +297,8 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Manzilni tanlang',
-                      style: AppStyle.fontStyle.copyWith(fontSize: 18),
-                    ),
+                    Text('Manzilni tanlang',
+                        style: AppStyle.fontStyle.copyWith(fontSize: 18)),
                     Divider(),
                     ...regions.map((location) => ListTile(
                           title: Text(location, style: AppStyle.fontStyle),
@@ -460,10 +417,8 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Vaqtni tanlang',
-                style: AppStyle.fontStyle.copyWith(fontSize: 18),
-              ),
+              Text('Vaqtni tanlang',
+                  style: AppStyle.fontStyle.copyWith(fontSize: 18)),
               Divider(),
               ..._periodOptions.map((option) => ListTile(
                     title: Text(option, style: AppStyle.fontStyle),

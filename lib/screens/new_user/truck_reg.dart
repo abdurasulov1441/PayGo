@@ -43,11 +43,13 @@ class _TruckDriverRegistrationPageState
   List<String> regions = [];
 
   Future<void> fetchRegionsFromFirestore() async {
-    QuerySnapshot snapshot =
-        await FirebaseFirestore.instance.collection('regions').get();
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('data')
+        .doc('regions')
+        .get();
 
     setState(() {
-      regions = snapshot.docs.map((doc) => doc['region'] as String).toList();
+      regions = List<String>.from(snapshot['regions']);
     });
   }
 
@@ -71,7 +73,6 @@ class _TruckDriverRegistrationPageState
   final _formKey = GlobalKey<FormState>();
 
   Future<String> generateTruckDriverUserId() async {
-    // Fetch the latest userId from Firestore by ordering in descending order
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('truckdrivers')
         .orderBy('userId', descending: true)
@@ -79,40 +80,33 @@ class _TruckDriverRegistrationPageState
         .get();
 
     if (querySnapshot.docs.isEmpty) {
-      // No users found, start with 000001
       return '000001';
     } else {
-      // Get the latest userId and increment it
       String lastUserId = querySnapshot.docs.first['userId'];
       int newUserId = int.parse(lastUserId) + 1;
-
-      // Format to ensure it's always 6 digits
       return newUserId.toString().padLeft(6, '0');
     }
   }
 
   Future<void> saveDataToFirestore() async {
     setState(() {
-      isLoading = true; // Show loading indicator
+      isLoading = true;
     });
 
     try {
       if (_formKey.currentState!.validate()) {
-        // Generate userId for truck drivers
-        String userId = await generateTruckDriverUserId();
-
-        // Calculate subscription expiry date (31 days from today)
-        DateTime now = DateTime.now();
-        DateTime expiredDate = now.add(Duration(days: 31));
+        String userId =
+            await generateTruckDriverUserId(); // Сгенерированный `userId`
+        DateTime expiredDate = DateTime.now().add(Duration(days: 31));
 
         final data = {
-          'userId': userId, // Save the generated userId for truck drivers
+          'userId': userId,
           'email': user?.email,
           'name': _controllers['Ism']!.text,
-          'lastName': _controllers['Familiya']!.text,
-          'phoneNumber': _controllers['Telefon raqami']!.text,
-          'truckModel': _controllers['Mashina markasi']!.text,
-          'TruckNumber':
+          'surname': _controllers['Familiya']!.text,
+          'phone_number': _controllers['Telefon raqami']!.text,
+          'truck_model': _controllers['Mashina markasi']!.text,
+          'truck_number':
               '${_controllers['Area Code']!.text}${_controllers['Letter Code']!.text}${_controllers['Number Code']!.text}${_controllers['Ending Code']!.text}',
           'from': _controllers['Qayerdan']!.text,
           'to': _controllers['Qayerga']!.text,
@@ -120,33 +114,25 @@ class _TruckDriverRegistrationPageState
           'balance': 0,
           'expired_date': Timestamp.fromDate(expiredDate),
           'subscription_plan': 'Vaqtinchalik',
-          'vehicleType': 'truck',
           'reports': 0,
-          'photo1': '',
-          'photo2': '',
-          'photo3': '',
-          'photo4': '',
-          'photo5': '',
-          'photo6': '',
-          'photo7': '',
         };
 
+        // Используем `userId` как идентификатор документа
         await FirebaseFirestore.instance
-            .collection('truckdrivers') // Save to truckdrivers collection
-            .doc(user?.uid)
+            .collection('truckdrivers')
+            .doc(userId)
             .set(data);
 
-        // Navigate after successful save
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => HomeScreen()),
           (Route<dynamic> route) => false,
         );
       }
     } catch (e) {
-      // Handle errors (if necessary)
+      // Обработка ошибок
     } finally {
       setState(() {
-        isLoading = false; // Hide loading indicator
+        isLoading = false;
       });
     }
   }

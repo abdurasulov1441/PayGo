@@ -18,7 +18,7 @@ class TruckOrderHistoryPage extends StatefulWidget {
 class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
   Map<String, double> orderRatings = {};
   Map<String, String> ratingDocIds = {};
-  Map<String, bool> expandedStates = {}; // Store expanded state for each order
+  Map<String, bool> expandedStates = {};
 
   @override
   void initState() {
@@ -28,17 +28,15 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
 
   Future<void> _loadRatings() async {
     final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
-
     if (currentUserEmail != null) {
       QuerySnapshot ratingsSnapshot = await FirebaseFirestore.instance
           .collection('driverTruckRatings')
           .where('ratedBy', isEqualTo: currentUserEmail)
           .get();
-
       setState(() {
         for (var doc in ratingsSnapshot.docs) {
-          orderRatings[doc['orderId']] = doc['rating'].toDouble();
-          ratingDocIds[doc['orderId']] = doc.id;
+          orderRatings[doc['order_id']] = doc['rating'].toDouble();
+          ratingDocIds[doc['order_id']] = doc.id;
         }
       });
     }
@@ -55,7 +53,8 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
     try {
       await intent.launch();
     } catch (e) {
-      _showSnackBar('Call failed. Please check phone settings.');
+      _showSnackBar(
+          "Qo'ng'iroq amalga oshmadi. Telefon sozlamalarini tekshiring.");
     }
   }
 
@@ -67,7 +66,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final userEmail = FirebaseAuth.instance.currentUser?.email;
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -92,7 +91,8 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('truck_orders')
-            .where('userEmail', isEqualTo: userEmail)
+            .where('user_id',
+                isEqualTo: '000001') // Замените на ID пользователя
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData) {
@@ -114,121 +114,24 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
     );
   }
 
-  Future<void> checkAndHandleBan(String driverUserId) async {
-    final complaintSnapshot = await FirebaseFirestore.instance
-        .collection('complaints')
-        .where('driverUserId', isEqualTo: driverUserId)
-        .get();
-
-    final uniqueUserEmails =
-        complaintSnapshot.docs.map((doc) => doc['userEmail']).toSet().toList();
-
-    if (uniqueUserEmails.length >= 3) {
-      // If 3 or more unique complaints, set status to inactive
-      await FirebaseFirestore.instance
-          .collection('truckdrivers')
-          .doc(driverUserId)
-          .update({'status': 'inactive'});
-    }
-  }
-
-  Future<void> showComplaintDialog(
-      BuildContext context,
-      String orderId,
-      String driverUserId,
-      String userEmail,
-      String driverName,
-      String driverPhoneNumber) async {
-    TextEditingController complaintController = TextEditingController();
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Please describe your issue"),
-          content: TextField(
-            controller: complaintController,
-            maxLines: 3,
-            decoration: InputDecoration(hintText: "Describe the issue here"),
-          ),
-          actions: [
-            TextButton(
-              child: Text("Submit"),
-              onPressed: () async {
-                final complaintText = complaintController.text;
-                if (complaintText.isNotEmpty) {
-                  await FirebaseFirestore.instance
-                      .collection('complaints')
-                      .add({
-                    'orderId': orderId,
-                    'driverUserId': driverUserId,
-                    'userEmail': userEmail,
-                    'driverName': driverName,
-                    'driverPhoneNumber': driverPhoneNumber,
-                    'complaint': complaintText,
-                    'timestamp': DateTime.now(),
-                  });
-
-                  // Optional: You can call the ban check here if you want immediate processing
-                  await checkAndHandleBan(driverUserId);
-                }
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> showBanConfirmationDialog(
-      BuildContext context, String driverUserId) async {
-    bool confirmBan = await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Confirm Ban"),
-          content: Text("Are you sure you want to ban this driver?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text("No"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text("Yes"),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmBan == true) {
-      await checkAndHandleBan(driverUserId);
-    }
-  }
-
   Widget _buildTruckOrderCard(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-    String orderNumber = data['orderNumber']?.toString() ?? 'No Number';
-    String customerName = data['customerName'] ?? 'Ism mavjud emas';
-    String fromLocation = data['fromLocation'] ?? 'Unknown';
-    String toLocation = data['toLocation'] ?? 'Unknown';
-    double cargoWeight = (data['cargoWeight'] as num?)?.toDouble() ?? 0.0;
-    String cargoName = data['cargoName'] ?? 'Yuk nomi mavjud emas';
+    String orderNumber = doc.id;
+    String fromLocation = data['from'] ?? 'Noma\'lum';
+    String toLocation = data['to'] ?? 'Noma\'lum';
+    double cargoWeight = (data['cargo_weight'] as num?)?.toDouble() ?? 0.0;
+    String cargoName = data['cargo_name'] ?? 'Yuk nomi mavjud emas';
     String orderStatus = data['status'] ?? 'Status mavjud emas';
-    DateTime orderTime = (data['orderTime'] as Timestamp).toDate();
-    DateTime arrivalTime = orderTime.add(Duration(hours: 8));
-    String driverUserId = data['driverUserId'] ?? 'ID mavjud emas';
-
-    // Driver Information
-    String driverName = data['driverName'] ?? 'Ism mavjud emas';
+    DateTime acceptTime = (data['accept_time'] as Timestamp).toDate();
+    DateTime chosenTime = (data['chosen_time'] as Timestamp).toDate();
+    String driverUserId = data['driver_user_id'] ?? 'ID mavjud emas';
+    String driverName = data['driver_name'] ?? 'Ism mavjud emas';
     String driverPhoneNumber =
-        data['driverPhoneNumber'] ?? 'Telefon raqami mavjud emas';
-    String driverTruckModel = data['driverTruckModel'] ?? 'Mashina mavjud emas';
+        data['driver_phone_number'] ?? 'Telefon raqami mavjud emas';
+    String driverTruckModel =
+        data['driver_truck_model'] ?? 'Mashina mavjud emas';
     String driverTruckNumber =
-        data['driverTruckNumber'] ?? 'Avtomobil raqami mavjud emas';
+        data['driver_truck_number'] ?? 'Avtomobil raqami mavjud emas';
 
     bool isExpanded = expandedStates[doc.id] ?? false;
 
@@ -272,7 +175,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      _formatDate(orderTime),
+                      _formatDate(acceptTime),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.green,
@@ -300,32 +203,51 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
               ],
             ),
             SizedBox(height: 8),
-            Text(
-              customerName,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            _buildLocationRow(fromLocation, toLocation, acceptTime, chosenTime),
             SizedBox(height: 10),
-            _buildLocationRow(fromLocation, toLocation, orderTime, arrivalTime),
-            SizedBox(height: 10),
-            Text(
-              'Yuk nomi: $cargoName',
-              style: TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Yuk vazni: ${cargoWeight.toStringAsFixed(2)} kg',
-              style: TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Haydovchi ID: $driverUserId',
-              style: TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await showBanConfirmationDialog(context, driverUserId);
-              },
-              child: Text("Ban Driver"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Yuk nomi: $cargoName',
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Yuk vazni: ${cargoWeight.toStringAsFixed(2)} kg',
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Haydovchi ID: $driverUserId',
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                  ],
+                ),
+                if (orderStatus == 'qabul qilindi')
+                  ElevatedButton(
+                    onPressed: () {
+                      _showBanDialog(doc);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.taxi,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      "Shikoyat",
+                      style: AppStyle.fontStyle.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+              ],
             ),
             SizedBox(height: 10),
             if (orderStatus == 'tamomlandi')
@@ -335,9 +257,12 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Divider(),
                   Text(
                     'Haydovchi: $driverName',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 14,
+                    ),
                   ),
                   SizedBox(height: 4),
                   Row(
@@ -385,7 +310,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
   }
 
   Widget _buildLocationRow(String fromLocation, String toLocation,
-      DateTime orderTime, DateTime arrivalTime) {
+      DateTime acceptTime, DateTime chosenTime) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -397,7 +322,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
                   style: TextStyle(fontSize: 14, color: Colors.grey)),
               Text(fromLocation,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text(_formatDate(orderTime),
+              Text(_formatDate(acceptTime),
                   style: TextStyle(fontSize: 14, color: Colors.black54)),
             ],
           ),
@@ -411,7 +336,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
                   style: TextStyle(fontSize: 14, color: Colors.grey)),
               Text(toLocation,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text(_formatDate(arrivalTime),
+              Text(_formatDate(chosenTime),
                   style: TextStyle(fontSize: 14, color: Colors.black54)),
             ],
           ),
@@ -443,12 +368,11 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
 
   Future<void> _saveOrUpdateRating(String orderId, double rating,
       String driverUserId, String driverName, String driverPhoneNumber) async {
-    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
-    if (currentUserEmail != null) {
+    if (currentUserId != null) {
       if (rating <= 1.0) {
-        // Show complaint dialog
-        await _showComplaintDialog(orderId, driverUserId, currentUserEmail,
+        await _showComplaintDialog(orderId, driverUserId, currentUserId,
             driverName, driverPhoneNumber);
       } else {
         if (ratingDocIds.containsKey(orderId)) {
@@ -460,9 +384,9 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
           DocumentReference docRef = await FirebaseFirestore.instance
               .collection('driverTruckRatings')
               .add({
-            'orderId': orderId,
+            'order_id': orderId,
             'rating': rating,
-            'ratedBy': currentUserEmail
+            'ratedBy': currentUserId,
           });
           setState(() {
             ratingDocIds[orderId] = docRef.id;
@@ -479,38 +403,231 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
     await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text("Please describe your issue"),
-          content: TextField(
-            controller: complaintController,
-            maxLines: 3,
-            decoration: InputDecoration(hintText: "Describe the issue here"),
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-          actions: [
-            TextButton(
-              child: Text("Submit"),
-              onPressed: () async {
-                final complaintText = complaintController.text;
-                if (complaintText.isNotEmpty) {
-                  await FirebaseFirestore.instance
-                      .collection('complaints')
-                      .add({
-                    'orderId': orderId,
-                    'driverUserId': driverUserId,
-                    'userEmail': userEmail,
-                    'driverName': driverName,
-                    'driverPhoneNumber': driverPhoneNumber,
-                    'complaint': complaintText,
-                    'timestamp': DateTime.now(),
-                  });
-                }
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.taxi,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.feedback, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'Izohingizni yuboring',
+                      style: AppStyle.fontStyle.copyWith(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Haydovchi bilan bog‘liq muammoingizni tushuntiring:',
+                      style: AppStyle.fontStyle.copyWith(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: complaintController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: "Muammoni shu yerda tushuntiring",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        "Bekor qilish",
+                        style: AppStyle.fontStyle.copyWith(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final complaintText = complaintController.text;
+                        if (complaintText.isNotEmpty) {
+                          await FirebaseFirestore.instance
+                              .collection('feedback')
+                              .add({
+                            'orderId': orderId,
+                            'driverUserId': driverUserId,
+                            'userEmail': userEmail,
+                            'driverName': driverName,
+                            'driverPhoneNumber': driverPhoneNumber,
+                            'complaint': complaintText,
+                            'timestamp': DateTime.now(),
+                          });
+                          Navigator.of(context).pop();
+                          _showSnackBar('Fikr muvaffaqiyatli yuborildi');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.taxi,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        "Yuborish",
+                        style: AppStyle.fontStyle.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
+  }
+
+  Future<void> _showBanDialog(DocumentSnapshot orderDoc) async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (currentUserId == null) {
+      _showSnackBar("Error: User is not logged in.");
+      return;
+    }
+
+    // Order details
+    String orderNumber = orderDoc.id;
+    String driverUserId = orderDoc['accepted_by'] ?? 'Unknown';
+    String passengerId = orderDoc['user_id'] ?? 'Unknown';
+
+    try {
+      // Retrieve driver information using `driverUserId`
+      DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
+          .collection('truckdrivers')
+          .doc(driverUserId)
+          .get();
+
+      String driverName = driverSnapshot['name'] ?? 'Unknown';
+      String driverPhoneNumber = driverSnapshot['phone_number'] ?? 'Unknown';
+
+      // Reference to the driver's document in banlisttruck collection
+      final driverBanDocRef = FirebaseFirestore.instance
+          .collection('banlisttruck')
+          .doc(driverUserId);
+
+      // Check if this passenger already submitted a complaint against this driver for this order
+      DocumentSnapshot passengerComplaintSnapshot = await driverBanDocRef
+          .collection('complaints')
+          .doc(currentUserId)
+          .get();
+
+      if (passengerComplaintSnapshot.exists) {
+        _showSnackBar('You have already filed a complaint for this order.');
+        return;
+      }
+
+      // Show confirmation dialog
+      bool confirm = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("File Complaint"),
+            content: Text(
+                "Are you sure you want to file a complaint against this driver?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text("No", style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.taxi,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  "Yes",
+                  style: AppStyle.fontStyle.copyWith(color: Colors.white),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!confirm) return;
+
+      // Add complaint document under the driver ID with passenger's ID
+      await driverBanDocRef.collection('complaints').doc(currentUserId).set({
+        'orderNumber': orderNumber,
+        'driverUserId': driverUserId,
+        'driverName': driverName,
+        'driverPhoneNumber': driverPhoneNumber,
+        'passengerId': currentUserId,
+        'complaint': "Complaint filed due to low rating or other issues",
+        'timestamp': DateTime.now(),
+      });
+
+      // Count the number of complaints for this driver
+      QuerySnapshot complaintsSnapshot =
+          await driverBanDocRef.collection('complaints').get();
+      int complaintCount = complaintsSnapshot.docs.length;
+
+      // Ban driver if the complaint count exceeds the threshold (e.g., 3 complaints)
+      if (complaintCount >= 3) {
+        await FirebaseFirestore.instance
+            .collection('truckdrivers')
+            .doc(driverUserId)
+            .update({'status': 'inactive'});
+        _showSnackBar('Driver has been blocked due to multiple complaints.');
+      } else {
+        _showSnackBar('Complaint successfully filed.');
+      }
+    } catch (e) {
+      print('Error saving complaint: ${e.toString()}');
+      _showSnackBar('Error: Unable to file complaint.');
+    }
   }
 
   String _formatDate(DateTime dateTime) {

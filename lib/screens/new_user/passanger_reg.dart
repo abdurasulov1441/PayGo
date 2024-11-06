@@ -25,42 +25,33 @@ class _PassengerRegistrationPageState extends State<PassengerRegistrationPage> {
   final _formKey = GlobalKey<FormState>();
 
   Future<String> _generateUserId() async {
-    // Получаем все документы в коллекции 'user' и сортируем их по 'userId' в обратном порядке
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('user')
+        .collection('user') // изменено на 'users'
         .orderBy('userId', descending: true)
         .limit(1)
         .get();
 
     if (querySnapshot.docs.isEmpty) {
-      return '000001'; // Если нет пользователей, начинаем с '000001'
+      return '000001';
     } else {
       int lastUserId = int.parse(querySnapshot.docs.first['userId']);
-      int newUserId = lastUserId + 1;
-      return newUserId
-          .toString()
-          .padLeft(6, '0'); // Преобразуем в шестизначное число
+      return (lastUserId + 1).toString().padLeft(6, '0');
     }
   }
 
-  void savePassengerData() async {
+  void _savePassengerData() async {
     if (_formKey.currentState!.validate()) {
-      String userId = await _generateUserId(); // Генерация нового userId
+      String userId = await _generateUserId();
 
       final data = {
         'email': user?.email,
         'name': _nameController.text,
-        'lastName': _lastNameController.text,
-        'phoneNumber': _phoneController.text,
-        'userId': userId, // Записываем userId
-        'status': 'active', // Статус по умолчанию
-        'role': 'passenger', // Роль 'passenger'
+        'surname': _lastNameController.text,
+        'phone_number': _phoneController.text,
+        'status': 'active',
       };
 
-      await FirebaseFirestore.instance
-          .collection('user')
-          .doc(user?.uid)
-          .set(data);
+      await FirebaseFirestore.instance.collection('user').doc(userId).set(data);
 
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => MainCivilPage()),
@@ -87,14 +78,14 @@ class _PassengerRegistrationPageState extends State<PassengerRegistrationPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              buildTextField(_nameController, 'Ism'),
+              _buildTextField(_nameController, 'Ism'),
               const SizedBox(height: 20),
-              buildTextField(_lastNameController, 'Familiya'),
+              _buildTextField(_lastNameController, 'Familiya'),
               const SizedBox(height: 20),
-              buildPhoneNumberField(_phoneController),
+              _buildPhoneNumberField(_phoneController),
               const SizedBox(height: 40),
               ElevatedButton(
-                onPressed: savePassengerData,
+                onPressed: _savePassengerData,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.taxi,
                   padding: const EdgeInsets.symmetric(vertical: 15),
@@ -117,7 +108,7 @@ class _PassengerRegistrationPageState extends State<PassengerRegistrationPage> {
     );
   }
 
-  Widget buildTextField(TextEditingController controller, String label) {
+  Widget _buildTextField(TextEditingController controller, String label) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -138,7 +129,7 @@ class _PassengerRegistrationPageState extends State<PassengerRegistrationPage> {
     );
   }
 
-  Widget buildPhoneNumberField(TextEditingController controller) {
+  Widget _buildPhoneNumberField(TextEditingController controller) {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.phone,
