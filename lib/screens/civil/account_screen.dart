@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:taksi/screens/civil/history_truck.dart';
 import 'package:taksi/screens/civil/historytaxi.dart';
+import 'package:taksi/services/flushbar.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -18,26 +19,49 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> signOut() async {
     final navigator = Navigator.of(context);
-
     await FirebaseAuth.instance.signOut();
-
     navigator.pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
   }
 
-  Future<void> deleteUserData() async {
-    await FirebaseFirestore.instance.collection('user').doc(user!.uid).delete();
-    await signOut();
-  }
-
-  Future<void> changeProfile() async {
-    await FirebaseFirestore.instance.collection('user').doc(user!.uid).delete();
-  }
-
-  void showFeatureInDevelopmentMessage(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+  void showCustomDialog(String title, String content, VoidCallback onConfirm) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text(
+          title,
+          style: AppStyle.fontStyle.copyWith(
+              fontWeight: FontWeight.bold, color: AppColors.textColor),
+        ),
         content: Text(
-            'Bu funksiya hozirda ishlab chiqilmoqda va tez orada mavjud bo‘ladi.'),
+          content,
+          style: AppStyle.fontStyle.copyWith(color: AppColors.textColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Bekor qilish',
+              style: AppStyle.fontStyle.copyWith(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.taxi,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Tasdiqlash',
+              style: AppStyle.fontStyle.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -63,39 +87,32 @@ class _AccountScreenState extends State<AccountScreen> {
           style: AppStyle.fontStyle.copyWith(
               color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.done,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
       ),
-      body: StreamBuilder<DocumentSnapshot>(
+      body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('user')
-            .doc(user!.uid)
+            .where('email', isEqualTo: user?.email)
             .snapshots(),
-        builder: (context, userSnapshot) {
-          if (!userSnapshot.hasData) {
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final userData = userSnapshot.data!.data() as Map<String, dynamic>?;
+          if (snapshot.data!.docs.isEmpty) {
+            return const Center(
+                child: Text('Foydalanuvchi ma’lumotlari topilmadi.'));
+          }
 
+          final userData =
+              snapshot.data!.docs.first.data() as Map<String, dynamic>?;
           String userName = userData?['name'] ?? 'Noma’lum';
-          String userLastName = userData?['lastName'] ?? 'Noma’lum';
+          String userSurname = userData?['surname'] ?? 'Noma’lum';
           String userEmail = userData?['email'] ?? 'Noma’lum';
-          String userPhoneNumber = userData?['phoneNumber'] ?? 'Noma’lum';
+          String userPhoneNumber = userData?['phone_number'] ?? 'Noma’lum';
 
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
             children: [
-              // First Card: Account Information Section
               Card(
                 color: Colors.white,
                 elevation: 5,
@@ -118,7 +135,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       const SizedBox(height: 15),
                       buildSettingTile(
                         icon: Icons.person,
-                        label: '$userName $userLastName',
+                        label: '$userName $userSurname',
                       ),
                       const Divider(),
                       buildSettingTile(
@@ -135,8 +152,6 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               ),
               const SizedBox(height: 25),
-
-              // Second Card: Settings Options Section
               Card(
                 color: Colors.white,
                 elevation: 5,
@@ -185,7 +200,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.brightness_6,
                         label: 'Mavzuni o\'zgartirish',
                         onTap: () {
-                          showFeatureInDevelopmentMessage(context);
+                          showCustomTopToast(context);
                         },
                       ),
                       const Divider(),
@@ -193,14 +208,20 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.language,
                         label: 'Tilni o\'zgartirish',
                         onTap: () {
-                          showFeatureInDevelopmentMessage(context);
+                          showCustomTopToast(context);
                         },
                       ),
                       const Divider(),
                       buildSettingTile(
                         icon: Icons.logout,
                         label: 'Chiqish',
-                        onTap: () => signOut(),
+                        onTap: () {
+                          showCustomDialog(
+                            'Chiqish',
+                            'Haqiqatan ham chiqmoqchimisiz?',
+                            () => signOut(),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -213,7 +234,6 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  // Custom ListTile for settings
   Widget buildSettingTile(
       {required IconData icon, required String label, VoidCallback? onTap}) {
     return GestureDetector(

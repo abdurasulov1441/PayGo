@@ -9,7 +9,7 @@ import 'package:taksi/screens/new_user/role_select_page.dart';
 import 'package:taksi/style/app_style.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   // Функция для получения роли пользователя по электронной почте
   Future<String?> getUserRole(String email) async {
@@ -113,6 +113,8 @@ class HomeScreen extends StatelessWidget {
 }
 
 class AdminDashboard extends StatelessWidget {
+  const AdminDashboard({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

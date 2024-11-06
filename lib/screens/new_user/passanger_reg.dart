@@ -65,6 +65,14 @@ class _PassengerRegistrationPageState extends State<PassengerRegistrationPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.white,
+            )),
         title: Text(
           "Yo’lovchi ma'lumotlari",
           style: AppStyle.fontStyle.copyWith(color: Colors.white),

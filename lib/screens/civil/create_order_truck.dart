@@ -43,8 +43,8 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
       'cargo_name': _cargoNameController.text,
       'from': fromLocation,
       'to': toLocation,
-      'status': 'kutish jarayonida', // Статус по умолчанию
-      'accepted_by': null, // Поле для ID водителя, который примет заказ
+      'status': 'kutish jarayonida',
+      'accepted_by': null,
     };
 
     await FirebaseFirestore.instance
@@ -75,8 +75,7 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
             .get();
 
         if (snapshot.docs.isNotEmpty) {
-          return snapshot
-              .docs.first.id; // Возвращаем короткий ID, например, "000001"
+          return snapshot.docs.first.id;
         }
       }
     }
@@ -118,7 +117,13 @@ class _CreateOrderTruckState extends State<CreateOrderTruck> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Yuk mashinasi buyurtmasi berish',
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back_ios)),
+        centerTitle: true,
+        title: Text('Yuk uchun buyurtma',
             style:
                 AppStyle.fontStyle.copyWith(color: Colors.white, fontSize: 20)),
         backgroundColor: AppColors.taxi,

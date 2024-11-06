@@ -29,7 +29,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "Iltimos, qaysi rolni tanlaysiz",
+                    "Qaysi rolni tanlaysiz",
                     style: AppStyle.fontStyle
                         .copyWith(fontSize: 24, fontWeight: FontWeight.bold),
                   ),

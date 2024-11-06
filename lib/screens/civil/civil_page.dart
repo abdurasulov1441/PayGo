@@ -6,6 +6,7 @@ import 'package:taksi/screens/civil/delivery_page.dart';
 import 'package:taksi/screens/civil/taksi_page.dart';
 import 'package:taksi/screens/civil/account_screen.dart';
 import 'package:taksi/screens/sign/login_screen.dart';
+import 'package:taksi/services/flushbar.dart';
 
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart'; // Assuming AppStyle is in this file
@@ -137,13 +138,13 @@ class MainCivilPage extends StatelessWidget {
                     GestureDetector(
                       onTap: () {
                         if (user != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => TaxiPage()),
-                          );
+                          showCustomTopToast(context);
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(builder: (context) => TaxiPage()),
+                          // );
                         } else {
-                          _showLoginDialog(
-                              context); // Show registration dialog if not logged in
+                          _showLoginDialog(context);
                         }
                       },
                       child: transportCard(
@@ -182,8 +183,7 @@ class MainCivilPage extends StatelessWidget {
                                 builder: (context) => CreateOrderTruck()),
                           );
                         } else {
-                          _showLoginDialog(
-                              context); // Show registration dialog if not logged in
+                          _showLoginDialog(context);
                         }
                       },
                       child: transportCard(
@@ -195,14 +195,14 @@ class MainCivilPage extends StatelessWidget {
                     GestureDetector(
                       onTap: () {
                         if (user != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => CreateOrderTaksi()),
-                          );
+                          showCustomTopToast(context);
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //       builder: (context) => CreateOrderTaksi()),
+                          // );
                         } else {
-                          _showLoginDialog(
-                              context); // Show registration dialog if not logged in
+                          _showLoginDialog(context);
                         }
                       },
                       child: transportCard(

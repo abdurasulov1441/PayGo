@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
-import 'package:taksi/screens/drivers/obunalar.dart';
+import 'package:taksi/screens/drivers_truck/obunalar.dart';
 import 'package:taksi/screens/drivers/payment.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
@@ -53,49 +53,49 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
     );
   }
 
-  // Профиль водителя
   Widget _buildProfileHeader() {
     final user = FirebaseAuth.instance.currentUser;
 
-    return FutureBuilder<DocumentSnapshot>(
+    return FutureBuilder<QuerySnapshot>(
       future: FirebaseFirestore.instance
-          .collection('truckdrivers') // Коллекция для водителей грузовиков
-          .doc(user?.uid)
+          .collection('truckdrivers')
+          .where('email', isEqualTo: user?.email) // Find by email
           .get(),
-      builder:
-          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-          return Center(child: Text('Xatolik: Ma\'lumotlar yuklanmadi'));
-        }
-
-        final data = snapshot.data!.data() as Map<String, dynamic>?;
-
-        String firstName = data?['name'] ?? 'Ism kiritilmagan';
-        String lastName = data?['lastName'] ?? 'Familiya kiritilmagan';
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        // Placeholder data
+        String firstName = 'John';
+        String lastName = 'Doe';
         String fullName = '$firstName $lastName';
+        String formattedBalance = '0 UZS';
+        String subscriptionPlan = 'No Plan';
+        String formattedExpiration = 'Not Available';
 
-        int balance = data?['balance'] ?? 0;
-        String formattedBalance =
-            NumberFormat('#,###', 'en_US').format(balance).replaceAll(',', ' ');
+        // Replace placeholder data when actual data is available
+        if (snapshot.hasData &&
+            snapshot.data != null &&
+            snapshot.data!.docs.isNotEmpty) {
+          final data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
 
-        String? subscriptionPlan = data?['subscription_plan'];
-        Timestamp? expirationTimestamp = data?['expired_date'];
-        String? formattedExpiration;
+          firstName = data['name'] ?? firstName;
+          lastName = data['surname'] ?? lastName;
+          fullName = '$firstName $lastName';
 
-        if (expirationTimestamp != null) {
-          DateTime expirationDate = expirationTimestamp.toDate();
-          Duration difference = expirationDate.difference(DateTime.now());
+          int balance = data['balance'] ?? 0;
+          formattedBalance = NumberFormat('#,###', 'en_US')
+              .format(balance)
+              .replaceAll(',', ' ');
 
-          int months = difference.inDays ~/ 30;
-          int days = difference.inDays % 30;
+          subscriptionPlan = data['subscription_plan'] ?? subscriptionPlan;
+          Timestamp? expirationTimestamp = data['expired_date'];
 
-          if (months > 0) {
-            formattedExpiration = '$months oylik, $days kun';
-          } else {
-            formattedExpiration = '$days kun';
+          if (expirationTimestamp != null) {
+            DateTime expirationDate = expirationTimestamp.toDate();
+            Duration difference = expirationDate.difference(DateTime.now());
+
+            int months = difference.inDays ~/ 30;
+            int days = difference.inDays % 30;
+            formattedExpiration =
+                months > 0 ? '$months oylik, $days kun' : '$days kun';
           }
         }
 
@@ -111,32 +111,32 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
           child: Row(
             children: [
               CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(
-                    'https://via.placeholder.com/150'), // Аватар по умолчанию
-              ),
+                  radius: 40,
+                  backgroundImage: AssetImage(
+                    'assets/images/user.png',
+                  ) // Default avatar
+                  ),
               const SizedBox(width: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    fullName,
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fullName,
+                      style: AppStyle.fontStyle.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Balans: $formattedBalance UZS',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 16,
-                      color: Colors.white,
+                    const SizedBox(height: 8),
+                    Text(
+                      'Balans: $formattedBalance',
+                      style: AppStyle.fontStyle.copyWith(
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  if (subscriptionPlan != null &&
-                      formattedExpiration != null) ...[
                     const SizedBox(height: 8),
                     Text(
                       'Tarif: $subscriptionPlan',
@@ -153,7 +153,7 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
             ],
           ),
@@ -162,7 +162,6 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
     );
   }
 
-  // Элементы меню
   Widget _buildMenuItems(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -214,7 +213,6 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
     );
   }
 
-  // Помощник для создания элемента меню
   Widget _buildMenuItem(BuildContext context,
       {required IconData icon,
       required String title,
@@ -235,7 +233,6 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
     );
   }
 
-  // Окно подтверждения выхода
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
