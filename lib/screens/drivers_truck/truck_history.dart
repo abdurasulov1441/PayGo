@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -63,7 +64,9 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
       body: RefreshIndicator(
         onRefresh: _refreshPage,
         child: driverId == null
-            ? Center(child: CircularProgressIndicator())
+            ? Center(
+                child: LottieBuilder.asset('assets/lottie/loading.json'),
+              )
             : StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('truck_orders')

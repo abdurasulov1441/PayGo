@@ -3,6 +3,7 @@ import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -57,7 +58,9 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
           )),
       body: driverId == null
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+              child: LottieBuilder.asset('assets/lottie/loading.json'),
+            )
           : RefreshIndicator(
               onRefresh: _refreshPage,
               child: StreamBuilder(
@@ -72,7 +75,8 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
                   }
 
                   if (snapshot.data!.docs.isEmpty) {
-                    return Center(child: Text('Принятые заказы отсутствуют.'));
+                    return Center(
+                        child: Text('Qabul qilingan buyurtmalar mavjud emas.'));
                   }
 
                   return ListView(
@@ -84,7 +88,7 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
                             .get(),
                         builder: (context, passengerSnapshot) {
                           if (!passengerSnapshot.hasData) {
-                            return Center(child: CircularProgressIndicator());
+                            return SizedBox();
                           }
 
                           final passengerData = passengerSnapshot.data;
@@ -251,6 +255,22 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
               'Yuk vazni: $cargoWeight kg',
               style: TextStyle(fontSize: 16),
             ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _showBanPassengerDialog(doc['user_id']),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.taxi,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                "Shikoyat",
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
         ),
       ),
@@ -284,7 +304,8 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
     try {
       await intent.launch();
     } catch (e) {
-      _showSnackBar('Call failed. Please check phone settings.');
+      _showSnackBar(
+          'Qo‘ng‘iroq amalga oshmadi. Telefon sozlamalarini tekshiring.');
     }
   }
 
@@ -301,5 +322,71 @@ class _TruckAcceptedOrdersPageState extends State<TruckAcceptedOrdersPage> {
         .update({
       'status': 'tamomlandi',
     });
+  }
+
+  Future<void> _showBanPassengerDialog(String passengerId) async {
+    final driverId = this.driverId;
+    if (driverId == null) {
+      _showSnackBar("Xatolik: Haydovchi tizimga kirmagan.");
+      return;
+    }
+
+    final banDocRef =
+        FirebaseFirestore.instance.collection('banlistuser').doc(passengerId);
+
+    QuerySnapshot existingComplaintSnapshot = await banDocRef
+        .collection('complaints')
+        .where('driverId', isEqualTo: driverId)
+        .get();
+
+    if (existingComplaintSnapshot.docs.isNotEmpty) {
+      _showSnackBar('Siz ushbu yo‘lovchiga allaqachon shikoyat qildingiz.');
+      return;
+    }
+
+    bool confirm = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.feedback, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Shikoyat qilish"),
+            ],
+          ),
+          content: Text("Haqiqatan ham ushbu yo‘lovchini ban qilmoqchimisiz?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text("Yo'q", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.taxi,
+              ),
+              child: Text(
+                "Ha",
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!confirm) return;
+
+    await banDocRef.collection('complaints').add({
+      'driverId': driverId,
+      'timestamp': DateTime.now(),
+    });
+
+    _showSnackBar('Yo‘lovchi muvaffaqiyatli ban qilindi.');
   }
 }

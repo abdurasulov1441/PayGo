@@ -527,56 +527,72 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
   }
 
   Future<void> _showBanDialog(DocumentSnapshot orderDoc) async {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
 
-    if (currentUserId == null) {
-      _showSnackBar("Error: User is not logged in.");
+    if (currentUserEmail == null) {
+      _showSnackBar("Xatolik: Foydalanuvchi tizimga kirmagan.");
       return;
     }
 
-    // Order details
-    String orderNumber = orderDoc.id;
-    String driverUserId = orderDoc['accepted_by'] ?? 'Unknown';
-    String passengerId = orderDoc['user_id'] ?? 'Unknown';
+    // Buyurtma tafsilotlari
+    String driverUserId = orderDoc['accepted_by'] ?? '';
+    String passengerEmail = currentUserEmail;
+
+    if (driverUserId.isEmpty) {
+      _showSnackBar("Xatolik: Haydovchi ID topilmadi.");
+      return;
+    }
 
     try {
-      // Retrieve driver information using `driverUserId`
+      // Yo'lovchi ID sini email orqali olish
+      QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('user')
+          .where('email', isEqualTo: passengerEmail)
+          .get();
+
+      if (userSnapshot.docs.isEmpty) {
+        _showSnackBar('Foydalanuvchi topilmadi.');
+        return;
+      }
+
+      String passengerId = userSnapshot.docs.first.id;
+
+      // Banlisttruck kolleksiyasida haydovchi va yo'lovchi IDlarini tekshirish
+      final driverBanDocRef = FirebaseFirestore.instance
+          .collection('banlisttruck')
+          .doc(driverUserId);
+
+      QuerySnapshot existingComplaintSnapshot = await driverBanDocRef
+          .collection('complaints')
+          .where('passengerId', isEqualTo: passengerId)
+          .get();
+
+      if (existingComplaintSnapshot.docs.isNotEmpty) {
+        _showSnackBar('Siz ushbu haydovchiga allaqachon shikoyat qildingiz.');
+        return;
+      }
+
+      // Haydovchi ma'lumotlarini olish
       DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
           .collection('truckdrivers')
           .doc(driverUserId)
           .get();
 
-      String driverName = driverSnapshot['name'] ?? 'Unknown';
-      String driverPhoneNumber = driverSnapshot['phone_number'] ?? 'Unknown';
+      String driverName = driverSnapshot['name'] ?? 'Noma\'lum';
+      String driverPhoneNumber = driverSnapshot['phone_number'] ?? 'Noma\'lum';
 
-      // Reference to the driver's document in banlisttruck collection
-      final driverBanDocRef = FirebaseFirestore.instance
-          .collection('banlisttruck')
-          .doc(driverUserId);
-
-      // Check if this passenger already submitted a complaint against this driver for this order
-      DocumentSnapshot passengerComplaintSnapshot = await driverBanDocRef
-          .collection('complaints')
-          .doc(currentUserId)
-          .get();
-
-      if (passengerComplaintSnapshot.exists) {
-        _showSnackBar('You have already filed a complaint for this order.');
-        return;
-      }
-
-      // Show confirmation dialog
+      // Tasdiqlash dialogini ko'rsatish
       bool confirm = await showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text("File Complaint"),
+            title: Text("Shikoyat qilish"),
             content: Text(
-                "Are you sure you want to file a complaint against this driver?"),
+                "Haqiqatan ham ushbu haydovchiga shikoyat qilmoqchimisiz?"),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text("No", style: TextStyle(color: Colors.grey)),
+                child: Text("Yo'q", style: TextStyle(color: Colors.grey)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
@@ -587,7 +603,7 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
                   ),
                 ),
                 child: Text(
-                  "Yes",
+                  "Ha",
                   style: AppStyle.fontStyle.copyWith(color: Colors.white),
                 ),
               ),
@@ -598,35 +614,35 @@ class _TruckOrderHistoryPageState extends State<TruckOrderHistoryPage> {
 
       if (!confirm) return;
 
-      // Add complaint document under the driver ID with passenger's ID
-      await driverBanDocRef.collection('complaints').doc(currentUserId).set({
-        'orderNumber': orderNumber,
+      // Yangi shikoyatni complaints kolleksiyasiga qo'shish
+      await driverBanDocRef.collection('complaints').add({
         'driverUserId': driverUserId,
         'driverName': driverName,
         'driverPhoneNumber': driverPhoneNumber,
-        'passengerId': currentUserId,
-        'complaint': "Complaint filed due to low rating or other issues",
+        'passengerId': passengerId,
+        'complaint': "Past reyting yoki boshqa sabab tufayli shikoyat qilindi",
         'timestamp': DateTime.now(),
       });
 
-      // Count the number of complaints for this driver
+      // Ushbu haydovchiga qarshi shikoyatlar sonini hisoblash
       QuerySnapshot complaintsSnapshot =
           await driverBanDocRef.collection('complaints').get();
+
       int complaintCount = complaintsSnapshot.docs.length;
 
-      // Ban driver if the complaint count exceeds the threshold (e.g., 3 complaints)
+      // Agar shikoyatlar soni 3 yoki undan ko'p bo'lsa, haydovchini bloklash
       if (complaintCount >= 3) {
         await FirebaseFirestore.instance
             .collection('truckdrivers')
             .doc(driverUserId)
             .update({'status': 'inactive'});
-        _showSnackBar('Driver has been blocked due to multiple complaints.');
+        _showSnackBar('Haydovchi ko‘p shikoyatlar tufayli bloklandi.');
       } else {
-        _showSnackBar('Complaint successfully filed.');
+        _showSnackBar('Shikoyat muvaffaqiyatli ro‘yxatga olindi');
       }
     } catch (e) {
-      print('Error saving complaint: ${e.toString()}');
-      _showSnackBar('Error: Unable to file complaint.');
+      print('Xatolik saqlashda: ${e.toString()}');
+      _showSnackBar('Xatolik: Shikoyatni ro\'yxatga olish imkoni yo\'q');
     }
   }
 
