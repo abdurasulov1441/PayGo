@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:taksi/screens/admin/admin_page.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/drivers/drivers_page.dart';
 import 'package:taksi/screens/drivers_truck/truck_drivers_page.dart';
@@ -13,7 +14,7 @@ class HomeScreen extends StatelessWidget {
 
   // Функция для получения роли пользователя по электронной почте
   Future<String?> getUserRole(String email) async {
-    if (email == 'admin@example.com') {
+    if (email == 'abdurasulov1024@gmail.com') {
       return 'admin';
     }
 
@@ -109,20 +110,6 @@ class HomeScreen extends StatelessWidget {
         },
       );
     }
-  }
-}
-
-class AdminDashboard extends StatelessWidget {
-  const AdminDashboard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Admin Dashboard')),
-      body: Center(
-        child: Text('Добро пожаловать, администратор!'),
-      ),
-    );
   }
 }
 

@@ -1,19 +1,15 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-
-import 'package:taksi/screens/drivers/chat_page.dart';
-import 'package:taksi/screens/drivers_truck/chat_page.dart';
+import 'package:lottie/lottie.dart';
 import 'package:taksi/screens/drivers_truck/truck_account.dart';
+import 'package:taksi/screens/drivers_truck/truck_acepted_orders.dart';
 import 'package:taksi/screens/drivers_truck/truck_history.dart';
 import 'package:taksi/screens/drivers_truck/truck_orders.dart';
-
+import 'package:taksi/screens/drivers_truck/chat_page.dart';
 import 'package:taksi/style/app_colors.dart';
-
-import 'truck_acepted_orders.dart';
 
 class TruckDriverPage extends StatefulWidget {
   const TruckDriverPage({super.key});
@@ -25,70 +21,99 @@ class TruckDriverPage extends StatefulWidget {
 class _TruckDriverPageState extends State<TruckDriverPage> {
   int _selectedIndex = 0;
   Timer? _locationUpdateTimer;
-
-  // Define the pages corresponding to the BottomNavigationBar items
-  static const List<Widget> _pages = <Widget>[
-    TruckOrdersPage(), // Orders for trucks
-    TruckAcceptedOrdersPage(), // Accepted Truck Orders
-    TruckOrderHistoryPage(), // History of Truck Orders
-    TruckDriverAccountPage(), // Account Page for truck drivers
-  ];
+  bool _isSubscriptionValid = true;
 
   @override
   void initState() {
     super.initState();
-    _startLocationUpdates(); // Start updating GPS data every 10 seconds
+    _checkSubscriptionStatus();
+    _startLocationUpdates();
   }
 
   @override
   void dispose() {
     _locationUpdateTimer
-        ?.cancel(); // Stop the timer when the widget is disposed
+        ?.cancel(); // Cancel the timer when the widget is disposed
     super.dispose();
+  }
+
+  Future<void> _checkSubscriptionStatus() async {
+    print("Starting _checkSubscriptionStatus function");
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('truckdrivers')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final data = querySnapshot.docs.first.data();
+        print("Document found: ${data.toString()}");
+
+        if (data != null && data['expired_date'] != null) {
+          final DateTime expirationDate =
+              (data['expired_date'] as Timestamp).toDate();
+
+          // Ensure setState is called only if the widget is still mounted
+          if (mounted) {
+            setState(() {
+              _isSubscriptionValid = DateTime.now().isBefore(expirationDate);
+            });
+          }
+          print("Subscription is valid: $_isSubscriptionValid");
+        } else {
+          print("No 'expired_date' field found in document");
+        }
+      } else {
+        print("No document found for this user in 'truckdrivers' collection");
+      }
+    } catch (e) {
+      print("Error checking subscription status: $e");
+      if (mounted) {
+        setState(() {
+          _isSubscriptionValid = false;
+        });
+      }
+    }
   }
 
   void _startLocationUpdates() {
     _locationUpdateTimer = Timer.periodic(Duration(minutes: 10), (timer) async {
-      await _updateDriverLocation(); // Update driver location every 10 seconds
+      if (mounted) {
+        await _updateDriverLocation();
+      } else {
+        _locationUpdateTimer
+            ?.cancel(); // Ensure the timer is canceled if widget is unmounted
+      }
     });
   }
 
   Future<void> _updateDriverLocation() async {
     try {
-      // Ensure permissions are granted
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.deniedForever) {
-          print('Location permissions are permanently denied');
-          return;
-        }
+        if (permission == LocationPermission.deniedForever) return;
       }
 
-      if (permission == LocationPermission.denied) {
-        print('Location permissions are denied');
-        return;
-      }
+      if (permission == LocationPermission.denied) return;
 
-      // Get current location
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
       String? driverEmail = FirebaseAuth.instance.currentUser?.email;
       if (driverEmail != null) {
-        // Save to Firestore under a specific collection (e.g., "driver_locations")
         await FirebaseFirestore.instance
             .collection('driver_locations')
             .doc(driverEmail)
-            .set(
-                {
-              'latitude': position.latitude,
-              'longitude': position.longitude,
-              'timestamp': FieldValue.serverTimestamp(),
-            },
-                SetOptions(
-                    merge: true)); // Merge so we don't overwrite previous data
+            .set({
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'timestamp': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
       }
     } catch (e) {
       print('Failed to get location: $e');
@@ -96,16 +121,32 @@ class _TruckDriverPageState extends State<TruckDriverPage> {
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (mounted) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = _isSubscriptionValid
+        ? [
+            TruckOrdersPage(),
+            TruckAcceptedOrdersPage(),
+            TruckOrderHistoryPage(),
+            TruckDriverAccountPage(),
+          ]
+        : [
+            SubscriptionExpiredPage(),
+            TruckAcceptedOrdersPage(),
+            TruckOrderHistoryPage(),
+            TruckDriverAccountPage(),
+          ];
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _pages[_selectedIndex],
+      body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         items: const <BottomNavigationBarItem>[
@@ -128,18 +169,16 @@ class _TruckDriverPageState extends State<TruckDriverPage> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.teal,
-        unselectedItemColor: Colors.grey[600],
+        unselectedItemColor: Colors.grey,
         selectedLabelStyle: TextStyle(
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.teal,
         ),
         unselectedLabelStyle: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.normal,
-          color: Colors.grey[600],
         ),
-        iconSize: 26,
+        iconSize: 24,
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
       ),
@@ -158,6 +197,40 @@ class _TruckDriverPageState extends State<TruckDriverPage> {
             MaterialPageRoute(builder: (context) => TruckDriverChatPage()),
           );
         },
+      ),
+    );
+  }
+}
+
+class SubscriptionExpiredPage extends StatelessWidget {
+  const SubscriptionExpiredPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Card(
+        elevation: 10,
+        color: Colors.white,
+        margin: EdgeInsets.all(20),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              LottieBuilder.asset('assets/lottie/peoples.json'),
+              SizedBox(height: 20),
+              Text(
+                'Sizning obunangiz muddati tugagan. Buyurtmalarni ko\'rish uchun obunani yangilang.',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.taxi,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

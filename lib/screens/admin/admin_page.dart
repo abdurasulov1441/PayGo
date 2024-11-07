@@ -1,20 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:taksi/screens/admin/balance_check.dart';
-import 'package:taksi/screens/admin/identify_page.dart';
+import 'package:taksi/screens/admin/order_statistic.dart';
 import 'package:taksi/screens/admin/settings.dart';
-import 'package:taksi/screens/admin/test.dart';
+import 'package:taksi/screens/admin/user_statistic.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
-class AdminPage extends StatefulWidget {
-  const AdminPage({super.key});
+class AdminDashboard extends StatefulWidget {
+  const AdminDashboard({super.key});
 
   @override
   _AdminPageState createState() => _AdminPageState();
 }
 
-class _AdminPageState extends State<AdminPage> {
+class _AdminPageState extends State<AdminDashboard> {
   int _currentIndex = 0;
 
   int accountVerificationCount = 0;
@@ -23,20 +23,7 @@ class _AdminPageState extends State<AdminPage> {
   @override
   void initState() {
     super.initState();
-    fetchUnverifiedAccountCount();
     fetchPendingTransactionsCount(); // Получение количества транзакций
-  }
-
-  // Получение количества пользователей со статусом 'unidentified'
-  Future<void> fetchUnverifiedAccountCount() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('driver')
-        .where('status', isEqualTo: 'unidentified')
-        .get();
-
-    setState(() {
-      accountVerificationCount = querySnapshot.docs.length;
-    });
   }
 
   // Получение количества транзакций со статусом "unchecked"
@@ -56,8 +43,7 @@ class _AdminPageState extends State<AdminPage> {
     OrderStatisticsPage(),
     UserDriverStatisticsPage(),
     BalanceRequestsPage(),
-    AccountVerificationPage(),
-    SettingsPage(),
+    AdminSettingsPage(),
   ];
 
   @override
@@ -94,11 +80,7 @@ class _AdminPageState extends State<AdminPage> {
               icon: Icons.account_balance_wallet,
               label: 'Balansni to\'ldirish',
               count: balanceRequestCount), // Счётчик транзакций "unchecked"
-          _buildBottomNavigationBarItem(
-              icon: Icons.verified_user,
-              label: 'Akkountni tekshirish',
-              count:
-                  accountVerificationCount), // Счётчик аккаунтов "unidentified"
+
           _buildBottomNavigationBarItem(
               icon: Icons.settings, label: 'Sozlamalar', count: 0),
         ],
@@ -163,8 +145,6 @@ class _AdminPageState extends State<AdminPage> {
       case 2:
         return 'Balansni to\'ldirish so\'rovlari';
       case 3:
-        return 'Akkountni tekshirish';
-      case 4:
         return 'Sozlamalar';
       default:
         return 'Admin Panel';

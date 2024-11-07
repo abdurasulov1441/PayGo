@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/drivers_truck/obunalar.dart';
 import 'package:taksi/screens/drivers_truck/payment.dart';
+import 'package:taksi/services/flushbar.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -211,9 +212,7 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
           icon: Icons.nightlight_round,
           title: 'Tun rejimi va Til',
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Tun rejimi va Til selected')),
-            );
+            showCustomTopToast(context);
           },
         ),
         const SizedBox(height: 10),

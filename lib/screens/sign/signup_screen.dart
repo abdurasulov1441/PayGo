@@ -238,8 +238,8 @@ class _SignUpScreen extends State<SignUpScreen> {
                   ),
                 ),
                 onPressed: googleSignIn,
-                icon: Image.network(
-                  'https://cdn4.iconfinder.com/data/icons/logos-brands-7/512/google_logo-google_icongoogle-1024.png',
+                icon: Image.asset(
+                  'assets/images/google.jpg',
                   height: 24,
                   width: 24,
                 ),

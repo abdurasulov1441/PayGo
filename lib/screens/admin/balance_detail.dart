@@ -7,6 +7,15 @@ class BalanceDetailPage extends StatelessWidget {
   final String transactionId;
   const BalanceDetailPage(this.transactionId, {super.key});
 
+  Future<Map<String, dynamic>?> _getDriverData(String userId) async {
+    // Запрос к базе данных для получения данных водителя
+    final snapshot = await FirebaseFirestore.instance
+        .collection('truckdrivers')
+        .doc(userId)
+        .get();
+    return snapshot.exists ? snapshot.data() : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,29 +40,63 @@ class BalanceDetailPage extends StatelessWidget {
           }
 
           var transactionData = snapshot.data!.data() as Map<String, dynamic>;
+          String userId = transactionData['userId'];
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow('Ism:', transactionData['firstName']),
-                _buildInfoRow('Familiya:', transactionData['lastName']),
-                _buildInfoRow('Telefon:', transactionData['phoneNumber']),
-                _buildInfoRow('Miqdor:', '${transactionData['amount']} UZS'),
-                const SizedBox(height: 20),
-                Text('Kvitantsiya:',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    )),
-                const SizedBox(height: 10),
-                _buildReceiptImage(context, transactionData['receiptUrl']),
-                const SizedBox(height: 30),
-                _buildConfirmButton(context, transactionData['email'],
-                    transactionData['amount']),
-              ],
-            ),
+          return FutureBuilder<Map<String, dynamic>?>(
+            future: _getDriverData(userId),
+            builder: (context, driverSnapshot) {
+              if (!driverSnapshot.hasData) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              var driverData = driverSnapshot.data;
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow('Ism:', driverData?['name'] ?? 'Unknown'),
+                    _buildInfoRow(
+                        'Familiya:', driverData?['surname'] ?? 'Unknown'),
+                    _buildInfoRow(
+                        'Telefon:', driverData?['phone_number'] ?? 'N/A'),
+                    _buildInfoRow(
+                        'Miqdor:', '${transactionData['amount']} UZS'),
+                    _buildInfoRow(
+                        'Haydovchi id:', '${transactionData['userId']}'),
+                    const SizedBox(height: 20),
+                    Text('Kvitantsiya:',
+                        style: AppStyle.fontStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        )),
+                    const SizedBox(height: 10),
+                    _buildReceiptImage(context, transactionData['receiptUrl']),
+                    const SizedBox(height: 30),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildConfirmButton(context,
+                              driverData?['userId'], transactionData['amount']),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDeleteButton(
+                              context, driverData?['userId']),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              );
+            },
           );
         },
       ),
@@ -99,34 +142,54 @@ class BalanceDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildConfirmButton(BuildContext context, String email, int amount) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () async {
-          await _approveTransaction(email, amount);
+  Widget _buildConfirmButton(BuildContext context, String? userId, int amount) {
+    return ElevatedButton(
+      onPressed: () async {
+        if (userId != null) {
+          await _approveTransaction(userId, amount);
           Navigator.pop(context);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.taxi, // Основной цвет кнопки
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.taxi,
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
         ),
-        child: Text('Tasdiqlash va balansga qo\'shish',
-            style: AppStyle.fontStyle.copyWith(
-              fontSize: 16,
-              color: Colors.white,
-            )),
       ),
+      child: Text('Tasdiqlash va balansga qo\'shish',
+          style: AppStyle.fontStyle.copyWith(
+            fontSize: 16,
+            color: Colors.white,
+          )),
     );
   }
 
-  Future<void> _approveTransaction(String email, int amount) async {
-    // Получаем документ водителя по email
+  Widget _buildDeleteButton(BuildContext context, String? userId) {
+    return ElevatedButton(
+      onPressed: () async {
+        await _deleteTransaction();
+        Navigator.pop(context);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.redAccent,
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+      ),
+      child: Text('Bekor qilish',
+          style: AppStyle.fontStyle.copyWith(
+            fontSize: 16,
+            color: Colors.white,
+          )),
+    );
+  }
+
+  Future<void> _approveTransaction(String userId, int amount) async {
     QuerySnapshot driverSnapshot = await FirebaseFirestore.instance
-        .collection('driver')
-        .where('email', isEqualTo: email)
+        .collection('truckdrivers')
+        .where('userId', isEqualTo: userId)
         .get();
 
     if (driverSnapshot.docs.isNotEmpty) {
@@ -134,20 +197,27 @@ class BalanceDetailPage extends StatelessWidget {
       var driverData = driverDoc.data() as Map<String, dynamic>;
       int currentBalance = driverData['balance'] ?? 0;
 
-      // Обновляем баланс водителя
       await FirebaseFirestore.instance
-          .collection('driver')
+          .collection('truckdrivers')
           .doc(driverDoc.id)
           .update({
         'balance': currentBalance + amount,
       });
 
-      // Обновляем статус транзакции на 'checked'
       await FirebaseFirestore.instance
           .collection('transactions')
           .doc(transactionId)
           .update({'status': 'checked'});
     }
+  }
+
+  Future<void> _deleteTransaction() async {
+    await FirebaseFirestore.instance
+        .collection('transactions')
+        .doc(transactionId)
+        .delete();
+
+    print('Транзакция была удалена');
   }
 }
 

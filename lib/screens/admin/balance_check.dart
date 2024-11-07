@@ -6,6 +6,19 @@ import 'package:taksi/style/app_style.dart';
 class BalanceRequestsPage extends StatelessWidget {
   const BalanceRequestsPage({super.key});
 
+  Future<Map<String, dynamic>?> _fetchDriverDetails(String userId) async {
+    try {
+      DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
+          .collection('truckdrivers')
+          .doc(userId)
+          .get();
+      return driverSnapshot.data() as Map<String, dynamic>?;
+    } catch (e) {
+      print("Error fetching driver details: $e");
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,22 +49,52 @@ class BalanceRequestsPage extends StatelessWidget {
             itemCount: transactions.length,
             itemBuilder: (context, index) {
               var transaction = transactions[index];
-              return Card(
-                color: Colors.white,
-                child: ListTile(
-                  title: Text(
-                      '${transaction['firstName']} ${transaction['lastName']}'),
-                  subtitle: Text('${transaction['amount']} UZS'),
-                  trailing: Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BalanceDetailPage(transaction.id),
+              String userId = transaction['userId'];
+
+              return FutureBuilder<Map<String, dynamic>?>(
+                future: _fetchDriverDetails(userId),
+                builder: (context, driverSnapshot) {
+                  if (!driverSnapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  var driverData = driverSnapshot.data;
+
+                  return Card(
+                    color: Colors.white,
+                    child: ListTile(
+                      title: Text(
+                        driverData != null
+                            ? '${driverData['name']} ${driverData['surname']}'
+                            : 'Haydovchi topilmadi',
+                        style: AppStyle.fontStyle,
                       ),
-                    );
-                  },
-                ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('${transaction['amount']} UZS'),
+                          if (driverData != null)
+                            Text(
+                              'Aloqa: ${driverData['phone_number']}',
+                              style: AppStyle.fontStyle.copyWith(
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                        ],
+                      ),
+                      trailing: Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                BalanceDetailPage(transaction.id),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               );
             },
           );

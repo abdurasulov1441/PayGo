@@ -40,12 +40,8 @@ class MainCivilPage extends StatelessWidget {
               }
             },
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                    'https://i.pinimg.com/originals/ff/a0/9a/ffa09aec412db3f54deadf1b3781de2a.png'),
-              ),
-            ),
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset('assets/images/user.png')),
           ),
         ],
       ),
