@@ -26,23 +26,70 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
   String? _filePath;
   final Stopwatch _stopwatch = Stopwatch();
   String? _groupId;
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
     _initializeRecorder();
     _setupTruckDriverGroupChat();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
-
     _scrollController.addListener(() {
       if (_scrollController.position.atEdge &&
           _scrollController.position.pixels != 0) {
         _scrollToBottom();
       }
     });
+  }
+
+  Future<void> _setupTruckDriverGroupChat() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Поиск водителя по email и получение его ID
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('truckdrivers')
+            .where('email', isEqualTo: user.email)
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          final driverDoc = querySnapshot.docs.first;
+          _userId = driverDoc.id;
+
+          String fromRegion = driverDoc['from'];
+          String toRegion = driverDoc['to'];
+
+          // Проверка наличия группы чата для указанных регионов
+          QuerySnapshot groupSnapshot = await FirebaseFirestore.instance
+              .collection('truck_chatGroups')
+              .where('from', whereIn: [fromRegion, toRegion]).where('to',
+                  whereIn: [toRegion, fromRegion]).get();
+
+          if (groupSnapshot.docs.isEmpty) {
+            // Создание новой группы, если она не существует
+            DocumentReference newGroupRef = await FirebaseFirestore.instance
+                .collection('truck_chatGroups')
+                .add({
+              'from': fromRegion,
+              'to': toRegion,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+            setState(() {
+              _groupId = newGroupRef.id;
+            });
+          } else {
+            // Если группа существует, присоединяемся к ней
+            setState(() {
+              _groupId = groupSnapshot.docs.first.id;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      _showSnackBar("Ошибка при настройке чата: $e");
+    }
   }
 
   void _sendTextMessage() async {
@@ -52,75 +99,21 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
       _scrollToBottom();
 
       try {
-        User? user = FirebaseAuth.instance.currentUser;
-        if (user == null) return;
-
-        DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
-            .collection('truckdrivers') // Specific for truck drivers
-            .doc(user.uid)
-            .get();
-
-        String driverName = driverSnapshot['name'];
+        if (_userId == null) return;
 
         await FirebaseFirestore.instance
-            .collection('truck_chatGroups') // Collection for truck drivers
+            .collection('truck_chatGroups')
             .doc(_groupId)
             .collection('messages')
             .add({
           'text': message,
           'timestamp': FieldValue.serverTimestamp(),
-          'userId': user.uid,
-          'userName': driverName,
+          'userId': _userId,
+          'userName': 'Driver', // Замените на имя водителя, если нужно
         });
       } catch (e) {
-        _showSnackBar("Error sending message: $e");
+        _showSnackBar("Ошибка при отправке сообщения: $e");
       }
-    }
-  }
-
-  Future<void> _setupTruckDriverGroupChat() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Fetch truck driver data from Firestore
-        DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
-            .collection('truckdrivers') // Specific for truck drivers
-            .doc(user.uid)
-            .get();
-
-        if (driverSnapshot.exists) {
-          String fromRegion = driverSnapshot['from'];
-          String toRegion = driverSnapshot['to'];
-
-          // Check if a truck driver chat group exists for this combination of regions
-          QuerySnapshot groupSnapshot = await FirebaseFirestore.instance
-              .collection(
-                  'truck_chatGroups') // Specific collection for truck drivers
-              .where('from', whereIn: [fromRegion, toRegion]).where('to',
-                  whereIn: [toRegion, fromRegion]).get();
-
-          if (groupSnapshot.docs.isEmpty) {
-            // If no group exists, create a new one for truck drivers
-            DocumentReference newGroupRef = await FirebaseFirestore.instance
-                .collection('truck_chatGroups')
-                .add({
-              'from': fromRegion,
-              'to': toRegion,
-              'createdAt': FieldValue.serverTimestamp(),
-            });
-            setState(() {
-              _groupId = newGroupRef.id; // Store the groupId
-            });
-          } else {
-            // If the group exists, join the group
-            setState(() {
-              _groupId = groupSnapshot.docs.first.id;
-            });
-          }
-        }
-      }
-    } catch (e) {
-      _showSnackBar("Error setting up chat group: $e");
     }
   }
 
@@ -131,16 +124,8 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
         setState(() {});
       }
     } catch (e) {
-      _showSnackBar("Failed to initialize recorder: $e");
+      _showSnackBar("Ошибка при инициализации рекордера: $e");
     }
-  }
-
-  @override
-  void dispose() {
-    _recorder.closeRecorder();
-    _scrollController.dispose();
-    _stopwatch.stop();
-    super.dispose();
   }
 
   void _startRecording() async {
@@ -148,7 +133,7 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
       try {
         await _recorder.openRecorder();
       } catch (e) {
-        _showSnackBar('Failed to open recorder: $e');
+        _showSnackBar('Ошибка при открытии рекордера: $e');
         return;
       }
     }
@@ -168,7 +153,7 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
         _isRecording = true;
       });
     } catch (e) {
-      _showSnackBar('Failed to start recording: $e');
+      _showSnackBar('Ошибка при начале записи: $e');
     }
   }
 
@@ -189,8 +174,7 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
 
   void _uploadVoiceMessage(int duration) async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user == null || _groupId == null) return;
+      if (_userId == null || _groupId == null) return;
 
       final file = File(_filePath!);
       String fileName = '${DateTime.now().millisecondsSinceEpoch}.aac';
@@ -204,19 +188,19 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
         String downloadURL = await snapshot.ref.getDownloadURL();
 
         await FirebaseFirestore.instance
-            .collection('truck_chatGroups') // Specific for truck drivers
+            .collection('truck_chatGroups')
             .doc(_groupId)
             .collection('messages')
             .add({
           'voiceMessage': downloadURL,
           'duration': duration,
           'timestamp': FieldValue.serverTimestamp(),
-          'userId': user.uid,
-          'userName': user.displayName ?? 'Unknown User',
+          'userId': _userId,
+          'userName': 'Driver', // Замените на имя водителя, если нужно
         });
       }
     } catch (e) {
-      _showSnackBar("Error uploading voice message: $e");
+      _showSnackBar("Ошибка при загрузке голосового сообщения: $e");
     }
   }
 
@@ -242,6 +226,14 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
   }
 
   @override
+  void dispose() {
+    _recorder.closeRecorder();
+    _scrollController.dispose();
+    _stopwatch.stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -257,14 +249,13 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
             )),
         backgroundColor: AppColors.taxi,
         title: Text(
-          'Truck Driver Chat',
+          'Yuk mashinalar chati',
           style: AppStyle.fontStyle.copyWith(
               color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
       body: Stack(
         children: [
-          // Static Background Image
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -275,7 +266,6 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
               ),
             ),
           ),
-          // Chat Content
           Column(
             children: [
               Expanded(
@@ -315,9 +305,7 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
                                       .format(timestamp.toDate())
                                   : '';
 
-                              bool isMe =
-                                  FirebaseAuth.instance.currentUser!.uid ==
-                                      data?['userId'];
+                              bool isMe = _userId == data?['userId'];
                               return Align(
                                 alignment: isMe
                                     ? Alignment.centerRight
@@ -396,7 +384,7 @@ class _TruckDriverChatPageState extends State<TruckDriverChatPage> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        onTap: _scrollToBottom, // Scroll when tapping on input
+                        onTap: _scrollToBottom,
                       ),
                     ),
                     IconButton(

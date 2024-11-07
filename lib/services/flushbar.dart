@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:taksi/style/app_colors.dart';
 
 void showCustomTopToast(BuildContext context) {
   showToast(

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/drivers_truck/obunalar.dart';
-import 'package:taksi/screens/drivers/payment.dart';
+import 'package:taksi/screens/drivers_truck/payment.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -68,7 +68,8 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
         String fullName = '$firstName $lastName';
         String formattedBalance = '0 UZS';
         String subscriptionPlan = 'No Plan';
-        String formattedExpiration = 'Not Available';
+        String formattedExpiration =
+            'Obuna tugadi'; // Default message if expired
 
         // Replace placeholder data when actual data is available
         if (snapshot.hasData &&
@@ -90,12 +91,25 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
 
           if (expirationTimestamp != null) {
             DateTime expirationDate = expirationTimestamp.toDate();
-            Duration difference = expirationDate.difference(DateTime.now());
+            if (expirationDate.isAfter(DateTime.now())) {
+              Duration difference = expirationDate.difference(DateTime.now());
+              int months = difference.inDays ~/ 30;
+              int days = difference.inDays % 30;
 
-            int months = difference.inDays ~/ 30;
-            int days = difference.inDays % 30;
-            formattedExpiration =
-                months > 0 ? '$months oylik, $days kun' : '$days kun';
+              if (months >= 12) {
+                int years = months ~/ 12;
+                int remainingMonths = months % 12;
+                formattedExpiration = remainingMonths > 0
+                    ? '$years yil, $remainingMonths oy'
+                    : '$years yil';
+              } else {
+                formattedExpiration =
+                    months > 0 ? '$months oy, $days kun' : '$days kun';
+              }
+            } else {
+              // Subscription expired, set message
+              formattedExpiration = 'Obuna tugadi';
+            }
           }
         }
 
@@ -111,11 +125,11 @@ class _TruckDriverAccountPageState extends State<TruckDriverAccountPage> {
           child: Row(
             children: [
               CircleAvatar(
-                  radius: 40,
-                  backgroundImage: AssetImage(
-                    'assets/images/user.png',
-                  ) // Default avatar
-                  ),
+                radius: 40,
+                backgroundImage: AssetImage(
+                  'assets/images/user.png',
+                ), // Default avatar
+              ),
               const SizedBox(width: 20),
               Expanded(
                 child: Column(

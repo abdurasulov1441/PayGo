@@ -4,9 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:u_credit_card/u_credit_card.dart';
-import 'package:taksi/style/app_colors.dart'; // Custom AppColors
-import 'package:taksi/style/app_style.dart'; // Custom AppStyle
+import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 
 class BalanceTopUpPage extends StatefulWidget {
   const BalanceTopUpPage({super.key});
@@ -19,6 +18,27 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
   final _amountController = TextEditingController();
   File? _receiptImage;
   bool _isUploading = false;
+  String cardHolder = 'Loading...';
+  String cardNumber = '**** **** **** ****';
+  String cardType = 'humo';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCardData();
+  }
+
+  Future<void> fetchCardData() async {
+    final doc =
+        await FirebaseFirestore.instance.collection('data').doc('card').get();
+    if (doc.exists) {
+      setState(() {
+        cardHolder = doc['card_holder'] ?? 'Ism kiritilmagan';
+        cardNumber = doc['card_number'] ?? '**** **** **** ****';
+        cardType = doc['type'] ?? 'humo';
+      });
+    }
+  }
 
   Future<void> _pickImage() async {
     final pickedFile =
@@ -45,7 +65,6 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
     });
 
     try {
-      // Upload the receipt image to Firebase Storage
       String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
       UploadTask uploadTask = FirebaseStorage.instance
           .ref('receipts/$fileName')
@@ -54,29 +73,23 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
       TaskSnapshot snapshot = await uploadTask;
       String downloadURL = await snapshot.ref.getDownloadURL();
 
-      // Get user details
       User? user = FirebaseAuth.instance.currentUser;
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('taxidrivers')
-          .doc(user?.uid)
+      if (user == null) throw 'Пользователь не найден';
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('truckdrivers')
+          .where('email', isEqualTo: user.email)
           .get();
 
-      // Fetch user details from Firestore
-      final userData = userDoc.data() as Map<String, dynamic>?;
-      String firstName = userData?['name'] ?? 'Ism kiritilmagan';
-      String lastName = userData?['lastName'] ?? 'Familiya kiritilmagan';
-      String phoneNumber =
-          userData?['phoneNumber'] ?? 'Telefon raqam kiritilmagan';
-      String email = user?.email ?? 'Email kiritilmagan';
+      if (querySnapshot.docs.isEmpty) throw 'Водитель не найден';
 
-      // Add transaction to Firestore
+      String userId = querySnapshot.docs.first.id;
+
       await FirebaseFirestore.instance.collection('transactions').add({
+        'userId': userId,
         'amount': int.parse(_amountController.text),
         'receiptUrl': downloadURL,
-        'email': email,
-        'firstName': firstName,
-        'lastName': lastName,
-        'phoneNumber': phoneNumber,
+        'email': user.email,
         'status': 'unchecked',
         'timestamp': FieldValue.serverTimestamp(),
       });
@@ -87,7 +100,6 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
                 style: AppStyle.fontStyle)),
       );
 
-      // Clear the form
       setState(() {
         _amountController.clear();
         _receiptImage = null;
@@ -141,16 +153,7 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 20),
-              // Display a credit card using the uCreditCard library
-              Center(
-                child: CreditCardUi(
-                  cardHolderFullName: 'Sharipov Hasan',
-                  cardNumber: '5614 6812 2313 4002',
-                  validThru: '12/25', // Expiration date
-                  topLeftColor: AppColors.taxi, // Customizing card colors
-                  bottomRightColor: AppColors.taxi.withOpacity(0.8),
-                ),
-              ),
+              _buildCreditCard(),
               SizedBox(height: 30),
               Text(
                 'Summani kiriting:',
@@ -224,6 +227,73 @@ class _BalanceTopUpPageState extends State<BalanceTopUpPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCreditCard() {
+    String cardImagePath = cardType == 'humo'
+        ? 'assets/images/humo.png'
+        : 'assets/images/uzcard.png';
+
+    return Container(
+      height: 200,
+      width: double.infinity,
+      padding: EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.teal.shade800,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 30,
+          ),
+          Row(
+            children: [
+              Image.asset('assets/images/chip.png', width: 30),
+              if (cardType ==
+                  'humo') // Показать бесконтактную иконку только для Humo
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Image.asset('assets/images/wire_card.png', width: 25),
+                ),
+              Spacer(),
+            ],
+          ),
+          SizedBox(height: 20),
+          Text(
+            cardNumber,
+            style: AppStyle.fontStyle.copyWith(
+              color: Colors.white,
+              fontSize: 22,
+              letterSpacing: 1.5,
+            ),
+          ),
+          SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                cardHolder.toUpperCase(),
+                style: AppStyle.fontStyle.copyWith(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Image.asset(cardImagePath, height: 30),
+            ],
+          ),
+        ],
       ),
     );
   }

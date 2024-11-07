@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
@@ -12,6 +13,7 @@ class ObunalarPage extends StatefulWidget {
 
 class _ObunalarPageState extends State<ObunalarPage> {
   bool isLoading = false;
+  String? selectedPlan;
   List<Map<String, dynamic>> subscriptionPlans = [];
 
   @override
@@ -22,34 +24,13 @@ class _ObunalarPageState extends State<ObunalarPage> {
 
   Future<void> fetchSubscriptionPlans() async {
     setState(() => isLoading = true);
-    try {
-      final querySnapshot =
-          await FirebaseFirestore.instance.collection('tarif').get();
-
-      if (querySnapshot.docs.isEmpty) {
-        print("No subscription plans found in 'tarif' collection.");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tariflar topilmadi!')),
-        );
-      } else {
-        print("Fetched subscription plans:");
-        querySnapshot.docs.forEach((doc) {
-          print(doc.data()); // Debug print for each document
-        });
-        setState(() {
-          subscriptionPlans = querySnapshot.docs
-              .map((doc) => doc.data() as Map<String, dynamic>)
-              .toList();
-        });
-      }
-    } catch (e) {
-      print("Error fetching subscription plans: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Xatolik yuz berdi: $e')),
-      );
-    } finally {
-      setState(() => isLoading = false);
-    }
+    final querySnapshot =
+        await FirebaseFirestore.instance.collection('data').doc('tarif').get();
+    setState(() {
+      subscriptionPlans = List<Map<String, dynamic>>.from(
+          querySnapshot.data()?['tarifs'] ?? []);
+      isLoading = false;
+    });
   }
 
   @override
@@ -76,33 +57,31 @@ class _ObunalarPageState extends State<ObunalarPage> {
         padding: const EdgeInsets.all(16.0),
         child: isLoading
             ? Center(child: CircularProgressIndicator())
-            : subscriptionPlans.isEmpty
-                ? Center(child: Text('Tariflar mavjud emas.'))
-                : SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Tanlang Obunani:',
-                          style: AppStyle.fontStyle.copyWith(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.taxi,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 20),
-                        ...subscriptionPlans
-                            .map((plan) => _buildSubscriptionCard(
-                                  context,
-                                  title: plan['name'] ?? 'Noma\'lum tarif',
-                                  price: '${plan['price'] ?? '0'} UZS',
-                                  description:
-                                      plan['coment'] ?? 'Izoh mavjud emas',
-                                )),
-                      ],
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Tanlang Obunani:',
+                      style: AppStyle.fontStyle.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.taxi,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
+                    SizedBox(height: 20),
+                    ...subscriptionPlans.map((plan) => _buildSubscriptionCard(
+                          context,
+                          title: plan['name'],
+                          price: '${plan['sum_cost']} UZS',
+                          description: plan['coment'],
+                          period: plan['period'],
+                          cost: plan['sum_cost'],
+                        )),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -112,6 +91,8 @@ class _ObunalarPageState extends State<ObunalarPage> {
     required String title,
     required String price,
     required String description,
+    required String period,
+    required int cost,
   }) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -155,12 +136,23 @@ class _ObunalarPageState extends State<ObunalarPage> {
                 ),
                 textAlign: TextAlign.center,
               ),
+              SizedBox(height: 10),
+              Text(
+                'Muddat: $period',
+                style: AppStyle.fontStyle.copyWith(
+                  fontSize: 16,
+                  color: Colors.white70,
+                ),
+                textAlign: TextAlign.center,
+              ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  setState(() => isLoading = true);
-                  // Call to subscription confirmation function
-                  _confirmSubscription(context, title);
+                  setState(() {
+                    selectedPlan = title;
+                    isLoading = true;
+                  });
+                  _confirmSubscription(context, title, cost, period);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -169,14 +161,23 @@ class _ObunalarPageState extends State<ObunalarPage> {
                   ),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 40),
                 ),
-                child: Text(
-                  'TANLASH',
-                  style: AppStyle.fontStyle.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.taxi,
-                  ),
-                ),
+                child: isLoading && selectedPlan == title
+                    ? SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.taxi,
+                        ),
+                      )
+                    : Text(
+                        'TANLASH',
+                        style: AppStyle.fontStyle.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.taxi,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -185,7 +186,85 @@ class _ObunalarPageState extends State<ObunalarPage> {
     );
   }
 
-  Future<void> _confirmSubscription(BuildContext context, String plan) async {
-    // Logic to confirm subscription with proper error handling
+  Future<void> _confirmSubscription(
+      BuildContext context, String plan, int cost, String period) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Foydalanuvchi tizimga kirmagan!')),
+        );
+        return;
+      }
+
+      // Find the driver by email
+      final driverQuery = await FirebaseFirestore.instance
+          .collection('truckdrivers')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (driverQuery.docs.isEmpty) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Haydovchi topilmadi!')),
+        );
+        return;
+      }
+
+      final driverDoc = driverQuery.docs.first;
+      final driverData = driverDoc.data();
+
+      int balance = driverData['balance'] ?? 0;
+      Timestamp? currentExpiration = driverData['expired_date'];
+      int daysToAdd = period == '1 oy'
+          ? 30
+          : period == '6 oy'
+              ? 180
+              : 365;
+
+      if (balance >= cost) {
+        // Calculate the new expiration date
+        DateTime newExpirationDate;
+        if (currentExpiration != null &&
+            currentExpiration.toDate().isAfter(DateTime.now())) {
+          newExpirationDate =
+              currentExpiration.toDate().add(Duration(days: daysToAdd));
+        } else {
+          newExpirationDate = DateTime.now().add(Duration(days: daysToAdd));
+        }
+
+        // Update balance, subscription plan, and expiration date in Firestore
+        await FirebaseFirestore.instance
+            .collection('truckdrivers')
+            .doc(driverDoc.id)
+            .update({
+          'balance': balance - cost,
+          'subscription_plan': plan,
+          'expired_date': newExpirationDate,
+        });
+
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Muvaffaqiyatli obuna bo‘ldingiz!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Balansingiz yetarli emas!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Xatolik yuz berdi: $e')),
+      );
+    }
   }
 }

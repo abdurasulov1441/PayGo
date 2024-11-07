@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:taksi/screens/civil/create_order_taksi.dart';
 import 'package:taksi/screens/civil/create_order_truck.dart';
 import 'package:taksi/screens/civil/delivery_page.dart';
-import 'package:taksi/screens/civil/taksi_page.dart';
 import 'package:taksi/screens/civil/account_screen.dart';
 import 'package:taksi/screens/sign/login_screen.dart';
 import 'package:taksi/services/flushbar.dart';

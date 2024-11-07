@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:taksi/screens/drivers/chat_page.dart';
+import 'package:taksi/screens/drivers_truck/chat_page.dart';
 import 'package:taksi/screens/drivers_truck/truck_account.dart';
 import 'package:taksi/screens/drivers_truck/truck_history.dart';
 import 'package:taksi/screens/drivers_truck/truck_orders.dart';
@@ -154,7 +155,7 @@ class _TruckDriverPageState extends State<TruckDriverPage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ChatPage()),
+            MaterialPageRoute(builder: (context) => TruckDriverChatPage()),
           );
         },
       ),
