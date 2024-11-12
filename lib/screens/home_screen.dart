@@ -11,11 +11,16 @@ import 'package:taksi/style/app_style.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  // Функция для получения роли пользователя по электронной почте
   Future<String?> getUserRole(String email) async {
-    if (email == 'abdurasulov1024@gmail.com') {
-      return 'admin';
+    // Проверка для администратора
+    final adminDoc =
+        await FirebaseFirestore.instance.collection('data').doc('admin').get();
+
+    if (adminDoc.exists) {
+      final adminData = adminDoc.data();
+      if (adminData != null && adminData['email'] == email) {
+        return 'admin';
+      }
     }
 
     // Проверка для таксистов

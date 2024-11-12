@@ -6,7 +6,7 @@ import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
 class OrderStatisticsPage extends StatefulWidget {
-  const OrderStatisticsPage({Key? key}) : super(key: key);
+  const OrderStatisticsPage({super.key});
 
   @override
   _OrderStatisticsPageState createState() => _OrderStatisticsPageState();

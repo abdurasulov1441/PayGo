@@ -4,7 +4,7 @@ import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
 class TarifEditPage extends StatefulWidget {
-  const TarifEditPage({Key? key}) : super(key: key);
+  const TarifEditPage({super.key});
 
   @override
   _TarifEditPageState createState() => _TarifEditPageState();

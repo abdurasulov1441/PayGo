@@ -63,6 +63,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '36390506656',
     projectId: 'taksi-c0c76',
     storageBucket: 'taksi-c0c76.appspot.com',
-    iosBundleId: 'com.example.taksi',
+    iosBundleId: 'uz.paygo',
   );
 }

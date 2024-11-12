@@ -4,7 +4,7 @@ import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
 class CallCenterInformationPage extends StatefulWidget {
-  const CallCenterInformationPage({Key? key}) : super(key: key);
+  const CallCenterInformationPage({super.key});
 
   @override
   _CallCenterInformationPageState createState() =>

@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taksi/style/app_style.dart';
 
 class OrderStatisticsWidget extends StatelessWidget {
-  const OrderStatisticsWidget({Key? key}) : super(key: key);
+  const OrderStatisticsWidget({super.key});
 
   Stream<int> _getOrderCountStream(String status) {
     return FirebaseFirestore.instance

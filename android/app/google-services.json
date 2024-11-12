@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:36390506656:android:cabeec84ef1225072679c5",
         "android_client_info": {
-          "package_name": "com.example.taksi"
+          "package_name": "uz.paygo"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "36390506656-sbkori727kaoal2f46hnr3kl8terappf.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.taksi",
+            "package_name": "uz.paygo",
             "certificate_hash": "b61abc8b013ba7e03f4f3f18e0d9d4548ed8e8f5"
           }
         },
@@ -42,7 +42,7 @@
               "client_id": "36390506656-i6frm68no12hba3svlfouukm0clgau3m.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.taksi"
+                "bundle_id": "uz.paygo"
               }
             }
           ]

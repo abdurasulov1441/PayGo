@@ -4,7 +4,7 @@ import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
 class UserDriverStatisticsPage extends StatefulWidget {
-  const UserDriverStatisticsPage({Key? key}) : super(key: key);
+  const UserDriverStatisticsPage({super.key});
 
   @override
   _UserDriverStatisticsPageState createState() =>

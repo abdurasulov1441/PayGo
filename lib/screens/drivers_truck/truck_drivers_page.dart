@@ -52,7 +52,7 @@ class _TruckDriverPageState extends State<TruckDriverPage> {
         final data = querySnapshot.docs.first.data();
         print("Document found: ${data.toString()}");
 
-        if (data != null && data['expired_date'] != null) {
+        if (data['expired_date'] != null) {
           final DateTime expirationDate =
               (data['expired_date'] as Timestamp).toDate();
 
