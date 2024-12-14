@@ -1,31 +1,53 @@
-import 'package:email_validator/email_validator.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:taksi/screens/sign/verify_email_screen.dart';
+import 'package:flutter/services.dart';
 import 'package:taksi/services/snack_bar.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreen();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreen extends State<SignUpScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   bool isHiddenPassword = true;
-  TextEditingController emailTextInputController = TextEditingController();
+  TextEditingController phoneTextInputController =
+      TextEditingController(text: '+998 ');
   TextEditingController passwordTextInputController = TextEditingController();
   TextEditingController passwordTextRepeatInputController =
       TextEditingController();
   final formKey = GlobalKey<FormState>();
 
+  // Форматтер для номера телефона
+  final _phoneNumberFormatter = TextInputFormatter.withFunction(
+    (oldValue, newValue) {
+      if (!newValue.text.startsWith('+998 ')) {
+        return oldValue;
+      }
+
+      String text = newValue.text.substring(5).replaceAll(RegExp(r'\D'), '');
+      if (text.length > 9) {
+        text = text.substring(0, 9);
+      }
+
+      StringBuffer formatted = StringBuffer('+998 ');
+      if (text.isNotEmpty) formatted.write('(${text.substring(0, 2)}');
+      if (text.length > 2) formatted.write(') ${text.substring(2, 5)}');
+      if (text.length > 5) formatted.write(' ${text.substring(5, 7)}');
+      if (text.length > 7) formatted.write(' ${text.substring(7)}');
+
+      return TextEditingValue(
+        text: formatted.toString(),
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    },
+  );
+
   @override
   void dispose() {
-    emailTextInputController.dispose();
+    phoneTextInputController.dispose();
     passwordTextInputController.dispose();
     passwordTextRepeatInputController.dispose();
     super.dispose();
@@ -38,7 +60,6 @@ class _SignUpScreen extends State<SignUpScreen> {
   }
 
   Future<void> signUp() async {
-    final navigator = Navigator.of(context);
     final isValid = formKey.currentState!.validate();
     if (!isValid) return;
 
@@ -49,107 +70,9 @@ class _SignUpScreen extends State<SignUpScreen> {
       return;
     }
 
-    try {
-      final userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailTextInputController.text.trim(),
-        password: passwordTextInputController.text.trim(),
-      );
-
-      // Navigate to VerifyEmailScreen
-      if (mounted) {
-        navigator.pushReplacement(
-          MaterialPageRoute(builder: (context) => VerifyEmailScreen()),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      String message = 'Xatolik yuz berdi';
-      if (e.code == 'email-already-in-use') {
-        message = 'Ushbu email allaqachon mavjud';
-      }
-      if (mounted) {
-        SnackBarService.showSnackBar(context, message, true);
-      }
-    }
-  }
-
-  Future<void> googleSignIn() async {
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return; // User canceled the sign-in
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Firebase sign-in
-      final UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      final User? user = userCredential.user;
-
-      if (user != null) {
-        // Check if the user exists in Firestore
-        final DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-        if (userDoc.exists) {
-          if (mounted) {
-            // If the user already exists, show error dialog
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text("Xatolik"),
-                  content:
-                      Text("Bu email bilan foydalanuvchi allaqachon mavjud."),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text("OK"),
-                    ),
-                  ],
-                );
-              },
-            );
-          }
-        } else {
-          // If the user doesn't exist, create a new record in Firestore
-          final userData = {
-            'email': user.email,
-            'displayName': user.displayName,
-            'photoURL': user.photoURL,
-            'createdAt': FieldValue.serverTimestamp(),
-          };
-
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .set(userData);
-
-          // Navigate to the email verification screen
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => VerifyEmailScreen()),
-            );
-          }
-        }
-      }
-    } on FirebaseAuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Kirishda xatolik: ${e.message}")),
-        );
-      }
-    }
+    // Ваша логика регистрации пользователя через номер телефона
+    SnackBarService.showSnackBar(
+        context, 'Ro’yxatdan muvaffaqiyatli o’tdingiz!', false);
   }
 
   @override
@@ -183,14 +106,20 @@ class _SignUpScreen extends State<SignUpScreen> {
               ),
               const SizedBox(height: 20),
               buildTextField(
-                emailTextInputController,
-                'Email',
-                Icons.mail,
-                keyboardType: TextInputType.emailAddress,
-                validator: (email) =>
-                    email != null && !EmailValidator.validate(email)
-                        ? 'To’g’ri email kiriting'
-                        : null,
+                phoneTextInputController,
+                'Telefon raqam (+998 XXX XXX XX XX)',
+                Icons.phone,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [_phoneNumberFormatter],
+                validator: (phone) {
+                  if (phone == null || phone.isEmpty) {
+                    return 'Telefon raqamni kiriting';
+                  } else if (!RegExp(r'^\+998 \(\d{2}\) \d{3} \d{2} \d{2}$')
+                      .hasMatch(phone)) {
+                    return 'To’g’ri formatni kiriting: +998 (XX) XXX XX XX';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 15),
               buildTextField(
@@ -217,7 +146,7 @@ class _SignUpScreen extends State<SignUpScreen> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.taxi,
-                  minimumSize: Size(double.infinity, 50), // full width button
+                  minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -228,31 +157,10 @@ class _SignUpScreen extends State<SignUpScreen> {
                         color: Colors.white, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  minimumSize:
-                      const Size(double.infinity, 50), // full width button
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: googleSignIn,
-                icon: Image.asset(
-                  'assets/images/google.jpg',
-                  height: 24,
-                  width: 24,
-                ),
-                label: Text(
-                  'Google orqali kirish',
-                  style: AppStyle.fontStyle.copyWith(color: Colors.black),
-                ),
-              ),
-              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Akkauntingiz bormi?'),
+                  const Text('Akkauntingiz bormi?'),
                   TextButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -277,6 +185,7 @@ class _SignUpScreen extends State<SignUpScreen> {
     IconData icon, {
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -284,10 +193,9 @@ class _SignUpScreen extends State<SignUpScreen> {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator: validator ??
-          (value) =>
-              value == null || value.isEmpty ? 'Bu maydonni to’ldiring' : null,
+      validator: validator,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.grey[100],

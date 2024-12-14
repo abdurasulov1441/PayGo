@@ -6,14 +6,14 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.android.tools.build:gradle:7.1.3'
+        classpath 'com.android.tools.build:gradle:7.4.2' // Рекомендуемая версия Gradle Plugin
     }
 }
 
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    id "com.google.gms.google-services"
+    id "com.google.gms.google-services" // Firebase services
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -39,8 +39,8 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "uz.paygo"
-    compileSdk 34
+    namespace = "uz.paygo" // Укажите уникальный namespace
+    compileSdk 34 // Последняя версия SDK
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -50,8 +50,8 @@ android {
 
     defaultConfig {
         applicationId "uz.paygo"
-        minSdk 24
-        targetSdk 34
+        minSdk 24 // Минимальная версия SDK
+        targetSdk 34 // Целевая версия SDK
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         ndk {
@@ -70,9 +70,10 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            shrinkResources false
+            minifyEnabled false // Можно включить для уменьшения размера
+            shrinkResources false // Включить для продакшн
             signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -82,9 +83,9 @@ flutter {
 }
 
 dependencies {
-    implementation platform('com.google.firebase:firebase-bom:32.1.0')
-    implementation 'com.google.firebase:firebase-auth'
-    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation platform('com.google.firebase:firebase-bom:32.1.0') // Firebase BOM
+    implementation 'com.google.firebase:firebase-auth' // Firebase Auth
+    implementation 'com.google.android.gms:play-services-auth:20.6.0' // Google Auth
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
-    implementation 'com.yandex.android:maps.mobile:4.4.0-lite'
+    implementation 'com.yandex.android:maps.mobile:4.4.0-lite' // Yandex Maps SDK
 }

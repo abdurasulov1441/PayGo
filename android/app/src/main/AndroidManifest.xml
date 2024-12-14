@@ -8,43 +8,42 @@
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
     <application
-        android:label="PayGo"
-        android:icon="@mipmap/ic_launcher"
-        tools:replace="android:icon, android:label">
+         android:label="PayGo"
+    android:icon="@mipmap/ic_launcher"
+    tools:replace="android:icon, android:label">
 
         <!-- Yandex MapKit API key -->
         <meta-data
             android:name="com.yandex.maps.apikey"
-            android:value="15c1d849-cd77-420d-acf7-fdf37c9d4e58" /> <!-- Replace with your actual Yandex API key -->
+            android:value="15c1d849-cd77-420d-acf7-fdf37c9d4e58"/>
 
         <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:launchMode="singleTop"
-            android:theme="@style/LaunchTheme"
-            android:configChanges="orientation|keyboardHidden|screenSize|layoutDirection"
-            android:windowSoftInputMode="adjustResize">
-            <meta-data
-                android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme"/>
+        android:name=".MainActivity"
+        android:exported="true"
+        android:launchMode="singleTop"
+        android:theme="@style/LaunchTheme"
+        android:configChanges="orientation|keyboardHidden|screenSize|layoutDirection"
+        android:windowSoftInputMode="adjustResize">
+        <meta-data
+            android:name="io.flutter.embedding.android.NormalTheme"
+            android:resource="@style/NormalTheme"/>
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+        </intent-filter>
+    </activity>
 
         <!-- Firebase Messaging -->
         <service
@@ -61,13 +60,12 @@
             android:exported="true"
             android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                <category android:name="${applicationId}" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION"/>
+                <category android:name="${applicationId}"/>
             </intent-filter>
         </receiver>
 
-        <!-- Required meta-data for Flutter -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2"/>

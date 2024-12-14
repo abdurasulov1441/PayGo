@@ -72,6 +72,7 @@ dependencies:
   yandex_mapkit_lite: ^2.0.2
   flutter_styled_toast: ^2.2.1
   font_awesome_flutter: ^10.8.0
+  pinput: ^5.0.0
 
 dev_dependencies:
   flutter_test:

@@ -20,7 +20,7 @@ class MainCivilPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.taxi,
+        backgroundColor: AppColors.grade1,
         elevation: 0,
         actions: [
           GestureDetector(
@@ -51,7 +51,14 @@ class MainCivilPage extends StatelessWidget {
             width: double.infinity,
             height: 250,
             decoration: BoxDecoration(
-              color: AppColors.taxi,
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 11, 97, 114), // Начальный цвет
+                  Color.fromARGB(255, 36, 220, 212), // Конечный цвет
+                ],
+                begin: Alignment.topCenter, // Начало градиента
+                end: Alignment.bottomCenter, // Конец градиента
+              ),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(15),
                 bottomRight: Radius.circular(15),

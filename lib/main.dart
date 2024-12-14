@@ -115,7 +115,7 @@ class _MyAppState extends State<MyApp> {
       // ],
       // locale: const Locale('ru', 'RU'),
       routes: {
-        '/': (context) => const FirebaseStream(),
+        '/': (context) => FirebaseStream(),
         '/home': (context) => const HomeScreen(),
         '/account': (context) => const AccountScreen(),
         '/login': (context) => const LoginScreen(),
