@@ -73,6 +73,8 @@ dependencies:
   flutter_styled_toast: ^2.2.1
   font_awesome_flutter: ^10.8.0
   pinput: ^5.0.0
+  otp_timer_button: ^1.1.1
+  shared_preferences: ^2.3.3
 
 dev_dependencies:
   flutter_test:

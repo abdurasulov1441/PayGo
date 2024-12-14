@@ -7,6 +7,7 @@ import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/civil/historytaxi.dart';
 import 'package:taksi/screens/drivers/drivers_page.dart';
 import 'package:taksi/screens/home_screen.dart';
+import 'package:taksi/screens/new_user/role_select.dart';
 import 'package:taksi/screens/sign/login_screen.dart';
 import 'package:taksi/services/firebase_streem.dart';
 
@@ -115,7 +116,7 @@ class _MyAppState extends State<MyApp> {
       // ],
       // locale: const Locale('ru', 'RU'),
       routes: {
-        '/': (context) => FirebaseStream(),
+        '/': (context) => const FirebaseStream(),
         '/home': (context) => const HomeScreen(),
         '/account': (context) => const AccountScreen(),
         '/login': (context) => const LoginScreen(),

@@ -14,9 +14,6 @@ class MainCivilPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final User? user =
-        FirebaseAuth.instance.currentUser; // Get the current user
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -25,19 +22,10 @@ class MainCivilPage extends StatelessWidget {
         actions: [
           GestureDetector(
             onTap: () {
-              if (user != null) {
-                // If user is logged in, navigate to AccountScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AccountScreen()),
-                );
-              } else {
-                // If not logged in, navigate to LoginScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
-              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AccountScreen()),
+              );
             },
             child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -119,16 +107,11 @@ class MainCivilPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        if (user != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => DeliveryPage()),
-                          );
-                        } else {
-                          _showLoginDialog(
-                              context); // Show registration dialog if not logged in
-                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => DeliveryPage()),
+                        );
                       },
                       child: transportCard(
                         'Yuk mashinasi',
@@ -138,15 +121,7 @@ class MainCivilPage extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        if (user != null) {
-                          showCustomTopToast(context);
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(builder: (context) => TaxiPage()),
-                          // );
-                        } else {
-                          _showLoginDialog(context);
-                        }
+                        showCustomTopToast(context);
                       },
                       child: transportCard(
                         'Taksi',
@@ -177,15 +152,11 @@ class MainCivilPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        if (user != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => CreateOrderTruck()),
-                          );
-                        } else {
-                          _showLoginDialog(context);
-                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => CreateOrderTruck()),
+                        );
                       },
                       child: transportCard(
                         'Yuk mashinasi',
@@ -195,16 +166,7 @@ class MainCivilPage extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        if (user != null) {
-                          showCustomTopToast(context);
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //       builder: (context) => CreateOrderTaksi()),
-                          // );
-                        } else {
-                          _showLoginDialog(context);
-                        }
+                        showCustomTopToast(context);
                       },
                       child: transportCard(
                         'Taksi',

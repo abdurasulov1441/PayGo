@@ -1,5 +1,10 @@
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:taksi/screens/sign/sign_up_verify.dart';
+import 'package:taksi/services/gradientbutton.dart';
 import 'package:taksi/services/snack_bar.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
@@ -12,67 +17,90 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  bool isHiddenPassword = true;
+  TextEditingController nameTextInputController = TextEditingController();
   TextEditingController phoneTextInputController =
       TextEditingController(text: '+998 ');
-  TextEditingController passwordTextInputController = TextEditingController();
-  TextEditingController passwordTextRepeatInputController =
-      TextEditingController();
+
   final formKey = GlobalKey<FormState>();
 
-  // Форматтер для номера телефона
   final _phoneNumberFormatter = TextInputFormatter.withFunction(
     (oldValue, newValue) {
       if (!newValue.text.startsWith('+998 ')) {
-        return oldValue;
+        return TextEditingValue(
+          text: '+998 ',
+          selection: TextSelection.collapsed(offset: 5),
+        );
       }
 
-      String text = newValue.text.substring(5).replaceAll(RegExp(r'\D'), '');
-      if (text.length > 9) {
-        text = text.substring(0, 9);
+      String rawText =
+          newValue.text.replaceAll(RegExp(r'[^0-9]'), '').substring(3);
+
+      if (rawText.length > 9) {
+        rawText = rawText.substring(0, 9);
       }
 
-      StringBuffer formatted = StringBuffer('+998 ');
-      if (text.isNotEmpty) formatted.write('(${text.substring(0, 2)}');
-      if (text.length > 2) formatted.write(') ${text.substring(2, 5)}');
-      if (text.length > 5) formatted.write(' ${text.substring(5, 7)}');
-      if (text.length > 7) formatted.write(' ${text.substring(7)}');
+      String formattedText = '+998 ';
+      if (rawText.isNotEmpty) {
+        formattedText += '(${rawText.substring(0, min(2, rawText.length))}';
+      }
+      if (rawText.length > 2) {
+        formattedText += ') ${rawText.substring(2, min(5, rawText.length))}';
+      }
+      if (rawText.length > 5) {
+        formattedText += ' ${rawText.substring(5, min(7, rawText.length))}';
+      }
+      if (rawText.length > 7) {
+        formattedText += ' ${rawText.substring(7)}';
+      }
 
       return TextEditingValue(
-        text: formatted.toString(),
-        selection: TextSelection.collapsed(offset: formatted.length),
+        text: formattedText,
+        selection: TextSelection.collapsed(offset: formattedText.length),
       );
     },
   );
 
   @override
   void dispose() {
+    nameTextInputController.dispose();
     phoneTextInputController.dispose();
-    passwordTextInputController.dispose();
-    passwordTextRepeatInputController.dispose();
     super.dispose();
-  }
-
-  void togglePasswordView() {
-    setState(() {
-      isHiddenPassword = !isHiddenPassword;
-    });
   }
 
   Future<void> signUp() async {
     final isValid = formKey.currentState!.validate();
     if (!isValid) return;
 
-    if (passwordTextInputController.text !=
-        passwordTextRepeatInputController.text) {
-      SnackBarService.showSnackBar(
-          context, 'Parollar bir xil bo‘lishi kerak', true);
-      return;
-    }
+    try {
+      final response = await http.post(
+        Uri.parse('https://paygo.app-center.uz/api/auth/register'),
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'name': nameTextInputController.text.trim(),
+          'phone_number': phoneTextInputController.text.trim(),
+        }),
+      );
 
-    // Ваша логика регистрации пользователя через номер телефона
-    SnackBarService.showSnackBar(
-        context, 'Ro’yxatdan muvaffaqiyatli o’tdingiz!', false);
+      final data = jsonDecode(response.body);
+
+      SnackBarService.showSnackBar(context, data['message'], false);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerificationScreen(
+              phoneNumber: phoneTextInputController.text.trim(),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      SnackBarService.showSnackBar(
+          context, 'Internetga ulanishda xatolik', true);
+    }
   }
 
   @override
@@ -87,24 +115,57 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 120),
+              const SizedBox(height: 100),
               Text(
                 'Ro’yxatdan o’tish',
                 style: AppStyle.fontStyle.copyWith(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  color: AppColors.grade1,
                 ),
               ),
               const SizedBox(height: 20),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  width: 100,
-                  height: 100,
+              Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: SizedBox(
+                      height: 100,
+                      width: 100,
+                      child: Card(
+                        color: Colors.white,
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
+              buildTextField(
+                nameTextInputController,
+                'Ismingizni kiriting',
+                Icons.person,
+                validator: (name) {
+                  if (name == null || name.isEmpty) {
+                    return 'Ismingizni kiriting';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 15),
               buildTextField(
                 phoneTextInputController,
                 'Telefon raqam (+998 XXX XXX XX XX)',
@@ -121,40 +182,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 15),
-              buildTextField(
-                passwordTextInputController,
-                'Parol',
-                Icons.lock,
-                obscureText: isHiddenPassword,
-                validator: (value) => value != null && value.length < 6
-                    ? 'Kamida 6 ta belgidan iborat bo’lishi kerak'
-                    : null,
-              ),
-              const SizedBox(height: 15),
-              buildTextField(
-                passwordTextRepeatInputController,
-                'Parolni qayta kiriting',
-                Icons.lock,
-                obscureText: isHiddenPassword,
-                validator: (value) =>
-                    value != null && value != passwordTextInputController.text
-                        ? 'Parollar mos kelishi kerak'
-                        : null,
-              ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.taxi,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+              GradientButton(
                 onPressed: signUp,
-                child: Text('Ro’yxatdan o’tish',
-                    style: AppStyle.fontStyle.copyWith(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
+                text: 'Kirish',
               ),
               const SizedBox(height: 20),
               Row(
@@ -162,16 +193,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 children: [
                   const Text('Akkauntingiz bormi?'),
                   TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        'Kirish',
-                        style:
-                            AppStyle.fontStyle.copyWith(color: AppColors.taxi),
-                      )),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Kirish',
+                      style: AppStyle.fontStyle.copyWith(
+                        color: AppColors.grade1,
+                      ),
+                    ),
+                  ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -199,7 +232,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.grey[100],
-        prefixIcon: Icon(icon, color: AppColors.taxi),
+        prefixIcon: Icon(icon, color: AppColors.grade1),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,

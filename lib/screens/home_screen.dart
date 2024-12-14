@@ -6,7 +6,8 @@ import 'package:taksi/screens/admin/admin_page.dart';
 import 'package:taksi/screens/civil/civil_page.dart';
 import 'package:taksi/screens/drivers/drivers_page.dart';
 import 'package:taksi/screens/drivers_truck/truck_drivers_page.dart';
-import 'package:taksi/screens/new_user/role_select_page.dart';
+import 'package:taksi/screens/new_user/role_select.dart';
+
 import 'package:taksi/style/app_style.dart';
 
 class HomeScreen extends StatelessWidget {
