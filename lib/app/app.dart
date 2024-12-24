@@ -16,7 +16,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: "Qo'riqlash xizmati",
+      title: "PayGo",
       routerConfig: router,
       locale: context.locale,
       localizationsDelegates: context.localizationDelegates,

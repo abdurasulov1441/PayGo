@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:taksi/pages/civil/history_truck.dart';
-import 'package:taksi/pages/civil/historytaxi.dart';
-import 'package:taksi/services/flushbar.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -176,11 +173,11 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.history,
                         label: 'Sayohat tarixi',
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => OrderHistoryPage()),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //       builder: (context) => OrderHistoryPage()),
+                          // );
                         },
                       ),
                       const Divider(),
@@ -188,11 +185,11 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.history,
                         label: 'Yuk tarixi',
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => TruckOrderHistoryPage()),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //       builder: (context) => TruckOrderHistoryPage()),
+                          // );
                         },
                       ),
                       const Divider(),
@@ -200,7 +197,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.brightness_6,
                         label: 'Mavzuni o\'zgartirish',
                         onTap: () {
-                          showCustomTopToast(context);
+                     
                         },
                       ),
                       const Divider(),
@@ -208,7 +205,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icons.language,
                         label: 'Tilni o\'zgartirish',
                         onTap: () {
-                          showCustomTopToast(context);
+                        
                         },
                       ),
                       const Divider(),

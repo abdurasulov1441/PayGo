@@ -1,12 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:taksi/services/utils/Errorpage.dart';
 import 'package:taksi/pages/admin/admin_page.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
-import 'package:taksi/pages/drivers/drivers_page.dart';
-import 'package:taksi/pages/drivers_truck/truck_drivers_page.dart';
 import 'package:taksi/pages/new_user/role_select.dart';
 import 'package:taksi/pages/sign/login_screen.dart';
 import 'package:taksi/services/request_helper.dart';
@@ -65,10 +61,10 @@ class HomeScreen extends StatelessWidget {
               return RoleSelectionPage();
             case 1:
               return MainCivilPage();
-            case 2:
-              return DriverPage();
-            case 3:
-              return TruckDriverPage();
+            // case 2:
+            //   return DriverPage();
+            // case 3:
+            //   return TruckDriverPage();
             case 4:
               return AdminDashboard();
             default:

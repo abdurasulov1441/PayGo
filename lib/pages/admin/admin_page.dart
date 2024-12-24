@@ -1,9 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:taksi/pages/admin/balance_check.dart';
-import 'package:taksi/pages/admin/order_statistic.dart';
-import 'package:taksi/pages/admin/settings.dart';
-import 'package:taksi/pages/admin/user_statistic.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -39,12 +35,7 @@ class _AdminPageState extends State<AdminDashboard> {
   }
 
   // Список страниц для каждого раздела
-  final List<Widget> _pages = [
-    OrderStatisticsPage(),
-    UserDriverStatisticsPage(),
-    BalanceRequestsPage(),
-    AdminSettingsPage(),
-  ];
+  final List<Widget> _pages = [];
 
   @override
   Widget build(BuildContext context) {

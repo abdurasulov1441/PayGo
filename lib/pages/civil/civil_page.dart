@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:taksi/pages/civil/create_order_truck.dart';
-import 'package:taksi/pages/civil/delivery_page.dart';
+
 import 'package:taksi/pages/civil/account_screen.dart';
 import 'package:taksi/pages/sign/login_screen.dart';
-import 'package:taksi/services/flushbar.dart';
 
 import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart'; // Assuming AppStyle is in this file
+import 'package:taksi/style/app_style.dart';
 
 class MainCivilPage extends StatelessWidget {
   const MainCivilPage({super.key});
 
-
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -108,11 +104,11 @@ class MainCivilPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => DeliveryPage()),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //       builder: (context) => DeliveryPage()),
+                        // );
                       },
                       child: transportCard(
                         'Yuk mashinasi',
@@ -121,9 +117,7 @@ class MainCivilPage extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        showCustomTopToast(context);
-                      },
+                      onTap: () {},
                       child: transportCard(
                         'Taksi',
                         Icons.local_taxi,
@@ -153,11 +147,11 @@ class MainCivilPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => CreateOrderTruck()),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //       builder: (context) => CreateOrderTruck()),
+                        // );
                       },
                       child: transportCard(
                         'Yuk mashinasi',
@@ -166,9 +160,7 @@ class MainCivilPage extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        showCustomTopToast(context);
-                      },
+                      onTap: () {},
                       child: transportCard(
                         'Taksi',
                         Icons.local_taxi,
@@ -216,133 +208,6 @@ class MainCivilPage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showLoginDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Red Header
-              Container(
-                height: 50,
-                //padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.taxi, // Red header background
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    topRight: Radius.circular(10),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Icon(Icons.warning, color: Colors.white), // Warning icon
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Ro‘yxatdan o‘tishingiz kerak', // Header text
-                        style: AppStyle.fontStyle.copyWith(
-                          color: Colors.white, // White text
-                          fontSize: 12, // Smaller font size
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close, color: Colors.white),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
-                ),
-              ),
-              // White Body
-              Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  'Ushbu xizmatdan foydalanish uchun tizimga kirishingiz kerak. Ro‘yxatdan o‘tmoqchimisiz?',
-                  style: AppStyle.fontStyle.copyWith(
-                    color: Colors.black, // Black text for the body
-                    fontSize: 11, // Smaller font size for body text
-                  ),
-                ),
-              ),
-              Divider(height: 1),
-              SizedBox(
-                height: 10,
-              ),
-              // Action Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor:
-                          AppColors.taxi, // Red background for 'YES' button
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Yo\'q',
-                      style: AppStyle.fontStyle.copyWith(
-                          fontSize: 14, // Smaller font size for 'Yes' button
-                          color: Colors.white,
-                          fontWeight:
-                              FontWeight.bold // White text for 'YES' button
-                          ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor:
-                          AppColors.taxi, // Red background for 'YES' button
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Ha',
-                      style: AppStyle.fontStyle.copyWith(
-                          fontSize: 14, // Smaller font size for 'Yes' button
-                          color: Colors.white,
-                          fontWeight:
-                              FontWeight.bold // White text for 'YES' button
-                          ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
     );
   }
 }
