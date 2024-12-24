@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-
-import 'package:taksi/pages/civil/account_screen.dart';
-import 'package:taksi/pages/sign/login_screen.dart';
-
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -19,10 +15,10 @@ class MainCivilPage extends StatelessWidget {
         actions: [
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AccountScreen()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => AccountScreen()),
+              // );
             },
             child: Padding(
                 padding: const EdgeInsets.all(8.0),

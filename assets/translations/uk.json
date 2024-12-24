@@ -1,3 +1,16 @@
 {
-  "language": "Ўзбек"
+  "language": "Ўзбек",
+  "select_language": "Тилни танланг",
+  "continue": "Давом этиш",
+  "chosen_language": "Танланган тил:",  
+
+  "welcome": "Хуш келибсиз !",
+  "login": "Кириш",
+  "dont_have_account": "Aккаунтингиз йўқми?",
+  "registration": "Рўйҳатдан ўтиш",
+
+  "phone_verify": "Рақамни тасдиқлаш",
+  "enter_sms": "СМС ни киритинг",
+  "we_send_sms": "Биз сизга 6 тали рақам жўнатдик",
+  "resend_code": "Кодни қайтадан жўнатиш"
 }

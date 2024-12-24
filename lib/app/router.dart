@@ -1,12 +1,17 @@
 import 'package:go_router/go_router.dart';
+import 'package:taksi/pages/civil/civil_page.dart';
+import 'package:taksi/pages/civil/test_page.dart';
 import 'package:taksi/pages/home_screen.dart';
 import 'package:taksi/pages/new_user/role_select.dart';
 import 'package:taksi/pages/sign/login_screen.dart';
 import 'package:taksi/pages/sign/sign_up_verify.dart';
 import 'package:taksi/pages/sign/signup_screen.dart';
 import 'package:taksi/services/db/cache.dart';
+import 'package:taksi/services/language/language_select_page.dart';
 
 abstract class Routes {
+  static const selsctLanguagePage = '/selsctLanguagePage';
+
   static const homeScreen = '/homeScreen';
 
   static const loginScreen = '/loginScreen';
@@ -14,33 +19,34 @@ abstract class Routes {
   static const register = '/register';
 
   static const roleSelect = '/roleSelect';
+  static const civilPage = '/civilPage';
 
-  static var home;
+  static const testPage = '/testPage';
 }
 
 String _initialLocation() {
-  // return Routes.splashScreen;
+  return Routes.testPage;
 
   final userToken = cache.getString("user_token");
 
   if (userToken != null) {
     return Routes.homeScreen;
   }
-  return Routes.loginScreen;
+  return Routes.selsctLanguagePage;
 }
 
 Object? _initialExtra() {
-  return {
-    'passport': "AB0146098",
-    'birth_date': "1999-01-26",
-    'full_name': "Abduraimbek Yarkinov",
-  };
+  return {};
 }
 
 final router = GoRouter(
   initialLocation: _initialLocation(),
   initialExtra: _initialExtra(),
   routes: [
+    GoRoute(
+      path: Routes.homeScreen,
+      builder: (context, state) => const LanguageSelectionPage(),
+    ),
     GoRoute(
       path: Routes.homeScreen,
       builder: (context, state) => const HomeScreen(),
@@ -63,6 +69,14 @@ final router = GoRouter(
         final phoneNumber = state.extra as String;
         return VerificationScreen(phoneNumber: phoneNumber);
       },
+    ),
+    GoRoute(
+      path: Routes.civilPage,
+      builder: (context, state) => const MainCivilPage(),
+    ),
+    GoRoute(
+      path: Routes.testPage,
+      builder: (context, state) => const TestPage(),
     ),
   ],
 );

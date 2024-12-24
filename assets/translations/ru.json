@@ -1,4 +1,18 @@
 {
-  "language": "Русский"
+  "language": "Русский",
+  "select_language": "Выберите язык",
+  "continue": "Продолжить",
+  "chosen_language": "Выбранный язык:",
+  
 
+  "welcome": "Добро пожаловать",
+  "login": "Вход",
+  "dont_have_account": "Нет аккаунта?",
+  "registration": "Регистрация",
+
+  "phone_verify": "Проверка номера",
+  "enter_sms": "Введите СМС",
+  "we_send_sms": "Мы вам отправили 6-значный код",
+  "resend_code": "Отправить код повторно"
+  
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:taksi/services/language/language_select_page.dart';
 import 'package:taksi/services/utils/Errorpage.dart';
 import 'package:taksi/pages/admin/admin_page.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
@@ -14,18 +15,14 @@ class HomeScreen extends StatelessWidget {
 
   Future<Map<String, dynamic>?> checkUserStatus() async {
     try {
-      // Выполнение GET-запроса через RequestHelper
       final response = await requestHelper.getWithAuth(
         '/services/zyber/api/users/get-user-status',
       );
 
-      return response
-          as Map<String, dynamic>?; // Возвращаем данные о статусе пользователя
+      return response as Map<String, dynamic>?;
     } on UnauthenticatedError {
-      // Если токен недействителен, возвращаем null
       return null;
     } catch (e) {
-      // Обработка сетевых ошибок
       print('Ошибка сети: $e');
       return null;
     }
@@ -44,14 +41,12 @@ class HomeScreen extends StatelessWidget {
             ),
           );
         } else if (!snapshot.hasData || snapshot.data == null) {
-          // Если токена нет или ошибка — отправляем на LoginPage
-          return LoginScreen();
+          return LanguageSelectionPage();
         } else {
           final userData = snapshot.data!;
           final int status = userData['status'];
           final int roleId = userData['role_id'];
 
-          // Проверяем статус и роли
           if (status == 0) {
             return const BlockedUsersPage();
           }

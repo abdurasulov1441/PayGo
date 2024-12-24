@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/app/router.dart';
-import 'package:taksi/pages/sign/sign_up_verify.dart';
 import 'package:taksi/pages/sign/signup_screen.dart';
 import 'package:taksi/services/gradientbutton.dart';
 import 'package:taksi/style/app_colors.dart';
@@ -109,113 +108,108 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.backgroundColor,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back,
-            color: AppColors.textColor,
-          ),
-        ),
-        elevation: 0,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(30.0),
         child: Form(
           key: formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Xush kelibsiz !',
-                style: AppStyle.fontStyle
-                    .copyWith(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              Center(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: SizedBox(
-                      height: 100,
-                      width: 100,
-                      child: Card(
-                        color: Colors.white,
-                        child: Image.asset(
-                          'assets/images/logo.png',
-                          fit: BoxFit.cover,
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  height: 100,
+                ),
+                Text(
+                  "welcome".tr(),
+                  style: AppStyle.fontStyle
+                      .copyWith(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: Card(
+                          color: Colors.white,
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: phoneTextInputController,
-                keyboardType: TextInputType.phone,
-                inputFormatters: [_phoneNumberFormatter],
-                validator: (phone) {
-                  if (phone == null || phone.isEmpty) {
-                    return 'Telefon raqamni kiriting';
-                  } else if (!RegExp(r'^\+998 \(\d{2}\) \d{3} \d{2} \d{2}$')
-                      .hasMatch(phone)) {
-                    return 'To\'g\'ri formatni kiriting: +998 (XX) XXX XX XX';
-                  }
-                  return null;
-                },
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                  prefixIcon: const Icon(Icons.phone, color: AppColors.grade2),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                  hintText: '+998 (XX) XXX XX XX',
-                  hintStyle: AppStyle.fontStyle.copyWith(color: Colors.grey),
-                ),
-              ),
-              const SizedBox(height: 20),
-              GradientButton(
-                onPressed: login,
-                text: 'Kirish',
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Akkauntingiz yo\'qmi?'),
-                  const SizedBox(width: 5),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const SignUpScreen()),
-                      );
-                    },
-                    child: Text(
-                      'Ro\'yxatdan o\'tish',
-                      style:
-                          AppStyle.fontStyle.copyWith(color: AppColors.grade2),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: phoneTextInputController,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [_phoneNumberFormatter],
+                  validator: (phone) {
+                    if (phone == null || phone.isEmpty) {
+                      return 'Telefon raqamni kiriting';
+                    } else if (!RegExp(r'^\+998 \(\d{2}\) \d{3} \d{2} \d{2}$')
+                        .hasMatch(phone)) {
+                      return 'To\'g\'ri formatni kiriting: +998 (XX) XXX XX XX';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    prefixIcon:
+                        const Icon(Icons.phone, color: AppColors.grade2),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
                     ),
-                  )
-                ],
-              ),
-            ],
+                    hintText: '+998 (XX) XXX XX XX',
+                    hintStyle: AppStyle.fontStyle.copyWith(color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                GradientButton(
+                  onPressed: login,
+                  text: 'login'.tr(),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('dont_have_account').tr(),
+                    const SizedBox(width: 5),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignUpScreen()),
+                        );
+                      },
+                      child: Text(
+                        'registration',
+                        style: AppStyle.fontStyle
+                            .copyWith(color: AppColors.grade2),
+                      ).tr(),
+                    )
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

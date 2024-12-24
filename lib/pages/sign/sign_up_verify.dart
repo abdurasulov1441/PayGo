@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -126,11 +127,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
             icon: Icon(
               Icons.arrow_back,
@@ -139,9 +141,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
         centerTitle: true,
         backgroundColor: AppColors.grade1,
         title: Text(
-          'Telefonni tasdiqlash',
+          'phone_verify',
           style: AppStyle.fontStyle.copyWith(color: Colors.white, fontSize: 20),
-        ),
+        ).tr(),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -150,19 +152,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              SizedBox(
+                height: 50,
+              ),
               Lottie.asset('assets/lottie/sms_verify.json',
                   width: 200, height: 200),
               SizedBox(height: 20),
               Text(
-                'Sms ni tasdiqlash',
+                'enter_sms',
                 style: AppStyle.fontStyle
                     .copyWith(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
+              ).tr(),
               SizedBox(height: 10),
               Text(
-                'Biz sizga 6 tali raqam jo‘natdik',
+                'we_send_sms',
                 style: AppStyle.fontStyle.copyWith(color: Colors.grey),
-              ),
+              ).tr(),
               SizedBox(height: 10),
               Text(
                 maskPhoneNumber(widget.phoneNumber),
@@ -173,10 +178,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 controller: controller,
                 height: 60,
                 text: Text(
-                  'Kodni qaytadan jo\'natish',
+                  'resend_code',
                   style: AppStyle.fontStyle.copyWith(color: AppColors.grade1),
-                ),
-                duration: 5,
+                ).tr(),
+                duration: 60,
                 radius: 30,
                 backgroundColor: Colors.blue,
                 textColor: Colors.white,
@@ -214,10 +219,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         ),
                       ),
                       child: Text(
-                        'Akkauntni tasdiqlash va yaratish',
+                        'phone_verify',
                         style: AppStyle.fontStyle
                             .copyWith(color: AppColors.backgroundColor),
-                      ),
+                      ).tr(),
                     ),
             ],
           ),

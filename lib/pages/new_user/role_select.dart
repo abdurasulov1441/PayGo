@@ -60,8 +60,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
       );
 
       if (response['success'] == true) {
-       
-        context.go(Routes.home);
+        context.go(Routes.homeScreen);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -122,10 +121,8 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                       onPressed: selectedRole != null
                           ? () {
                               if (selectedRole == roles.first['name']) {
-                                // Если выбрана первая роль, отправляем запрос
                                 updateUserRole(1);
                               } else {
-                                // Обработка других ролей
                                 print("Выбрана роль: $selectedRole");
                               }
                             }
