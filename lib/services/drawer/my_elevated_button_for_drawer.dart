@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
+import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 
 class MyElevatedButtonForDrawer extends StatelessWidget {
   const MyElevatedButtonForDrawer(
@@ -14,6 +16,7 @@ class MyElevatedButtonForDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
         style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.grade1,
           elevation: 3,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           shape: RoundedRectangleBorder(
@@ -25,11 +28,17 @@ class MyElevatedButtonForDrawer extends StatelessWidget {
         },
         child: Row(
           children: [
-            Icon(icon),
+            Icon(
+              icon,
+              color: Colors.white,
+            ),
             SizedBox(
               width: 10,
             ),
-            Text(name)
+            Text(
+              name,
+              style: AppStyle.fontStyle.copyWith(color: Colors.white),
+            )
           ],
         ));
   }

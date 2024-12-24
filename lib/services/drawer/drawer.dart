@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/drawer/my_elevated_button_for_drawer.dart';
+import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
 class MyCostomDrawer extends StatelessWidget {
@@ -11,6 +11,7 @@ class MyCostomDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: Container(
+        color: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -20,7 +21,8 @@ class MyCostomDrawer extends StatelessWidget {
             ),
             Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
+                  // child: Image.asset('assets/images/user.png'),
                   radius: 30,
                 ),
                 const SizedBox(
@@ -42,7 +44,6 @@ class MyCostomDrawer extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                
                 SizedBox(
                   width: 10,
                 ),
@@ -53,6 +54,7 @@ class MyCostomDrawer extends StatelessWidget {
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 3,
+                      backgroundColor: AppColors.grade1,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 5),
                       shape: RoundedRectangleBorder(
@@ -64,7 +66,7 @@ class MyCostomDrawer extends StatelessWidget {
                     },
                     child: Text(
                       'To\'ldirish',
-                      style: AppStyle.fontStyle,
+                      style: AppStyle.fontStyle.copyWith(color: Colors.white),
                     ))
               ],
             ),
@@ -74,7 +76,7 @@ class MyCostomDrawer extends StatelessWidget {
             const Divider(),
             MyElevatedButtonForDrawer(
               icon: Icons.home,
-              name: 'Home',
+              name: 'Tariflar',
               route: Routes.civilPage,
             ),
             const SizedBox(
@@ -82,7 +84,31 @@ class MyCostomDrawer extends StatelessWidget {
             ),
             MyElevatedButtonForDrawer(
               icon: Icons.home,
-              name: 'Home',
+              name: 'Yuk buyurtmasi tarixi',
+              route: Routes.civilPage,
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            MyElevatedButtonForDrawer(
+              icon: Icons.home,
+              name: 'Yuk buyurtmasi tarixi',
+              route: Routes.civilPage,
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            MyElevatedButtonForDrawer(
+              icon: Icons.home,
+              name: 'To\'lovlar tarixi',
+              route: Routes.civilPage,
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            MyElevatedButtonForDrawer(
+              icon: Icons.settings,
+              name: 'Sozlamalar',
               route: Routes.civilPage,
             ),
             const Spacer(),
