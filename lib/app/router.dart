@@ -25,7 +25,7 @@ abstract class Routes {
 }
 
 String _initialLocation() {
-  return Routes.testPage;
+  return Routes.civilPage;
 
   final userToken = cache.getString("user_token");
 

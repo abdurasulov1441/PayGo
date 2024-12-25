@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taksi/services/drawer/drawer.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -8,23 +9,12 @@ class MainCivilPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MyCostomDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: AppColors.grade1,
         elevation: 0,
-        actions: [
-          GestureDetector(
-            onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => AccountScreen()),
-              // );
-            },
-            child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.asset('assets/images/user.png')),
-          ),
-        ],
       ),
       body: Stack(
         children: [

@@ -1,91 +1,44 @@
-buildscript {
-    ext.kotlin_version = '1.8.0'
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.android.tools.build:gradle:7.4.2' // Рекомендуемая версия Gradle Plugin
-    }
-}
-
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    id "com.google.gms.google-services" // Firebase services
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader("UTF-8") { reader -> localProperties.load(reader) }
-}
-
-def flutterRoot = localProperties.getProperty('flutter.sdk')
-if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
-}
-
-def flutterVersionCode = localProperties.getProperty("flutter.versionCode", "1")
-def flutterVersionName = localProperties.getProperty("flutter.versionName", "1.0")
-
-// Load keystore properties
-def keystorePropertiesFile = rootProject.file("key.properties")
-def keystoreProperties = new Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-
 android {
-    namespace = "uz.paygo" // Укажите уникальный namespace
-    compileSdk 34 // Последняя версия SDK
+    namespace = "com.example.taksi"
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
     }
 
     defaultConfig {
-        applicationId "uz.paygo"
-        minSdk 24 // Минимальная версия SDK
-        targetSdk 34 // Целевая версия SDK
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-        ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-        }
-    }
-
-    signingConfigs {
-        release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword keystoreProperties['storePassword']
-        }
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.example.taksi"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        minSdk = 23
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
     }
 
     buildTypes {
         release {
-            minifyEnabled false // Можно включить для уменьшения размера
-            shrinkResources false // Включить для продакшн
-            signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
         }
     }
 }
 
 flutter {
-    source "../.."
-}
-
-dependencies {
-    implementation platform('com.google.firebase:firebase-bom:32.1.0') // Firebase BOM
-    implementation 'com.google.firebase:firebase-auth' // Firebase Auth
-    implementation 'com.google.android.gms:play-services-auth:20.6.0' // Google Auth
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
-    implementation 'com.yandex.android:maps.mobile:4.4.0-lite' // Yandex Maps SDK
+    source = "../.."
 }

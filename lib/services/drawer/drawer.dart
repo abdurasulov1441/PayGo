@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/drawer/my_elevated_button_for_drawer.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+
+import 'package:url_launcher/url_launcher.dart';
 
 class MyCostomDrawer extends StatelessWidget {
   const MyCostomDrawer({super.key});
@@ -52,27 +52,31 @@ class MyCostomDrawer extends StatelessWidget {
                   width: 10,
                 ),
                 ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 3,
-                      backgroundColor: AppColors.grade1,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
+                  style: ElevatedButton.styleFrom(
+                    elevation: 3,
+                    backgroundColor: Colors.blue,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
-                    onPressed: () {
-                      // context.go(Routes.civilPage);
-                    },
-                    child: Text(
-                      'To\'ldirish',
-                      style: AppStyle.fontStyle.copyWith(color: Colors.white),
-                    ))
+                  ),
+                  onPressed: () async {
+                    final url = Uri.parse(
+                        'https://my.click.uz/services/pay?service_id=63738&merchant_id=33627&amount=1000&transaction_param=1&return_url=app-center.uz');
+                    if (!await launchUrl(url,
+                        mode: LaunchMode.inAppBrowserView)) {
+                      throw Exception('Could not launch $url');
+                    }
+                  },
+                  child: const Text(
+                    'To\'ldirish',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(
-              height: 5,
-            ),
+            const SizedBox(height: 10),
             const Divider(),
             MyElevatedButtonForDrawer(
               icon: Icons.home,
