@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 import 'package:taksi/app/router.dart';
-import 'package:taksi/pages/sign/sign_up_verify.dart';
 import 'package:taksi/services/gradientbutton.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/snack_bar.dart';

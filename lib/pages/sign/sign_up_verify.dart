@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:otp_timer_button/otp_timer_button.dart';
 import 'package:pinput/pinput.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/request_helper.dart';

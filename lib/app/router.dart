@@ -25,7 +25,7 @@ abstract class Routes {
 }
 
 String _initialLocation() {
-  return Routes.civilPage;
+  return Routes.roleSelect;
 
   final userToken = cache.getString("user_token");
 

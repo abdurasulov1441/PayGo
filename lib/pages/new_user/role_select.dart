@@ -37,8 +37,8 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
         roles = response;
         isLoading = false;
       });
-    } on UnauthenticatedError {
-      context.go(Routes.loginScreen);
+      // } on UnauthenticatedError {
+      //   context.go(Routes.loginScreen);
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ошибка сети. Попробуйте снова.')),
@@ -51,7 +51,6 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
   Future<void> updateUserRole(int roleId) async {
     try {
-      // Отправляем PUT-запрос на сервер через RequestHelper
       final response = await requestHelper.putWithAuth(
         '/services/zyber/api/users/update-user-role',
         {
@@ -130,7 +129,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selectedRole != null
                             ? AppColors.grade1
-                            : Colors.grey, // Активный/неактивный цвет
+                            : Colors.grey,
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),

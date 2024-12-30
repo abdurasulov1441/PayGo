@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/drawer/my_elevated_button_for_drawer.dart';
 
-import 'package:url_launcher/url_launcher.dart';
-
 class MyCostomDrawer extends StatelessWidget {
   const MyCostomDrawer({super.key});
 
@@ -41,41 +39,41 @@ class MyCostomDrawer extends StatelessWidget {
             const SizedBox(
               height: 10,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 10,
-                ),
-                Text('Balans : 26 000 so\'m'),
-                SizedBox(
-                  width: 10,
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 3,
-                    backgroundColor: Colors.blue,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  onPressed: () async {
-                    final url = Uri.parse(
-                        'https://my.click.uz/services/pay?service_id=63738&merchant_id=33627&amount=1000&transaction_param=1&return_url=app-center.uz');
-                    if (!await launchUrl(url,
-                        mode: LaunchMode.inAppBrowserView)) {
-                      throw Exception('Could not launch $url');
-                    }
-                  },
-                  child: const Text(
-                    'To\'ldirish',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     SizedBox(
+            //       width: 10,
+            //     ),
+            //     Text('Balans : 26 000 so\'m'),
+            //     SizedBox(
+            //       width: 10,
+            //     ),
+            //     ElevatedButton(
+            //       style: ElevatedButton.styleFrom(
+            //         elevation: 3,
+            //         backgroundColor: Colors.blue,
+            //         padding:
+            //             const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            //         shape: RoundedRectangleBorder(
+            //           borderRadius: BorderRadius.circular(8.0),
+            //         ),
+            //       ),
+            //       onPressed: () async {
+            //         final url = Uri.parse(
+            //             'https://my.click.uz/services/pay?service_id=63738&merchant_id=33627&amount=1000&transaction_param=1&return_url=app-center.uz');
+            //         if (!await launchUrl(url,
+            //             mode: LaunchMode.inAppBrowserView)) {
+            //           throw Exception('Could not launch $url');
+            //         }
+            //       },
+            //       child: const Text(
+            //         'To\'ldirish',
+            //         style: TextStyle(color: Colors.white),
+            //       ),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(height: 10),
             const Divider(),
             MyElevatedButtonForDrawer(
@@ -102,14 +100,7 @@ class MyCostomDrawer extends StatelessWidget {
             const SizedBox(
               height: 10,
             ),
-            MyElevatedButtonForDrawer(
-              icon: Icons.home,
-              name: 'To\'lovlar tarixi',
-              route: Routes.civilPage,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
+
             MyElevatedButtonForDrawer(
               icon: Icons.settings,
               name: 'Sozlamalar',
