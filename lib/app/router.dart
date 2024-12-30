@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
 import 'package:taksi/pages/civil/test_page.dart';
+import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
 import 'package:taksi/pages/home_screen.dart';
 import 'package:taksi/pages/new_user/role_select.dart';
 import 'package:taksi/pages/sign/login_screen.dart';
@@ -22,10 +23,11 @@ abstract class Routes {
   static const civilPage = '/civilPage';
 
   static const testPage = '/testPage';
+  static const yandex_map_truck = '/yandex_map_truck';
 }
 
 String _initialLocation() {
-  return Routes.roleSelect;
+  return Routes.civilPage;
 
   final userToken = cache.getString("user_token");
 
@@ -77,6 +79,10 @@ final router = GoRouter(
     GoRoute(
       path: Routes.testPage,
       builder: (context, state) => const TestPage(),
+    ),
+    GoRoute(
+      path: Routes.yandex_map_truck,
+      builder: (context, state) => const MapkitFlutterApp(),
     ),
   ],
 );

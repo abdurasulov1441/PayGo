@@ -20,8 +20,8 @@ class MyCostomDrawer extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  // child: Image.asset('assets/images/user.png'),
                   radius: 30,
+                  child: Image.asset('assets/images/user.png'),
                 ),
                 const SizedBox(
                   width: 10,
@@ -74,8 +74,9 @@ class MyCostomDrawer extends StatelessWidget {
             //     ),
             //   ],
             // ),
-            const SizedBox(height: 10),
-            const Divider(),
+            // const SizedBox(height: 10),
+            // const Divider(),
+            const SizedBox(height: 20),
             MyElevatedButtonForDrawer(
               icon: Icons.home,
               name: 'Tariflar',

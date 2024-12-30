@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:taksi/app/router.dart';
 import 'package:taksi/services/drawer/drawer.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
@@ -90,6 +92,9 @@ class MainCivilPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
+                        context.push(
+                          Routes.yandex_map_truck,
+                        );
                         // Navigator.push(
                         //   context,
                         //   MaterialPageRoute(
