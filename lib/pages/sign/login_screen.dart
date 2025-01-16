@@ -23,7 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
       TextEditingController(text: '+998 ');
   final formKey = GlobalKey<FormState>();
 
-  // Форматтер для номера телефона
   final _phoneNumberFormatter = TextInputFormatter.withFunction(
     (oldValue, newValue) {
       if (!newValue.text.startsWith('+998 ')) {
@@ -81,25 +80,29 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
 
-        // Вывод сообщения об успешном входе
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(responseData['message'])),
         );
 
-        // Навигация на другой экран (при необходимости)
         context.go(
           Routes.verfySMS,
-          extra: phoneTextInputController.text.trim(), // Номер телефона
+          extra: phoneTextInputController.text.trim(),
         );
       } else {
         final responseData = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: ${responseData['message']}')),
+          SnackBar(
+              content: Row(
+            children: [Text('error'.tr()), Text('${responseData['message']}')],
+          )),
         );
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка соединения: $error')),
+        SnackBar(
+            content: Row(
+          children: [Text('error'.tr()), Text('$error')],
+        )),
       );
     }
   }
@@ -161,10 +164,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   inputFormatters: [_phoneNumberFormatter],
                   validator: (phone) {
                     if (phone == null || phone.isEmpty) {
-                      return 'Telefon raqamni kiriting';
+                      return 'enter_phone'.tr();
                     } else if (!RegExp(r'^\+998 \(\d{2}\) \d{3} \d{2} \d{2}$')
                         .hasMatch(phone)) {
-                      return 'To\'g\'ri formatni kiriting: +998 (XX) XXX XX XX';
+                      return 'enter_corectly_phone_format'.tr();
                     }
                     return null;
                   },
@@ -177,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide.none,
                     ),
-                    hintText: '+998 (XX) XXX XX XX',
+                    hintText: 'phone_number'.tr(),
                     hintStyle: AppStyle.fontStyle.copyWith(color: Colors.grey),
                   ),
                 ),

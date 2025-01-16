@@ -102,19 +102,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
         cache.setString('refresh_token', response['refreshToken']);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tasdiqlash muvaffaqiyatli o’tdi.')),
+          SnackBar(content: Text('verification_succes'.tr())),
         );
         context.go(
           Routes.homeScreen,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Xatolik: Tokenlar olinmadi.')),
+          SnackBar(content: Text('error_token'.tr())),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Xatolik yuz berdi: $e')),
+        SnackBar(
+            content: Row(
+          children: [Text('error'.tr()), Text("$e")],
+        )),
       );
     } finally {
       setState(() {

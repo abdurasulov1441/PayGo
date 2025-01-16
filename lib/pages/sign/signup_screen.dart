@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -108,7 +109,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             children: [
               const SizedBox(height: 100),
               Text(
-                'Ro’yxatdan o’tish',
+                'registration'.tr(),
                 style: AppStyle.fontStyle.copyWith(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -147,11 +148,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 20),
               buildTextField(
                 nameTextInputController,
-                'Ismingizni kiriting',
+                'enter_name'.tr(),
                 Icons.person,
                 validator: (name) {
                   if (name == null || name.isEmpty) {
-                    return 'Ismingizni kiriting';
+                    return 'enter_name'.tr();
                   }
                   return null;
                 },
@@ -159,16 +160,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 15),
               buildTextField(
                 phoneTextInputController,
-                'Telefon raqam (+998 XXX XXX XX XX)',
+                'phone_number'.tr(),
                 Icons.phone,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [_phoneNumberFormatter],
                 validator: (phone) {
                   if (phone == null || phone.isEmpty) {
-                    return 'Telefon raqamni kiriting';
+                    return 'enter_phone_format'.tr();
                   } else if (!RegExp(r'^\+998 \(\d{2}\) \d{3} \d{2} \d{2}$')
                       .hasMatch(phone)) {
-                    return 'To’g’ri formatni kiriting: +998 (XX) XXX XX XX';
+                    return 'enter_corectly_phone_format'.tr();
                   }
                   return null;
                 },
@@ -176,19 +177,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 20),
               GradientButton(
                 onPressed: signUp,
-                text: 'Kirish',
+                text: 'login'.tr(),
               ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Akkauntingiz bormi?'),
+                  Text('dont_have_account'.tr()),
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Text(
-                      'Kirish',
+                      'registration'.tr(),
                       style: AppStyle.fontStyle.copyWith(
                         color: AppColors.grade1,
                       ),

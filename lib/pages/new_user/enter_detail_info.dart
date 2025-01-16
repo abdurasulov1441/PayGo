@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/request_helper.dart';
@@ -86,9 +87,7 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
   Future<void> sendData() async {
     if (selectedFromRegionId == selectedToRegionId) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Выберите разные области для отправления и прибытия.')),
+        SnackBar(content: Text('error_locations'.tr())),
       );
       return;
     }
@@ -114,7 +113,7 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
 
       if (response['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'] ?? 'Успешно отправлено.')),
+          SnackBar(content: Text(response['message'] ?? 'succes_send'.tr())),
         );
         print(widget.roleId);
         if (widget.roleId == 2) {
@@ -128,9 +127,8 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
         );
       }
     } catch (e) {
-      print('Ошибка при отправке данных: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ошибка сети. Попробуйте снова.')),
+        SnackBar(content: Text('error_conection'.tr())),
       );
     }
   }
@@ -138,18 +136,17 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Введите данные')),
+      appBar: AppBar(title: Text('enter_data'.tr())),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Car Brand Dropdown
               isLoadingBrands
                   ? const CircularProgressIndicator()
                   : DropdownButton<int>(
                       isExpanded: true,
-                      hint: const Text('Выберите бренд машины'),
+                      hint: Text('select_car_brand'.tr()),
                       value: selectedCarBrandId,
                       items: carBrands.map<DropdownMenuItem<int>>((brand) {
                         return DropdownMenuItem<int>(
@@ -169,12 +166,11 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
 
               const SizedBox(height: 20),
 
-              // Car Model Dropdown
               isLoadingModels
                   ? const CircularProgressIndicator()
                   : DropdownButton<int>(
                       isExpanded: true,
-                      hint: const Text('Выберите модель машины'),
+                      hint: Text('select_car_model'.tr()),
                       value: selectedCarModelId,
                       items: carModels.map<DropdownMenuItem<int>>((model) {
                         return DropdownMenuItem<int>(
@@ -191,20 +187,18 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
 
               const SizedBox(height: 20),
 
-              // Car Number Input
               TextField(
                 controller: carNumberController,
-                decoration: const InputDecoration(labelText: 'Номер машины'),
+                decoration: InputDecoration(labelText: 'car_number'.tr()),
               ),
 
               const SizedBox(height: 20),
 
-              // From Region Dropdown
               isLoadingRegions
                   ? const CircularProgressIndicator()
                   : DropdownButton<int>(
                       isExpanded: true,
-                      hint: const Text('Выберите область отправления'),
+                      hint: Text('select_from_location'.tr()),
                       value: selectedFromRegionId,
                       items: regions.map<DropdownMenuItem<int>>((region) {
                         return DropdownMenuItem<int>(
@@ -226,7 +220,7 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
                   ? const CircularProgressIndicator()
                   : DropdownButton<int>(
                       isExpanded: true,
-                      hint: const Text('Выберите область прибытия'),
+                      hint: Text('select_to_location'.tr()),
                       value: selectedToRegionId,
                       items: regions.map<DropdownMenuItem<int>>((region) {
                         return DropdownMenuItem<int>(
@@ -243,10 +237,9 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
 
               const SizedBox(height: 40),
 
-              // Submit Button
               ElevatedButton(
                 onPressed: sendData,
-                child: const Text('Отправить'),
+                child: Text('send'.tr()),
               ),
             ],
           ),

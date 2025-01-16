@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
@@ -42,7 +43,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
       });
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ошибка сети. Попробуйте снова.')),
+        SnackBar(content: Text('error_conection'.tr())),
       );
       setState(() {
         isLoading = false;
@@ -58,22 +59,21 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
         log: true,
       );
 
-      print('Роль $roleId успешно отправлена на сервер.');
       context.go(Routes.civilPage);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ошибка сети. Попробуйте снова.')),
+        SnackBar(content: Text('error_conection'.tr())),
       );
     }
   }
 
   void navigateToNextPage() {
     if (selectedRoleId == 1) {
-      updateUserRole(1); // Сразу обновляем статус для первой роли
+      updateUserRole(1);
     } else if (selectedRoleId == 2 || selectedRoleId == 3) {
       context.go(
         Routes.enterDetailInfo,
-        extra: {'roleId': selectedRoleId}, // Передаем выбранную роль
+        extra: {'roleId': selectedRoleId},
       );
     }
   }
@@ -92,9 +92,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
               : Column(
                   children: [
                     Text(
-                      "Rolingizni tanlang",
+                      "enter_role".tr(),
                       style: TextStyle(
-                        fontFamily: 'YourFontName',
+                        fontFamily: 'Poppins',
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -134,9 +134,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                         ),
                       ),
                       child: Text(
-                        "Keyingisi",
+                        "next".tr(),
                         style: TextStyle(
-                          fontFamily: 'YourFontName',
+                          fontFamily: 'Poppins',
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -188,7 +188,7 @@ class RoleCard extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'YourFontName',
+                fontFamily: 'Poppins',
                 fontSize: 18,
                 color: Colors.black,
               ),
