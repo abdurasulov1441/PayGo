@@ -1,8 +1,14 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
 import 'package:taksi/pages/civil/test_page.dart';
 import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
+import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
+import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
 import 'package:taksi/pages/home_screen.dart';
+import 'package:taksi/pages/new_user/enter_detail_info.dart';
 import 'package:taksi/pages/new_user/role_select.dart';
 import 'package:taksi/pages/sign/login_screen.dart';
 import 'package:taksi/pages/sign/sign_up_verify.dart';
@@ -20,16 +26,24 @@ abstract class Routes {
   static const register = '/register';
 
   static const roleSelect = '/roleSelect';
+
   static const civilPage = '/civilPage';
+
+  static const enterDetailInfo = '/enterDetailInfo';
+
+  static const taxiDriverPage = '/taxiDriverPage';
+
+  static const truckDriverPage = '/truckDriverPage';
 
   static const testPage = '/testPage';
   static const yandex_map_truck = '/yandex_map_truck';
 }
 
 String _initialLocation() {
-  return Routes.civilPage;
+  // return Routes.selsctLanguagePage;
 
   final userToken = cache.getString("user_token");
+ 
 
   if (userToken != null) {
     return Routes.homeScreen;
@@ -46,7 +60,7 @@ final router = GoRouter(
   initialExtra: _initialExtra(),
   routes: [
     GoRoute(
-      path: Routes.homeScreen,
+      path: Routes.selsctLanguagePage,
       builder: (context, state) => const LanguageSelectionPage(),
     ),
     GoRoute(
@@ -84,5 +98,35 @@ final router = GoRouter(
       path: Routes.yandex_map_truck,
       builder: (context, state) => const MapkitFlutterApp(),
     ),
+    GoRoute(
+      path: Routes.truckDriverPage,
+      builder: (context, state) => const DriverTruckHome(),
+    ),
+    GoRoute(
+      path: Routes.taxiDriverPage,
+      builder: (context, state) => const DriverTaxiHome(),
+    ),
+   GoRoute(
+  path: Routes.enterDetailInfo,
+  builder: (context, state) {
+    final args = state.extra as Map<String, dynamic>?; // Получаем аргументы из extra
+
+    if (args == null || args['roleId'] == null) {
+      // Если аргументы отсутствуют
+      return Scaffold(
+        body: Center(
+          child: Text(
+            'Ошибка: Аргументы отсутствуют.',
+            style: TextStyle(fontSize: 18, color: Colors.red),
+          ),
+        ),
+      );
+    }
+
+    final int roleId = args['roleId'];
+    return EnterDetailInfo(roleId: roleId); // Передаём аргументы в EnterDetailInfo
+  },
+),
+
   ],
 );

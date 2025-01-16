@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
@@ -13,6 +14,8 @@ class RoleSelectionPage extends StatefulWidget {
 
 class _RoleSelectionPageState extends State<RoleSelectionPage> {
   String? selectedRole;
+  int? selectedRoleId;
+
   List<dynamic> roles = [];
   bool isLoading = true;
 
@@ -31,13 +34,12 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
       final response = await requestHelper.getWithAuth(
         '/services/zyber/api/users/get-roles',
       );
+      print(response);
 
       setState(() {
         roles = response;
         isLoading = false;
       });
-      // } on UnauthenticatedError {
-      //   context.go(Routes.loginScreen);
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ошибка сети. Попробуйте снова.')),
@@ -52,22 +54,26 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
     try {
       final response = await requestHelper.putWithAuth(
         '/services/zyber/api/users/update-user-role',
-        {
-          'role_id': roleId,
-        },
+        {'role_id': roleId},
+        log: true,
       );
 
-      if (response['success'] == true) {
-        context.go(Routes.homeScreen);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(response['message'] ?? 'Ошибка обновления роли.')),
-        );
-      }
+      print('Роль $roleId успешно отправлена на сервер.');
+      context.go(Routes.civilPage);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ошибка сети. Попробуйте снова.')),
+      );
+    }
+  }
+
+  void navigateToNextPage() {
+    if (selectedRoleId == 1) {
+      updateUserRole(1); // Сразу обновляем статус для первой роли
+    } else if (selectedRoleId == 2 || selectedRoleId == 3) {
+      context.go(
+        Routes.enterDetailInfo,
+        extra: {'roleId': selectedRoleId}, // Передаем выбранную роль
       );
     }
   }
@@ -101,14 +107,15 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                         itemCount: roles.length,
                         itemBuilder: (context, index) {
                           final role = roles[index];
+
                           return RoleCard(
-                            icon: Icons
-                                .person, // Вы можете поменять иконки на основе роли
+                            icon: Icons.person,
                             label: role['name'],
-                            isSelected: selectedRole == role['name'],
+                            isSelected: selectedRoleId == role['id'],
                             onTap: () {
                               setState(() {
                                 selectedRole = role['name'];
+                                selectedRoleId = role['id'];
                               });
                             },
                           );
@@ -116,20 +123,12 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: selectedRole != null
-                          ? () {
-                              if (selectedRole == roles.first['name']) {
-                                updateUserRole(1);
-                              } else {
-                                print("Выбрана роль: $selectedRole");
-                              }
-                            }
-                          : null,
+                      onPressed:
+                          selectedRoleId != null ? navigateToNextPage : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedRole != null
+                        backgroundColor: selectedRoleId != null
                             ? AppColors.grade1
                             : Colors.grey,
-                        minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -173,6 +172,7 @@ class RoleCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue[50] : Colors.grey[200],
           borderRadius: BorderRadius.circular(15),

@@ -72,27 +72,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!isValid) return;
 
     try {
-      // Выполнение POST-запроса через RequestHelper
       final response = await requestHelper.post(
-        '/services/zyber/api/auth/register',
-        {
-          'name': nameTextInputController.text.trim(),
-          'phone_number': phoneTextInputController.text.trim(),
-        },
-      );
+          '/services/zyber/api/auth/register',
+          {
+            'name': nameTextInputController.text.trim(),
+            'phone_number': phoneTextInputController.text.trim(),
+          },
+          log: true);
 
-      // Показ сообщения пользователю
       SnackBarService.showSnackBar(context, response['message'], false);
 
-      // Если регистрация успешна, переходим на экран верификации
       if (response['statusCode'] == 200 || response['statusCode'] == 201) {
         context.go(
           Routes.verfySMS,
-          extra: phoneTextInputController.text.trim(), // Номер телефона
+          extra: phoneTextInputController.text.trim(),
         );
       }
     } catch (e) {
-      // Обработка ошибок и показ сообщения
       SnackBarService.showSnackBar(
           context, 'Internetga ulanishda xatolik', true);
     }

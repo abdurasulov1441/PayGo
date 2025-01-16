@@ -17,7 +17,7 @@ final class RequestHelper {
 
   String get token {
     final token = cache.getString("user_token");
-
+    if (token == null) {}
     if (token != null) return token;
     // router.go(Routes.loginPage);
     throw UnauthenticatedError();
@@ -105,51 +105,99 @@ final class RequestHelper {
     bool log = false,
     CancelToken? cancelToken,
   }) async {
-    try {
-      final headers = {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      };
+    String? token = cache.getString('user_token');
 
-      final response = await dio.get(
+    Future<Response> performRequest(String token) {
+      return dio.get(
         baseUrl + path,
         cancelToken: cancelToken,
         options: Options(
-          headers: headers,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
         ),
       );
+    }
+
+    try {
+      final response = await performRequest(token!);
 
       if (log) {
         logger.d([
           'GET',
           path,
-          headers,
           response.statusCode,
           response.statusMessage,
           response.data,
         ]);
-
-        logMethod(jsonEncode(response.data));
       }
 
       return response.data;
     } on DioException catch (e) {
-      logger.d([
-        'GET',
-        path,
-        e.response?.statusCode,
-        e.response?.statusMessage,
-        e.response?.data,
-      ]);
-
       if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-        router.go(Routes.roleSelect);
-        throw UnauthenticatedError();
-      }
+        final refreshToken = cache.getString('refresh_token');
 
-      return e.response?.data;
-    } catch (_) {
-      rethrow;
+        if (refreshToken != null) {
+          print("Обновление токенов: отправляем refreshToken: $refreshToken");
+
+          try {
+            final refreshResponse = await dio.post(
+              baseUrl + '/services/zyber/api/auth/refresh',
+              data: {'refreshToken': refreshToken},
+              options: Options(
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                },
+              ),
+            );
+
+            print("Ответ сервера на refresh: ${refreshResponse.data}");
+
+            final newAccessToken = refreshResponse.data['accessToken'];
+
+            if (newAccessToken != null) {
+              cache.setString('user_token', newAccessToken);
+
+              // Повторяем исходный запрос с новым токеном
+              final retryResponse = await performRequest(newAccessToken);
+
+              if (log) {
+                logger.d([
+                  'GET (retry)',
+                  path,
+                  retryResponse.statusCode,
+                  retryResponse.statusMessage,
+                  retryResponse.data,
+                ]);
+              }
+
+              return retryResponse.data;
+            } else {
+              print("Ошибка: Новый accessToken отсутствует.");
+              router.go(Routes.loginScreen); // Переход на экран логина
+              throw UnauthenticatedError();
+            }
+          } catch (refreshError) {
+            print("Ошибка при обновлении токенов: $refreshError");
+
+            if (refreshError is DioException && refreshError.response != null) {
+              print("Ответ сервера: ${refreshError.response?.data}");
+            }
+
+            router.go(Routes.loginScreen); // Переход на экран логина
+            throw UnauthenticatedError();
+          }
+        } else {
+          print("Refresh Token отсутствует в кеше.");
+          router.go(Routes.loginScreen); // Переход на экран логина
+          throw UnauthenticatedError();
+        }
+      } else {
+        print("Ошибка запроса: $e");
+        throw e;
+      }
     }
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
+import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
 import 'package:taksi/services/language/language_select_page.dart';
 import 'package:taksi/services/utils/Errorpage.dart';
 import 'package:taksi/pages/admin/admin_page.dart';
@@ -40,11 +42,15 @@ class HomeScreen extends StatelessWidget {
             ),
           );
         } else if (!snapshot.hasData || snapshot.data == null) {
-          return LanguageSelectionPage();
+          return const LanguageSelectionPage();
         } else {
           final userData = snapshot.data!;
-          final int status = userData['status'];
-          final int roleId = userData['role_id'];
+          final int? status = userData['status'] as int?;
+          final int? roleId = userData['role_id'] as int?;
+
+          if (status == null || roleId == null) {
+            return const LanguageSelectionPage();
+          }
 
           if (status == 0) {
             return const BlockedUsersPage();
@@ -52,17 +58,17 @@ class HomeScreen extends StatelessWidget {
 
           switch (roleId) {
             case 0:
-              return RoleSelectionPage();
+              return const RoleSelectionPage();
             case 1:
-              return MainCivilPage();
-            // case 2:
-            //   return DriverPage();
-            // case 3:
-            //   return TruckDriverPage();
+              return const MainCivilPage();
+            case 2:
+              return const DriverTaxiHome();
+            case 3:
+              return const DriverTruckHome();
             case 4:
-              return AdminDashboard();
+              return const AdminDashboard();
             default:
-              return ErrorPage();
+              return const ErrorPage();
           }
         }
       },
