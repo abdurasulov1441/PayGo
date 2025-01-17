@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluid_bottom_nav_bar/fluid_bottom_nav_bar.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:taksi/pages/drivers_taxi/1Order/taxi_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/2Accepted/taxi_accpeted_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/3History/taxi_orders_history_page.dart';
@@ -14,14 +15,23 @@ class DriverTaxiHome extends StatefulWidget {
 }
 
 class _FluidNavBarDemoState extends State<DriverTaxiHome> {
-  Widget _child = TaxiAcceptedOrdersPage();
+  Widget _child = TaxiOrdersPage();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.grade1,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60)),
+        onPressed: () {},
+        child: SvgPicture.asset(
+          'assets/images/message.svg',
+          color: AppColors.backgroundColor,
+        ),
+      ),
+      backgroundColor: AppColors.backgroundColor,
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 100),
+        duration: const Duration(microseconds: 10),
         child: _child,
       ),
       bottomNavigationBar: FluidNavBar(
@@ -63,10 +73,10 @@ class _FluidNavBarDemoState extends State<DriverTaxiHome> {
     setState(() {
       switch (index) {
         case 0:
-          _child = TaxiAcceptedOrdersPage();
+          _child = TaxiOrdersPage();
           break;
         case 1:
-          _child = TaxiOrdersPage();
+          _child = TaxiAcceptedOrdersPage();
           break;
         case 2:
           _child = TaxiOrdersHistoryPage();

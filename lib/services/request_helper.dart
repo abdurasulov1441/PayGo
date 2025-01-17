@@ -143,7 +143,7 @@ final class RequestHelper {
 
           try {
             final refreshResponse = await dio.post(
-              baseUrl + '/services/zyber/api/auth/refresh',
+              '$baseUrl/services/zyber/api/auth/refresh',
               data: {'refreshToken': refreshToken},
               options: Options(
                 headers: {
@@ -196,7 +196,7 @@ final class RequestHelper {
         }
       } else {
         print("Ошибка запроса: $e");
-        throw e;
+        rethrow;
       }
     }
   }
