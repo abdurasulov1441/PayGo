@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:taksi/style/app_colors.dart';
 
 class TaxiAccountPage extends StatelessWidget {
@@ -14,8 +15,8 @@ class TaxiAccountPage extends StatelessWidget {
             width: double.infinity,
             decoration: const BoxDecoration(
               borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(15),
-                  bottomRight: Radius.circular(15)),
+                  bottomLeft: Radius.circular(25),
+                  bottomRight: Radius.circular(25)),
               gradient: LinearGradient(
                 colors: [AppColors.grade1, AppColors.grade2],
                 begin: Alignment.topLeft,
@@ -53,11 +54,11 @@ class TaxiAccountPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
-                _buildOption(Icons.lock, 'Password'),
-                _buildOption(Icons.email, 'Email Address'),
-                _buildOption(Icons.fingerprint, 'Fingerprint'),
-                _buildOption(Icons.support_agent, 'Support'),
-                _buildOption(Icons.logout, 'Sign Out'),
+                _buildOption('balansni_toldirish', 'Balansni to\'ldirish'),
+                _buildOption('tariflar', 'Tariflar'),
+                _buildOption('transaction_history', 'To\'lovlar tarixi'),
+                _buildOption('sozlamalar', 'Sozlamalar'),
+                _buildOption('chiqish', 'Chiqish'),
               ],
             ),
           ),
@@ -66,7 +67,7 @@ class TaxiAccountPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOption(IconData icon, String title) {
+  Widget _buildOption(String icon, String title) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
@@ -75,7 +76,7 @@ class TaxiAccountPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.09),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -83,7 +84,10 @@ class TaxiAccountPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.grade1),
+          SvgPicture.asset(
+            'assets/images/$icon.svg',
+            color: AppColors.grade1,
+          ),
           const SizedBox(width: 15),
           Expanded(
             child: Text(
