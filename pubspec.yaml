@@ -55,6 +55,7 @@ dependencies:
   logger: ^2.5.0
   flutter_dotenv: ^5.2.1
   fluid_bottom_nav_bar: ^1.4.0
+  webview_flutter: ^4.10.0
 
 
 dev_dependencies:

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:taksi/app/router.dart';
 import 'package:taksi/style/app_colors.dart';
 
 class TaxiAccountPage extends StatelessWidget {
@@ -27,7 +28,7 @@ class TaxiAccountPage extends StatelessWidget {
             child: Column(
               children: [
                 CircleAvatar(
-                  radius: 50,
+                  radius: 40,
                   backgroundImage: AssetImage('assets/images/user.png'),
                 ),
                 const SizedBox(height: 10),
@@ -39,13 +40,39 @@ class TaxiAccountPage extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Text(
-                  'User',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Balans : 123 000 s\'om',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    IconButton(
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.refresh,
+                          color: AppColors.backgroundColor,
+                        ))
+                  ],
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Tarif tugash muddati : 2025.08.19',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                )
               ],
             ),
           ),
@@ -54,8 +81,12 @@ class TaxiAccountPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
-                _buildOption('balansni_toldirish', 'Balansni to\'ldirish'),
+                GestureDetector(
+                    onTap: () => router.push(Routes.taxiBalancePage),
+                    child: _buildOption(
+                        'balansni_toldirish', 'Balansni to\'ldirish')),
                 _buildOption('tariflar', 'Tariflar'),
+                _buildOption('tariflar', 'Ma\'lumotlar'),
                 _buildOption('transaction_history', 'To\'lovlar tarixi'),
                 _buildOption('sozlamalar', 'Sozlamalar'),
                 _buildOption('chiqish', 'Chiqish'),
