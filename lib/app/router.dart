@@ -4,6 +4,9 @@ import 'package:taksi/pages/civil/civil_page.dart';
 import 'package:taksi/pages/civil/test_page.dart';
 import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_page.dart';
+import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_verify_page.dart';
+import 'package:taksi/pages/drivers_taxi/4Account/get_tarifs/tarifs_page.dart';
+import 'package:taksi/pages/drivers_taxi/4Account/payment_history/payment_history.dart';
 import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
 import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
 import 'package:taksi/pages/home_screen.dart';
@@ -19,19 +22,27 @@ abstract class Routes {
   static const selsctLanguagePage = '/selsctLanguagePage';
 
   static const homeScreen = '/homeScreen';
-
+///////////////////////////////////////////////////////
   static const loginScreen = '/loginScreen';
   static const verfySMS = '/verfySMS';
   static const register = '/register';
-
-  static const roleSelect = '/roleSelect';
+///////////////////////////////////////////////////////
 
   static const civilPage = '/civilPage';
 
+///////////////////////////////////////////////////////
+  static const roleSelect = '/roleSelect';
   static const enterDetailInfo = '/enterDetailInfo';
-
+///////////////////////////////////////////////////////
   static const taxiDriverPage = '/taxiDriverPage';
+
   static const taxiBalancePage = '/taxiBalancePage';
+  static const paymentStatus = '/paymentStatus';
+  static const paymentHistory = '/paymentHistory';
+
+  static const tarifsPage = '/tarifsPage';
+
+  ///////////////////////////////////////////////////////
 
   static const truckDriverPage = '/truckDriverPage';
 
@@ -111,7 +122,6 @@ final router = GoRouter(
         final args = state.extra as Map<String, dynamic>?;
 
         if (args == null || args['roleId'] == null) {
-          // Если аргументы отсутствуют
           return Scaffold(
             body: Center(
               child: Text(
@@ -129,6 +139,21 @@ final router = GoRouter(
     GoRoute(
       path: Routes.taxiBalancePage,
       builder: (context, state) => const BalancePage(),
+    ),
+    GoRoute(
+      path: '/paymentStatus',
+      builder: (context, state) {
+        final invoiceId = state.extra as String;
+        return PaymentStatusPage(invoiceId: invoiceId);
+      },
+    ),
+    GoRoute(
+      path: Routes.paymentHistory,
+      builder: (context, state) => const PaymentHistoryPage(),
+    ),
+    GoRoute(
+      path: Routes.tarifsPage,
+      builder: (context, state) => const TariffsPage(),
     ),
   ],
 );

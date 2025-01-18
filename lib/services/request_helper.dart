@@ -13,8 +13,8 @@ final class RequestHelper {
 
   void logMethod(String message) {
     log(message);
-  }
-
+  } 
+                   
   String get token {
     final token = cache.getString("user_token");
     if (token == null) {}

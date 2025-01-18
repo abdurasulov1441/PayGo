@@ -85,9 +85,14 @@ class TaxiAccountPage extends StatelessWidget {
                     onTap: () => router.push(Routes.taxiBalancePage),
                     child: _buildOption(
                         'balansni_toldirish', 'Balansni to\'ldirish')),
-                _buildOption('tariflar', 'Tariflar'),
+                GestureDetector(
+                    onTap: () => router.push(Routes.tarifsPage),
+                    child: _buildOption('tariflar', 'Tariflar')),
                 _buildOption('tariflar', 'Ma\'lumotlar'),
-                _buildOption('transaction_history', 'To\'lovlar tarixi'),
+                GestureDetector(
+                    onTap: () => router.push(Routes.paymentHistory),
+                    child: _buildOption(
+                        'transaction_history', 'To\'lovlar tarixi')),
                 _buildOption('sozlamalar', 'Sozlamalar'),
                 _buildOption('chiqish', 'Chiqish'),
               ],
