@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:taksi/services/request_helper.dart';
+import 'package:taksi/services/toatstification.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -13,16 +15,15 @@ class BalancePage extends StatefulWidget {
 
 class _BalancePageState extends State<BalancePage> {
   final TextEditingController _amountController = TextEditingController();
-
+  String? selectedPaymentSystem;
   Future<void> _makePayment() async {
     final amount = double.tryParse(_amountController.text);
-    if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Iltimos, to‘g‘ri miqdor kiriting!'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    if (amount == null || amount < 1000) {
+      showErrorNotification(
+          titleText: 'To\'lov miqdorida xatolik!',
+          descriptionText: 'minimal to\'lov 1000 so\'m',
+          backroundColor: Colors.red,
+          icon: Icon(Icons.error));
       return;
     }
 
@@ -65,7 +66,16 @@ class _BalancePageState extends State<BalancePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              context.pop();
+            },
+            icon: Icon(
+              Icons.arrow_back,
+              color: AppColors.backgroundColor,
+            )),
         title: Text(
           'Balansni to‘ldirish',
           style: AppStyle.fontStyle.copyWith(
@@ -75,47 +85,143 @@ class _BalancePageState extends State<BalancePage> {
         ),
         backgroundColor: AppColors.grade1,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: AppColors.backgroundColor,
-          ),
-          onPressed: () {
-            context.pop();
-          },
-        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: 'To‘lov uchun miqdorni kiriting',
-                labelText: 'Summa',
-                prefixIcon: const Icon(
-                  Icons.attach_money,
-                  color: AppColors.grade1,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: AppColors.grade1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: AppColors.grade1),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(
+                    'To\'lov tizimini tanlang',
+                    style: AppStyle.fontStyle
+                        .copyWith(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _makePayment,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.grade1,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedPaymentSystem = 'Click';
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: selectedPaymentSystem == 'Click'
+                              ? AppColors.grade1
+                              : Colors.grey,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/click.png',
+                            width: 120,
+                            height: 120,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      showErrorNotification(
+                        titleText: 'Tez orada ishga tushiramiz',
+                        descriptionText: 'Hurmat bilan PayGo',
+                        backroundColor: AppColors.grade1,
+                        icon: const Icon(Icons.warning),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: selectedPaymentSystem == 'Payme'
+                              ? AppColors.grade1
+                              : Colors.grey,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/payme.png',
+                            width: 120,
+                            height: 120,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: const Text('Balansni to‘ldirish'),
-            ),
-          ],
+              const SizedBox(height: 20),
+              if (selectedPaymentSystem == null) ...[
+                LottieBuilder.asset(
+                  'assets/lottie/balance_pop_up.json',
+                ),
+              ] else if (selectedPaymentSystem == 'Click') ...[
+                TextField(
+                  controller: _amountController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: 'To‘lov uchun miqdorni kiriting',
+                    labelText: 'Summa',
+                    labelStyle:
+                        AppStyle.fontStyle.copyWith(color: AppColors.grade1),
+                    prefixIcon: const Icon(
+                      Icons.attach_money,
+                      color: AppColors.grade1,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.grade1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.grade1),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    final amount = double.tryParse(_amountController.text);
+                    if (amount == null || amount < 1000) {
+                      showErrorNotification(
+                        titleText: 'To‘lov miqdorida xatolik!',
+                        descriptionText: 'Minimal to‘lov 1000 so‘m.',
+                        backroundColor: Colors.red,
+                        icon: const Icon(Icons.error),
+                      );
+                    } else {
+                      _makePayment();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    backgroundColor: AppColors.grade1,
+                  ),
+                  child: Text(
+                    'Balansni to‘ldirish',
+                    style: AppStyle.fontStyle
+                        .copyWith(color: AppColors.backgroundColor),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

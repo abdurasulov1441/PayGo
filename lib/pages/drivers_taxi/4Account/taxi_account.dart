@@ -19,7 +19,7 @@ class TaxiAccountPage extends StatelessWidget {
                   bottomLeft: Radius.circular(25),
                   bottomRight: Radius.circular(25)),
               gradient: LinearGradient(
-                colors: [AppColors.grade1, AppColors.grade2],
+                colors: [AppColors.grade2, AppColors.grade1],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
