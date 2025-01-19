@@ -7,7 +7,7 @@ class TestPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: MyCostomDrawer(),
+      drawer: MyCustomDrawer(),
       appBar: AppBar(),
       body: Column(
         children: [],

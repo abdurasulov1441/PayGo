@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:path/path.dart';
 import 'package:taksi/app/router.dart';
+import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/style/app_colors.dart';
 
 class TaxiAccountPage extends StatelessWidget {
   const TaxiAccountPage({super.key});
+  Future<void> _signOut() async {
+    cache.clear();
+    router.go(Routes.selsctLanguagePage);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +100,8 @@ class TaxiAccountPage extends StatelessWidget {
                     child: _buildOption(
                         'transaction_history', 'To\'lovlar tarixi')),
                 _buildOption('sozlamalar', 'Sozlamalar'),
-                _buildOption('chiqish', 'Chiqish'),
+                GestureDetector(
+                    onTap: _signOut, child: _buildOption('chiqish', 'Chiqish')),
               ],
             ),
           ),
