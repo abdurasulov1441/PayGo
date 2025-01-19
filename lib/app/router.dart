@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
+import 'package:taksi/pages/civil/delivery_page.dart';
+import 'package:taksi/pages/civil/taksi_page.dart';
 import 'package:taksi/pages/civil/test_page.dart';
 import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_page.dart';
@@ -29,6 +31,8 @@ abstract class Routes {
 ///////////////////////////////////////////////////////
 
   static const civilPage = '/civilPage';
+  static const taxiPage = '/taxiPage';
+  static const taxiDeliveryPage = '/taxiDeliveryPage';
 
 ///////////////////////////////////////////////////////
   static const roleSelect = '/roleSelect';
@@ -154,6 +158,14 @@ final router = GoRouter(
     GoRoute(
       path: Routes.tarifsPage,
       builder: (context, state) => const TariffsPage(),
+    ),
+    GoRoute(
+      path: Routes.taxiPage,
+      builder: (context, state) => const TaxiPage(),
+    ),
+    GoRoute(
+      path: Routes.taxiDeliveryPage,
+      builder: (context, state) => const DeliveryPage(),
     ),
   ],
 );

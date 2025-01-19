@@ -12,7 +12,7 @@ class MainCivilPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: MyCustomDrawer(),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.ui,
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: AppColors.grade1,
@@ -138,6 +138,7 @@ class MainCivilPage extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
+                        context.push(Routes.taxiDeliveryPage);
                         // Navigator.push(
                         //   context,
                         //   MaterialPageRoute(
@@ -151,7 +152,9 @@ class MainCivilPage extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        context.push(Routes.taxiPage);
+                      },
                       child: transportCard(
                         'Taksi',
                         Icons.local_taxi,

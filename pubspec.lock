@@ -245,22 +245,6 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
-  community_charts_common:
-    dependency: transitive
-    description:
-      name: community_charts_common
-      sha256: d997ade57f15490346de46efbe23805d378a672aafbf5e47e19517964b671009
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.4"
-  community_charts_flutter:
-    dependency: transitive
-    description:
-      name: community_charts_flutter
-      sha256: "4614846b99782ab79b613687704865e5468ecada3f0ad1afe1cdc3ff5b727f72"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.4"
   connectivity_plus:
     dependency: "direct main"
     description:
@@ -309,14 +293,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
-  d_chart:
-    dependency: "direct main"
-    description:
-      name: d_chart
-      sha256: "8cd3d41129ebb26ce86200b2f131bfc7aade2a19686c5e1ef94095c506119596"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.10.2"
   dart_style:
     dependency: transitive
     description:
@@ -365,14 +341,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.2"
-  email_validator:
-    dependency: "direct main"
-    description:
-      name: email_validator
-      sha256: b19aa5d92fdd76fbc65112060c94d45ba855105a28bb6e462de7ff03b12fa1fb
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   equatable:
     dependency: transitive
     description:
@@ -461,30 +429,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.10+5"
-  firebase_auth:
-    dependency: "direct main"
-    description:
-      name: firebase_auth
-      sha256: "03483af6e67b7c4b696ca9386989a6cd5593569e1ac5af6907ea5f7fd9c16d8b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.3.4"
-  firebase_auth_platform_interface:
-    dependency: transitive
-    description:
-      name: firebase_auth_platform_interface
-      sha256: "3e1409f48c48930635705b1237ebbdee8c54c19106a0a4fb321dbb4b642820c4"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.4.10"
-  firebase_auth_web:
-    dependency: transitive
-    description:
-      name: firebase_auth_web
-      sha256: d83fe95c44d73c9c29b006ac7df3aa5e1b8ce92b62edc44e8f86250951fe2cd0
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.13.5"
   firebase_core:
     dependency: "direct main"
     description:
@@ -671,14 +615,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-  flutter_styled_toast:
-    dependency: "direct main"
-    description:
-      name: flutter_styled_toast
-      sha256: e667f13a665820eb0fa8506547e47eacbcddf1948d6d3036cfd3b089bd4b0516
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.1"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -1486,14 +1422,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-  u_credit_card:
-    dependency: "direct main"
-    description:
-      name: u_credit_card
-      sha256: "97fb11becedd3159f1f7b19cbafb1a64661733aaedc254aef5023bfc5d140b21"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.0"
   universal_io:
     dependency: transitive
     description:
@@ -1630,38 +1558,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
-  webview_flutter:
-    dependency: "direct main"
-    description:
-      name: webview_flutter
-      sha256: "889a0a678e7c793c308c68739996227c9661590605e70b1f6cf6b9a6634f7aec"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.10.0"
-  webview_flutter_android:
-    dependency: transitive
-    description:
-      name: webview_flutter_android
-      sha256: d1ee28f44894cbabb1d94cc42f9980297f689ff844d067ec50ff88d86e27d63f
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.3.0"
-  webview_flutter_platform_interface:
-    dependency: transitive
-    description:
-      name: webview_flutter_platform_interface
-      sha256: d937581d6e558908d7ae3dc1989c4f87b786891ab47bb9df7de548a151779d8d
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.10.0"
-  webview_flutter_wkwebview:
-    dependency: transitive
-    description:
-      name: webview_flutter_wkwebview
-      sha256: "4adc14ea9a770cc9e2c8f1ac734536bd40e82615bd0fa6b94be10982de656cc7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.17.0"
   win32:
     dependency: transitive
     description:

@@ -137,7 +137,7 @@ class _PaymentStatusPageState extends State<PaymentStatusPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     height: 150,
                     decoration: BoxDecoration(
-                      color: AppColors.headerColor,
+                      color: AppColors.ui,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
