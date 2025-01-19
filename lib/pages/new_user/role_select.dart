@@ -52,6 +52,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
   Future<void> updateUserRole(int roleId) async {
     try {
+      // ignore: unused_local_variable
       final response = await requestHelper.putWithAuth(
         '/services/zyber/api/users/update-user-role',
         {'role_id': roleId},

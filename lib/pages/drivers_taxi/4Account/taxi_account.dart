@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:path/path.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/style/app_colors.dart';
