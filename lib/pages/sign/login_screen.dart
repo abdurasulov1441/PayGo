@@ -65,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!isValid) return;
 
     final url =
-        Uri.parse('http://10.100.26.2:5050/services/zyber/api/auth/login');
+        Uri.parse('https://paygo.app-center.uz/services/zyber/api/auth/login');
     final headers = {
       'Content-Type': 'application/json',
       'accept': 'application/json',

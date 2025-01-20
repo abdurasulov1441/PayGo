@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:taksi/services/request_helper.dart';
 
-class AccountDetailInfoTaksi extends StatelessWidget {
+class AccountDetailInfoTaksi extends StatefulWidget {
   const AccountDetailInfoTaksi({super.key});
 
+  @override
+  State<AccountDetailInfoTaksi> createState() => _AccountDetailInfoTaksiState();
+}
+
+class _AccountDetailInfoTaksiState extends State<AccountDetailInfoTaksi> {
+
+  Future<void> _fetchDetailInfo() async {
+    try {
+      final response = await requestHelper
+          .getWithAuth('/services/zyber/api/ref/get-tariffs', log: true);
+
+      if (response != null && response is List) {
+        setState(() {
+         
+        });
+      } else {
+       
+      }
+    } catch (e) {
+      
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

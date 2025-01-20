@@ -97,7 +97,8 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                   itemBuilder: (context, index) {
                     final payment = paymentHistory[index];
                     final isTarif = payment['tarif_id'] == 0;
-                    final balance = double.parse(payment['balance']);
+                    final balance = payment['balance'];
+                    final tarifName = payment['tariff_name'];
                     return Card(
                       elevation: 5,
                       color: AppColors.backgroundColor,
@@ -121,7 +122,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                             Text(
                               isTarif
                                   ? 'To‘lov muvaffaqiyatli amalga oshirildi'
-                                  : 'Xizmat uchun to‘lov',
+                                  : 'Tarif uchun to\'lov $tarifName',
                               style: AppStyle.fontStyle.copyWith(
                                 fontSize: 14,
                                 color: Colors.grey,
@@ -132,7 +133,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '${balance > 0 ? "+" : ""}${balance.toStringAsFixed(0)} UZS',
+                                  '$balance UZS',
                                   style: AppStyle.fontStyle.copyWith(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,

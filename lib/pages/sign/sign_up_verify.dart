@@ -52,7 +52,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Future<void> resendVerificationCode(String phoneNumber) async {
     try {
       final response = await http.post(
-        Uri.parse('http://10.100.26.2:5050/services/zyber/api/auth/resend'),
+        Uri.parse('https://paygo.app-center.uz/services/zyber/api/auth/resend'),
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',

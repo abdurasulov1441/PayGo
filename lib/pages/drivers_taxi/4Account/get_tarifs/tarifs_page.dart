@@ -1,4 +1,5 @@
 import 'package:elegant_notification/elegant_notification.dart';
+import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/services/request_helper.dart';
@@ -40,31 +41,58 @@ class _TariffsPageState extends State<TariffsPage> {
     }
   }
 
-  Future<void> _getTarif(bool isConfirmed) async {
+  Future<void> _getTarif(bool isConfirmed, int tariffId) async {
     try {
       final response = await requestHelper.postWithAuth(
         '/services/zyber/api/payments/subscribe-tariff',
-        {"tariff_id": 1, "buy": isConfirmed},
+        {"tariff_id": tariffId, "buy": isConfirmed},
         log: true,
       );
 
-      // Приведение статуса к int
       final int status = response['status'] is int
           ? response['status']
           : int.tryParse(response['status'].toString()) ?? 0;
 
-      // Логирование статуса
-      print("Статус: $status, Тип: ${status.runtimeType}");
+      final String ssssssss = response['message'];
 
-      if (status == 1 || status == 3) {
+      if (status == 1) {
         ElegantNotification.success(
-          title: const Text('Tarif'),
-          description: Text('${response['message']}'),
           width: 360,
+          isDismissable: false,
+          animationCurve: Curves.easeInOut,
           position: Alignment.topCenter,
+          animation: AnimationType.fromTop,
+          title: Text('Tarif'),
+          description: Text(ssssssss),
+          onDismiss: () {},
+          onNotificationPressed: () {},
+          shadow: BoxShadow(
+            color: Colors.green,
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 4),
+          ),
+        ).show(context);
+      } else if (status == 3) {
+        ElegantNotification.error(
+          width: 360,
+          isDismissable: false,
+          animationCurve: Curves.easeInOut,
+          position: Alignment.topCenter,
+          animation: AnimationType.fromTop,
+          title: Text('Tarif'),
+          description: Text(ssssssss),
+          onDismiss: () {},
+          onNotificationPressed: () {},
+          shadow: BoxShadow(
+            color: Colors.red,
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 4),
+          ),
         ).show(context);
       } else if (status == 2) {
-        _showLogoutDialog(response['message']);
+        _showLogoutDialog(response['message'], tariffId);
       } else {
         _showErrorSnackBar('Tariflarni yuklashda xatolik!');
       }
@@ -85,7 +113,7 @@ class _TariffsPageState extends State<TariffsPage> {
     );
   }
 
-  void _showLogoutDialog(String message) {
+  void _showLogoutDialog(String message, int tariffId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -102,7 +130,7 @@ class _TariffsPageState extends State<TariffsPage> {
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                await _getTarif(true);
+                await _getTarif(true, tariffId); // Передаем tariffId
               },
               child: const Text('Ha'),
             ),
@@ -234,8 +262,8 @@ class _TariffsPageState extends State<TariffsPage> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              _getTarif(false);
-              print(tariff['name']);
+              _getTarif(false, tariff['id']); // Передаем tariff['id']
+              print("Выбран тариф: ${tariff['name']}, ID: ${tariff['id']}");
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.grade1,
@@ -252,7 +280,7 @@ class _TariffsPageState extends State<TariffsPage> {
                 ),
               ),
             ),
-          ),
+          )
         ],
       ),
     );
