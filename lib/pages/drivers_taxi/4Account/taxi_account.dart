@@ -25,17 +25,37 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
     _getUserInfo();
   }
 
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   _getUserInfo();
-  // }
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Akkauntdan chiqish'),
+          content: const Text('Haqiqatdanham chiqmoqchimisz?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Yo\'q'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _signOut();
+              },
+              child: const Text('Ha'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _getUserInfo() async {
     try {
-      final response = await requestHelper.getWithAuth(
-        '/services/zyber/api/users/get-user-info',
-      );
+      final response = await requestHelper
+          .getWithAuth('/services/zyber/api/users/get-user-info', log: true);
       setState(() {
         name = response['name'];
         phone_number = response['phone_number'];
@@ -83,11 +103,11 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
                     shape: CircleBorder(),
                     child: CircleAvatar(
                       backgroundColor: Colors.grey[100],
+                      radius: 30.0,
                       child: Image.asset(
                         'assets/images/car.png',
                         height: 50,
                       ),
-                      radius: 30.0,
                     ),
                   ),
                 ),
@@ -147,7 +167,10 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
                         'transaction_history', 'To\'lovlar tarixi')),
                 _buildOption('sozlamalar', 'Sozlamalar'),
                 GestureDetector(
-                    onTap: _signOut, child: _buildOption('chiqish', 'Chiqish')),
+                    onTap: () {
+                      _showLogoutDialog(context);
+                    },
+                    child: _buildOption('chiqish', 'Chiqish')),
               ],
             ),
           ),

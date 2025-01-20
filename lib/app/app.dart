@@ -54,7 +54,7 @@ class _AppState extends State<App> {
             'Получено сообщение в активном состоянии: ${message.notification?.title}');
 
         _showLocalNotification(
-          title: message.notification?.title ?? 'Новое уведомление',
+          title: message.notification?.title ?? 'Yangi xabar',
           body: message.notification?.body ?? 'Нет описания',
         );
       });

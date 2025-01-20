@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:taksi/style/app_colors.dart';
 
 class OrderHistoryWidget extends StatelessWidget {
@@ -80,6 +81,23 @@ class OrderHistoryWidget extends StatelessWidget {
             'Yuk nomi: $cargoName',
             style: const TextStyle(fontSize: 16),
           ),
+          Center(
+            child: RatingBar.builder(
+              initialRating: 3,
+              minRating: 1,
+              direction: Axis.horizontal,
+              allowHalfRating: true,
+              itemCount: 5,
+              itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+              itemBuilder: (context, _) => Icon(
+                Icons.star,
+                color: Colors.amber,
+              ),
+              onRatingUpdate: (rating) {
+                print(rating);
+              },
+            ),
+          )
         ],
       ),
     );

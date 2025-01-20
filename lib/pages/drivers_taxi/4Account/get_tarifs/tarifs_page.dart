@@ -1,3 +1,4 @@
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/services/request_helper.dart';
@@ -12,7 +13,7 @@ class TariffsPage extends StatefulWidget {
 }
 
 class _TariffsPageState extends State<TariffsPage> {
-  List<Map<String, dynamic>> tariffsFromSever = [];
+  List<Map<String, dynamic>> tariffs = [];
   bool isLoading = true;
 
   @override
@@ -28,61 +29,94 @@ class _TariffsPageState extends State<TariffsPage> {
 
       if (response != null && response is List) {
         setState(() {
-          tariffsFromSever = List<Map<String, dynamic>>.from(response);
+          tariffs = List<Map<String, dynamic>>.from(response);
           isLoading = false;
         });
       } else {
-        setState(() {
-          isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tariflarni yuklashda xatolik!'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showErrorSnackBar('Tariflarni yuklashda xatolik!');
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tarmoq xatoligi!'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showErrorSnackBar('Tarmoq xatoligi!');
     }
   }
 
-  final List<Map<String, dynamic>> tariffs = [
-    {
-      "id": 1,
-      "name": "1 Oy",
-      "price": "30 000",
-      "discount": 0,
-      "monthly": "30 000 so'm/oy"
-    },
-    {
-      "id": 2,
-      "name": "3 Oy",
-      "price": "85 000",
-      "discount": 5,
-      "monthly": "28 333 so'm/oy"
-    },
-    {
-      "id": 3,
-      "name": "6 Oy",
-      "price": "160 000",
-      "discount": 10,
-      "monthly": "26 666 so'm/oy"
-    },
-  ];
+  Future<void> _getTarif(bool isConfirmed) async {
+    try {
+      final response = await requestHelper.postWithAuth(
+        '/services/zyber/api/payments/subscribe-tariff',
+        {"tariff_id": 1, "buy": isConfirmed},
+        log: true,
+      );
+
+      // Приведение статуса к int
+      final int status = response['status'] is int
+          ? response['status']
+          : int.tryParse(response['status'].toString()) ?? 0;
+
+      // Логирование статуса
+      print("Статус: $status, Тип: ${status.runtimeType}");
+
+      if (status == 1 || status == 3) {
+        ElegantNotification.success(
+          title: const Text('Tarif'),
+          description: Text('${response['message']}'),
+          width: 360,
+          position: Alignment.topCenter,
+        ).show(context);
+      } else if (status == 2) {
+        _showLogoutDialog(response['message']);
+      } else {
+        _showErrorSnackBar('Tariflarni yuklashda xatolik!');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Tarmoq xatoligi!');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    setState(() {
+      isLoading = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showLogoutDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Tarif'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Yo\'q'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _getTarif(true);
+              },
+              child: const Text('Ha'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         leading: IconButton(
           onPressed: () {
             context.pop();
@@ -101,14 +135,16 @@ class _TariffsPageState extends State<TariffsPage> {
         ),
         backgroundColor: AppColors.grade1,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: tariffs.length,
-        itemBuilder: (context, index) {
-          final tariff = tariffs[index];
-          return _buildTariffCard(tariff, index);
-        },
-      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: tariffs.length,
+              itemBuilder: (context, index) {
+                final tariff = tariffs[index];
+                return _buildTariffCard(tariff, index);
+              },
+            ),
     );
   }
 
@@ -148,22 +184,21 @@ class _TariffsPageState extends State<TariffsPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (tariff['discount'] > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        'Save ${tariff['discount']}%',
-                        style: AppStyle.fontStyle.copyWith(
-                          color: Colors.green,
-                          fontSize: 12,
-                        ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      '${tariff['description']} so\'m tejaladi',
+                      style: AppStyle.fontStyle.copyWith(
+                        color: Colors.green,
+                        fontSize: 12,
                       ),
                     ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     '${tariff['price']} so\'m',
@@ -175,38 +210,32 @@ class _TariffsPageState extends State<TariffsPage> {
                   ),
                 ],
               ),
-              Text(
-                '${tariff['monthly']}',
-                style: AppStyle.fontStyle.copyWith(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
+              Column(
+                children: [
+                  Text(
+                    '30 000',
+                    style: AppStyle.fontStyle.copyWith(
+                      decoration: TextDecoration.lineThrough,
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    '${tariff['monthly']} so\'m oyiga',
+                    style: AppStyle.fontStyle.copyWith(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              )
             ],
           ),
           const SizedBox(height: 16),
-          if (index == 2)
-            Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.grade1,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  'Hot',
-                  style: AppStyle.fontStyle.copyWith(
-                    color: AppColors.backgroundColor,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              _selectTariff(tariff['id']);
+              _getTarif(false);
+              print(tariff['name']);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.grade1,
@@ -225,15 +254,6 @@ class _TariffsPageState extends State<TariffsPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _selectTariff(int tariffId) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Siz $tariffId-idli tarifni tanladingiz!'),
-        backgroundColor: AppColors.grade1,
       ),
     );
   }
