@@ -1,11 +1,56 @@
+import 'package:avatar_glow/avatar_glow.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/db/cache.dart';
+import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/style/app_colors.dart';
 
-class TaxiAccountPage extends StatelessWidget {
+class TaxiAccountPage extends StatefulWidget {
   const TaxiAccountPage({super.key});
+
+  @override
+  State<TaxiAccountPage> createState() => _TaxiAccountPageState();
+}
+
+String name = '';
+String phone_number = '';
+String balance = '';
+
+class _TaxiAccountPageState extends State<TaxiAccountPage> {
+  @override
+  void initState() {
+    super.initState();
+    _getUserInfo();
+  }
+
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   _getUserInfo();
+  // }
+
+  Future<void> _getUserInfo() async {
+    try {
+      final response = await requestHelper.getWithAuth(
+        '/services/zyber/api/users/get-user-info',
+      );
+      setState(() {
+        name = response['name'];
+        phone_number = response['phone_number'];
+        balance = response['balance'];
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Row(
+          children: [Text('error'.tr()), Text("$e")],
+        )),
+      );
+    } finally {}
+  }
+
   Future<void> _signOut() async {
     cache.clear();
     router.go(Routes.selsctLanguagePage);
@@ -32,13 +77,23 @@ class TaxiAccountPage extends StatelessWidget {
             padding: const EdgeInsets.only(top: 60, bottom: 30),
             child: Column(
               children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: AssetImage('assets/images/user.png'),
+                AvatarGlow(
+                  child: Material(
+                    elevation: 8.0,
+                    shape: CircleBorder(),
+                    child: CircleAvatar(
+                      backgroundColor: Colors.grey[100],
+                      child: Image.asset(
+                        'assets/images/car.png',
+                        height: 50,
+                      ),
+                      radius: 30.0,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'Abdulaziz Abdurasulov',
+                Text(
+                  name,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -48,8 +103,8 @@ class TaxiAccountPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Balans : 123 000 s\'om',
+                    Text(
+                      'Balans: $balance so\'m',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -59,25 +114,15 @@ class TaxiAccountPage extends StatelessWidget {
                       width: 10,
                     ),
                     IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          _getUserInfo();
+                        },
                         icon: Icon(
                           Icons.refresh,
                           color: AppColors.backgroundColor,
                         ))
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Tarif tugash muddati : 2025.08.19',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                )
               ],
             ),
           ),
@@ -93,7 +138,9 @@ class TaxiAccountPage extends StatelessWidget {
                 GestureDetector(
                     onTap: () => router.push(Routes.tarifsPage),
                     child: _buildOption('tariflar', 'Tariflar')),
-                _buildOption('tariflar', 'Ma\'lumotlar'),
+                GestureDetector(
+                    onTap: () => router.push(Routes.accountDetailInfoPage),
+                    child: _buildOption('tariflar', 'Ma\'lumotlar')),
                 GestureDetector(
                     onTap: () => router.push(Routes.paymentHistory),
                     child: _buildOption(

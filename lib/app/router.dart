@@ -5,6 +5,7 @@ import 'package:taksi/pages/civil/delivery_page.dart';
 import 'package:taksi/pages/civil/taksi_page.dart';
 import 'package:taksi/pages/civil/test_page.dart';
 import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
+import 'package:taksi/pages/drivers_taxi/4Account/account_detail_info/account_detail_info_taksi.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_verify_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_tarifs/tarifs_page.dart';
@@ -43,7 +44,7 @@ abstract class Routes {
   static const taxiBalancePage = '/taxiBalancePage';
   static const paymentStatus = '/paymentStatus';
   static const paymentHistory = '/paymentHistory';
-
+  static const accountDetailInfoPage = '/accountDetailInfoPage';
   static const tarifsPage = '/tarifsPage';
 
   ///////////////////////////////////////////////////////
@@ -166,6 +167,10 @@ final router = GoRouter(
     GoRoute(
       path: Routes.taxiDeliveryPage,
       builder: (context, state) => const DeliveryPage(),
+    ),
+    GoRoute(
+      path: Routes.accountDetailInfoPage,
+      builder: (context, state) => const AccountDetailInfoTaksi(),
     ),
   ],
 );

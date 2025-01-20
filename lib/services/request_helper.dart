@@ -8,13 +8,14 @@ import 'package:taksi/services/utils/errors.dart';
 
 final class RequestHelper {
   final logger = Logger();
-  final baseUrl = 'https://paygo.app-center.uz';
+  // final baseUrl = 'https://paygo.app-center.uz';
+  final baseUrl = 'http://10.100.26.2:5050';
   final dio = Dio();
 
   void logMethod(String message) {
     log(message);
-  } 
-                   
+  }
+
   String get token {
     final token = cache.getString("user_token");
     if (token == null) {}

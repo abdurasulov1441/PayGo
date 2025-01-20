@@ -27,6 +27,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
   final TextEditingController _smsController = TextEditingController();
   late PinTheme currentPinTheme;
   bool isLoading = false;
+  final String fcm = cache.getString('fcm_token') ?? 'null';
+
   OtpTimerButtonController controller = OtpTimerButtonController();
 
   @override
@@ -50,7 +52,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Future<void> resendVerificationCode(String phoneNumber) async {
     try {
       final response = await http.post(
-        Uri.parse('https://paygo.app-center.uz/services/zyber/api/auth/resend'),
+        Uri.parse('http://10.100.26.2:5050/services/zyber/api/auth/resend'),
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',
@@ -94,9 +96,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
         {
           'phone_number': widget.phoneNumber,
           'verification_code': enteredCode,
+          'fcm_token': fcm,
         },
       );
-
+      print(fcm);
       if (response['accessToken'] != null && response['refreshToken'] != null) {
         cache.setString('user_token', response['accessToken']);
         cache.setString('refresh_token', response['refreshToken']);

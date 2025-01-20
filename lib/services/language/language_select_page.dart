@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/style/app_colors.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LanguageSelectionPage extends StatefulWidget {
   const LanguageSelectionPage({super.key});
@@ -13,6 +14,7 @@ class LanguageSelectionPage extends StatefulWidget {
 }
 
 class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
+  bool _permissionsGranted = false;
   Locale? selectedLocale;
 
   final List<Map<String, dynamic>> languages = [
@@ -20,6 +22,32 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
     {'locale': const Locale('ru'), 'name': 'Русский', 'flag': '🇷🇺'},
     {'locale': const Locale('uk'), 'name': 'Ўзбекча', 'flag': '🇺🇿'},
   ];
+  @override
+  void initState() {
+    super.initState();
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    final Map<Permission, PermissionStatus> statuses = await [
+      Permission.location,
+      Permission.sms,
+      Permission.phone,
+      Permission.notification,
+    ].request();
+
+    bool allGranted = statuses.values.every((status) => status.isGranted);
+
+    if (allGranted) {
+      setState(() {
+        _permissionsGranted = true;
+      });
+    } else {
+      setState(() {
+        _permissionsGranted = false;
+      });
+    }
+  }
 
   void _updateLocale(Locale locale) {
     setState(() {

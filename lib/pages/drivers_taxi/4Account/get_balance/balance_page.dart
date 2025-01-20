@@ -1,8 +1,9 @@
+import 'package:elegant_notification/elegant_notification.dart';
+import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:taksi/services/request_helper.dart';
-import 'package:taksi/services/toatstification.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -19,11 +20,24 @@ class _BalancePageState extends State<BalancePage> {
   Future<void> _makePayment() async {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount < 1000) {
-      showErrorNotification(
-          titleText: 'To\'lov miqdorida xatolik!',
-          descriptionText: 'minimal to\'lov 1000 so\'m',
-          backroundColor: Colors.red,
-          icon: Icon(Icons.error));
+      ElegantNotification.success(
+        width: 360,
+        isDismissable: false,
+        animationCurve: Curves.bounceOut,
+        position: Alignment.topCenter,
+        animation: AnimationType.fromTop,
+        title: Text('Update'),
+        description: Text('Your data has been updated'),
+        onDismiss: () {},
+        onNotificationPressed: () {},
+        shadow: BoxShadow(
+          color: Colors.green.withOpacity(0.2),
+          spreadRadius: 2,
+          blurRadius: 5,
+          offset: const Offset(0, 4),
+        ),
+      ).show(context);
+
       return;
     }
 
@@ -36,7 +50,24 @@ class _BalancePageState extends State<BalancePage> {
       if (response['success'] == true) {
         final invoiceId = response['invoice_id'];
         if (invoiceId != null) {
-          context.push('/paymentStatus', extra: invoiceId.toString());
+          ElegantNotification.success(
+            width: 360,
+            isDismissable: false,
+            animationCurve: Curves.bounceOut,
+            position: Alignment.topCenter,
+            animation: AnimationType.fromTop,
+            title: Text('To\'lov tizmi'),
+            description: Text('Raqamingizga hisob jo\'natildi'),
+            onDismiss: () {},
+            onNotificationPressed: () {},
+            shadow: BoxShadow(
+              color: Colors.green.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 4),
+            ),
+          ).show(context);
+          context.pop();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -134,12 +165,23 @@ class _BalancePageState extends State<BalancePage> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      showErrorNotification(
-                        titleText: 'Tez orada ishga tushiramiz',
-                        descriptionText: 'Hurmat bilan PayGo',
-                        backroundColor: AppColors.grade1,
-                        icon: const Icon(Icons.warning),
-                      );
+                      ElegantNotification.success(
+                        width: 360,
+                        isDismissable: false,
+                        animationCurve: Curves.bounceOut,
+                        position: Alignment.topCenter,
+                        animation: AnimationType.fromTop,
+                        title: Text('Update'),
+                        description: Text('Your data has been updated'),
+                        onDismiss: () {},
+                        onNotificationPressed: () {},
+                        shadow: BoxShadow(
+                          color: Colors.green.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 4),
+                        ),
+                      ).show(context);
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -197,12 +239,23 @@ class _BalancePageState extends State<BalancePage> {
                   onPressed: () {
                     final amount = double.tryParse(_amountController.text);
                     if (amount == null || amount < 1000) {
-                      showErrorNotification(
-                        titleText: 'To‘lov miqdorida xatolik!',
-                        descriptionText: 'Minimal to‘lov 1000 so‘m.',
-                        backroundColor: Colors.red,
-                        icon: const Icon(Icons.error),
-                      );
+                      ElegantNotification.success(
+                        width: 360,
+                        isDismissable: false,
+                        animationCurve: Curves.bounceOut,
+                        position: Alignment.topCenter,
+                        animation: AnimationType.fromTop,
+                        title: Text('Update'),
+                        description: Text('Your data has been updated'),
+                        onDismiss: () {},
+                        onNotificationPressed: () {},
+                        shadow: BoxShadow(
+                          color: Colors.green.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 4),
+                        ),
+                      ).show(context);
                     } else {
                       _makePayment();
                     }

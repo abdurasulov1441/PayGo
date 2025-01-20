@@ -10,7 +10,7 @@ class MyCustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future<void> _signOut() async {
+    Future<void> signOut() async {
       cache.clear();
       router.go(Routes.selsctLanguagePage);
     }
@@ -112,7 +112,7 @@ class MyCustomDrawer extends StatelessWidget {
                       icon: Icons.logout,
                       text: 'Sign Out',
                       onTap: () {
-                        _signOut();
+                        signOut();
                       },
                     ),
                   ],
