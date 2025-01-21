@@ -1,4 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:elegant_notification/elegant_notification.dart';
+import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -11,8 +13,6 @@ import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/snack_bar.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:taksi/style/app_colors.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class VerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -27,7 +27,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
   final TextEditingController _smsController = TextEditingController();
   late PinTheme currentPinTheme;
   bool isLoading = false;
-  final String fcm = cache.getString('fcm_token') ?? 'null';
+
+  final String fcm = cache.getString('fcm_token') ?? '';
 
   OtpTimerButtonController controller = OtpTimerButtonController();
 
@@ -51,22 +52,31 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   Future<void> resendVerificationCode(String phoneNumber) async {
     try {
-      final response = await http.post(
-        Uri.parse('https://paygo.app-center.uz/services/zyber/api/auth/resend'),
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({'phone_number': phoneNumber.trim()}),
-      );
-      print(phoneNumber);
-      final data = jsonDecode(response.body);
+      final response = await requestHelper.post(
+          '/services/zyber/api/auth/resend',
+          {'phone_number': phoneNumber.trim()},
+          log: true);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        SnackBarService.showSnackBar(context, data['message'], false);
+      if (response['statusCode'] == 200 || response['statusCode'] == 201) {
+        String status = response['message'];
+        ElegantNotification.success(
+          width: 360,
+          isDismissable: false,
+          animationCurve: Curves.easeInOut,
+          position: Alignment.topCenter,
+          animation: AnimationType.fromTop,
+          title: Text('Tarif'),
+          description: Text(status),
+          onDismiss: () {},
+          onNotificationPressed: () {},
+          shadow: BoxShadow(
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 4),
+          ),
+        ).show(context);
       } else {
-        SnackBarService.showSnackBar(
-            context, data['message'] ?? 'Xatolik yuz berdi.', true);
+        SnackBarService.showSnackBar(context, response['message'], false);
       }
     } catch (e) {
       SnackBarService.showSnackBar(
@@ -134,22 +144,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        leading: IconButton(
-            onPressed: () {
-              context.pop();
-            },
-            icon: Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            )),
-        centerTitle: true,
-        backgroundColor: AppColors.grade1,
-        title: Text(
-          'phone_verify',
-          style: AppStyle.fontStyle.copyWith(color: Colors.white, fontSize: 20),
-        ).tr(),
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -158,7 +152,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                height: 50,
+                height: 90,
               ),
               Lottie.asset('assets/lottie/sms_verify.json',
                   width: 200, height: 200),

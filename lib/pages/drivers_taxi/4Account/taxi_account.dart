@@ -143,6 +143,16 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
                         ))
                   ],
                 ),
+                Text(
+                  'Telefon raqam: $phone_number',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
               ],
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:taksi/style/app_style.dart';
 
 class LanguageSelectionPage extends StatefulWidget {
   const LanguageSelectionPage({super.key});
@@ -71,8 +72,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
               children: [
                 Text(
                   'chosen_language',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                  style: AppStyle.fontStyle
+                      .copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                   textAlign: TextAlign.center,
                 ).tr(),
                 SizedBox(
@@ -80,8 +81,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                 ),
                 Text(
                   'language'.tr(),
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                  style: AppStyle.fontStyle
+                      .copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -100,7 +101,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                       padding: const EdgeInsets.all(12.0),
                       decoration: BoxDecoration(
                         color: selectedLocale == lang['locale']
-                            ? AppColors.grade2
+                            ? AppColors.grade1
                             : Colors.white,
                         border: Border.all(
                           color: selectedLocale == lang['locale']
@@ -119,7 +120,11 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                           const SizedBox(width: 16),
                           Text(
                             lang['name'],
-                            style: const TextStyle(fontSize: 18),
+                            style: AppStyle.fontStyle.copyWith(
+                              color: selectedLocale == lang['locale']
+                                  ? AppColors.backgroundColor
+                                  : AppColors.grade1,
+                            ),
                           ),
                         ],
                       ),
@@ -137,15 +142,17 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    selectedLocale != null ? AppColors.grade2 : Colors.grey,
+                    selectedLocale != null ? AppColors.grade1 : Colors.grey,
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'continue',
-                style: TextStyle(fontSize: 16, color: Colors.white),
+                style: AppStyle.fontStyle.copyWith(
+                  color: AppColors.backgroundColor,
+                ),
               ).tr(),
             ),
           ],

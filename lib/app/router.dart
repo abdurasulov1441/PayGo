@@ -62,8 +62,9 @@ String _initialLocation() {
 
   if (userToken != null) {
     return Routes.homeScreen;
+  } else {
+    return Routes.selsctLanguagePage;
   }
-  return Routes.selsctLanguagePage;
 }
 
 Object? _initialExtra() {

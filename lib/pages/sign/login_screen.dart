@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:elegant_notification/elegant_notification.dart';
+import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:taksi/app/router.dart';
 import 'package:taksi/pages/sign/signup_screen.dart';
 import 'package:taksi/services/gradientbutton.dart';
+import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -64,50 +67,75 @@ class _LoginScreenState extends State<LoginScreen> {
     final isValid = formKey.currentState!.validate();
     if (!isValid) return;
 
-    final url =
-        Uri.parse('https://paygo.app-center.uz/services/zyber/api/auth/login');
-    final headers = {
-      'Content-Type': 'application/json',
-      'accept': 'application/json',
-    };
-    final body = jsonEncode({
-      'phone_number': phoneTextInputController.text.trim(),
-    });
-
     try {
-      final response = await http.post(url, headers: headers, body: body);
+      final response = await requestHelper.post(
+          '/services/zyber/api/auth/login',
+          {
+            'phone_number': phoneTextInputController.text.trim(),
+          },
+          log: true);
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(responseData['message'])),
-        );
-
+      if (response['status'] == 200) {
+        String status = response['message'];
+        ElegantNotification.success(
+          width: 360,
+          isDismissable: false,
+          animationCurve: Curves.easeInOut,
+          position: Alignment.topCenter,
+          animation: AnimationType.fromTop,
+          title: Text('Paygo'),
+          description: Text(status),
+          onDismiss: () {},
+          onNotificationPressed: () {},
+          shadow: BoxShadow(
+            color: Colors.green,
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 4),
+          ),
+        ).show(context);
         context.go(
           Routes.verfySMS,
           extra: phoneTextInputController.text.trim(),
         );
       } else {
-        context.go(
-          Routes.verfySMS,
-          extra: phoneTextInputController.text.trim(),
-        );
-        final responseData = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Row(
-            children: [Text('error'.tr()), Text('${responseData['message']}')],
-          )),
-        );
+        String status = response['message'];
+        ElegantNotification.success(
+          width: 360,
+          isDismissable: false,
+          animationCurve: Curves.easeInOut,
+          position: Alignment.topCenter,
+          animation: AnimationType.fromTop,
+          title: Text('Tarif'),
+          description: Text(status),
+          onDismiss: () {},
+          onNotificationPressed: () {},
+          shadow: BoxShadow(
+            color: Colors.green,
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 4),
+          ),
+        ).show(context);
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Row(
-          children: [Text('error'.tr()), Text('$error')],
-        )),
-      );
+      ElegantNotification.success(
+        width: 360,
+        isDismissable: false,
+        animationCurve: Curves.easeInOut,
+        position: Alignment.topCenter,
+        animation: AnimationType.fromTop,
+        title: Text('error'.tr()),
+        description: Text('error'.tr()),
+        onDismiss: () {},
+        onNotificationPressed: () {},
+        shadow: BoxShadow(
+          color: Colors.green,
+          spreadRadius: 2,
+          blurRadius: 5,
+          offset: const Offset(0, 4),
+        ),
+      ).show(context);
     }
   }
 
@@ -179,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     filled: true,
                     fillColor: Colors.grey[100],
                     prefixIcon:
-                        const Icon(Icons.phone, color: AppColors.grade2),
+                        const Icon(Icons.phone, color: AppColors.grade1),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide.none,
@@ -201,11 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(width: 5),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SignUpScreen()),
-                        );
+                        context.push(Routes.register);
                       },
                       child: Text(
                         'registration',

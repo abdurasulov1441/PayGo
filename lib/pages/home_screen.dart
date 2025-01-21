@@ -11,28 +11,45 @@ import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/utils/errors.dart';
 import 'package:taksi/style/app_style.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<Map<String, dynamic>?> _futureUserStatus;
 
   Future<Map<String, dynamic>?> checkUserStatus() async {
     try {
       final response = await requestHelper.getWithAuth(
         '/services/zyber/api/users/get-user-status',
       );
-
       return response as Map<String, dynamic>?;
     } on UnauthenticatedError {
       return null;
     } catch (e) {
-      print('Ошибка сети: $e');
       return null;
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _futureUserStatus = checkUserStatus();
+  }
+
+  void retryFetchUserStatus() {
+    setState(() {
+      _futureUserStatus = checkUserStatus();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, dynamic>?>(
-      future: checkUserStatus(),
+      future: _futureUserStatus,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -42,7 +59,23 @@ class HomeScreen extends StatelessWidget {
             ),
           );
         } else if (!snapshot.hasData || snapshot.data == null) {
-          return const LanguageSelectionPage();
+          return Scaffold(
+            backgroundColor: Colors.white,
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                  child:
+                      LottieBuilder.asset('assets/lottie/payment_error.json'),
+                ),
+                Text('Internet bilan aloqa yo\'q'),
+                ElevatedButton(
+                  onPressed: retryFetchUserStatus,
+                  child: Text('Qayta urinish'),
+                ),
+              ],
+            ),
+          );
         } else {
           final userData = snapshot.data!;
           final int? status = userData['status'] as int?;

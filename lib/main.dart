@@ -8,34 +8,26 @@ import 'package:taksi/services/db/cache.dart';
 import 'package:yandex_maps_mapkit/init.dart' as init;
 
 void main() async {
-
   await dotenv.load(fileName: ".env");
-
 
   await init.initMapkit(
       apiKey: dotenv.env["15c1d849-cd77-420d-acf7-fdf37c9d4e58"] ??
           "15c1d849-cd77-420d-acf7-fdf37c9d4e58");
 
-
   WidgetsFlutterBinding.ensureInitialized();
-
 
   await Firebase.initializeApp();
 
-
   await cache.init();
-
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-
   EasyLocalization.logger.enableBuildModes = [];
   await EasyLocalization.ensureInitialized();
 
- 
   runApp(
     EasyLocalization(
       path: 'assets/translations',

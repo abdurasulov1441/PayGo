@@ -177,19 +177,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 20),
               GradientButton(
                 onPressed: signUp,
-                text: 'login'.tr(),
+                text: 'registration'.tr(),
               ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('dont_have_account'.tr()),
+                  Text('have_account'.tr()),
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Text(
-                      'registration'.tr(),
+                      'login'.tr(),
                       style: AppStyle.fontStyle.copyWith(
                         color: AppColors.grade1,
                       ),

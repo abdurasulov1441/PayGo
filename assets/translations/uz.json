@@ -8,6 +8,7 @@
   "login": "Kirish",
   "dont_have_account": "Akkauntingiz yo'qmi?",
   "registration": "Ro'yxatdan o'tish",
+  "have_account": "Akkauntingiz bormi?",
 
   "phone_verify": "Raqamni tasdiqlash",
   "enter_sms": "SMS ni kiriting",
