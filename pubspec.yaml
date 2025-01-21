@@ -53,6 +53,7 @@ dependencies:
   elegant_notification: ^2.4.1
   avatar_glow: ^3.0.1
   flutter_rating_bar: ^4.0.1
+  flutter_gradient_animation_text: ^1.0.2
 
 
 dev_dependencies:
@@ -88,3 +89,6 @@ flutter:
     - family: Poppins
       fonts:
         - asset: assets/fonts/Roboto-Regular.ttf
+    - family: Number
+      fonts:
+        - asset: assets/fonts/FE-FONT.TTF

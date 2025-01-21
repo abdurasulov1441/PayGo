@@ -35,7 +35,7 @@ class TaxiOrdersPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: AppColors.ui,
       appBar: AppBar(
         backgroundColor: AppColors.grade1,
         title: Text(
