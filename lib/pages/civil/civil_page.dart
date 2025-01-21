@@ -1,19 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
-import 'package:taksi/services/drawer/drawer.dart';
+import 'package:taksi/services/db/cache.dart';
+
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
 class MainCivilPage extends StatelessWidget {
   const MainCivilPage({super.key});
+  Future<void> _signOut() async {
+    cache.clear();
+    router.go(Routes.selsctLanguagePage);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: MyCustomDrawer(),
       backgroundColor: AppColors.ui,
       appBar: AppBar(
+        actions: [
+          ElevatedButton(
+              onPressed: () {
+                _signOut;
+              },
+              child: SvgPicture.asset(
+                'assets/images/user.svg',
+                width: 20,
+                height: 20,
+              ))
+        ],
         iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: AppColors.grade1,
         elevation: 0,

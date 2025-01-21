@@ -15,7 +15,7 @@ class TaxiAccountPage extends StatefulWidget {
 }
 
 String name = '';
-String phone_number = '';
+String phoneNumber = '';
 String balance = '';
 
 class _TaxiAccountPageState extends State<TaxiAccountPage> {
@@ -58,7 +58,7 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
           .getWithAuth('/services/zyber/api/users/get-user-info', log: true);
       setState(() {
         name = response['name'];
-        phone_number = response['phone_number'];
+        phoneNumber = response['phone_number'];
         balance = response['balance'];
       });
     } catch (e) {
@@ -127,11 +127,8 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
                       'Balans: $balance so\'m',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 20,
                       ),
-                    ),
-                    SizedBox(
-                      width: 10,
                     ),
                     IconButton(
                         onPressed: () {
@@ -142,16 +139,6 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
                           color: AppColors.backgroundColor,
                         ))
                   ],
-                ),
-                Text(
-                  'Telefon raqam: $phone_number',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-                SizedBox(
-                  width: 10,
                 ),
               ],
             ),

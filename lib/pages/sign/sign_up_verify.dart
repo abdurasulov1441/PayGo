@@ -113,17 +113,42 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (response['accessToken'] != null && response['refreshToken'] != null) {
         cache.setString('user_token', response['accessToken']);
         cache.setString('refresh_token', response['refreshToken']);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('verification_succes'.tr())),
-        );
+        ElegantNotification.success(
+          width: 360,
+          isDismissable: false,
+          animationCurve: Curves.easeInOut,
+          position: Alignment.topCenter,
+          animation: AnimationType.fromTop,
+          description: Text('verification_succes'.tr()),
+          onDismiss: () {},
+          onNotificationPressed: () {},
+          shadow: BoxShadow(
+            color: Colors.green,
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 4),
+          ),
+        ).show(context);
         context.go(
           Routes.homeScreen,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('error_token'.tr())),
-        );
+        ElegantNotification.error(
+          width: 360,
+          isDismissable: false,
+          animationCurve: Curves.easeInOut,
+          position: Alignment.topCenter,
+          animation: AnimationType.fromTop,
+          description: Text('error_token'.tr()),
+          onDismiss: () {},
+          onNotificationPressed: () {},
+          shadow: BoxShadow(
+            color: Colors.red,
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 4),
+          ),
+        ).show(context);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
