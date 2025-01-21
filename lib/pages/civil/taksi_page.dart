@@ -1,11 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bottom_picker/resources/arrays.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
-import 'dart:math';
-
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:bottom_picker/bottom_picker.dart';
 
 class TaxiPage extends StatefulWidget {
   const TaxiPage({super.key});
@@ -17,6 +13,8 @@ class TaxiPage extends StatefulWidget {
 class _TaxiPageState extends State<TaxiPage> {
   String fromLocation = 'Namangan';
   String toLocation = 'Toshkent';
+  List<String> regions = [];
+  bool isLoadingRegions = true;
 
   final TextEditingController _phoneController =
       TextEditingController(text: '+998 ');
@@ -34,121 +32,40 @@ class _TaxiPageState extends State<TaxiPage> {
   String _selectedPeople = 'Tanlanmadi';
   DateTime? _selectedDateTime;
 
-  // Phone number formatter similar to the SignUpScreen
-  final _phoneNumberFormatter = TextInputFormatter.withFunction(
-    (oldValue, newValue) {
-      if (!newValue.text.startsWith('+998 ')) {
-        return oldValue;
-      }
+ 
 
-      String text = newValue.text.substring(5).replaceAll(RegExp(r'\D'), '');
-
-      if (text.length > 9) {
-        text = text.substring(0, 9);
-      }
-
-      StringBuffer formatted = StringBuffer('+998 ');
-      int selectionIndex = newValue.selection.baseOffset;
-
-      if (text.isNotEmpty) {
-        formatted.write('(${text.substring(0, min(2, text.length))}');
-      }
-      if (text.length > 2) {
-        formatted.write(') ${text.substring(2, min(5, text.length))}');
-      }
-      if (text.length > 5) {
-        formatted.write(' ${text.substring(5, min(7, text.length))}');
-      }
-      if (text.length > 7) {
-        formatted.write(' ${text.substring(7, text.length)}');
-      }
-
-      selectionIndex = formatted.length;
-
-      if (newValue.selection.baseOffset < 5) {
-        selectionIndex = 5;
-      }
-
-      return TextEditingValue(
-        text: formatted.toString(),
-        selection: TextSelection.collapsed(offset: selectionIndex),
-      );
-    },
-  );
-
-  void _swapLocations() {
-    setState(() {
-      final temp = fromLocation;
-      fromLocation = toLocation;
-      toLocation = temp;
-    });
+  @override
+  void initState() {
+    super.initState();
+    fetchRegions();
   }
 
-  Future<void> _pickTime() async {
-    final TimeOfDay? time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (BuildContext context, Widget? child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
-        );
-      },
-    );
-
-    if (time != null) {
+  Future<void> fetchRegions() async {
+    try {
+      // Imitation of a region fetch function. Replace with your API request.
+      await Future.delayed(const Duration(seconds: 2));
       setState(() {
-        _selectedDateTime = DateTime(
-          _selectedPeriod == 'Bugun'
-              ? DateTime.now().year
-              : DateTime.now().year,
-          _selectedPeriod == 'Bugun'
-              ? DateTime.now().month
-              : DateTime.now().month,
-          _selectedPeriod == 'Bugun'
-              ? DateTime.now().day
-              : DateTime.now().day + 1,
-          time.hour,
-          time.minute,
-        );
+        regions = ['Namangan', 'Toshkent', 'Farg‘ona', 'Andijon'];
+        isLoadingRegions = false;
       });
+    } catch (e) {
+      print('Ошибка загрузки регионов: $e');
     }
   }
 
-  Future<void> _pickDateTime() async {
-    DateTime now = DateTime.now();
-
-    final DateTime? date = await showDatePicker(
-      context: context,
-      initialDate: now,
-      firstDate: now,
-      lastDate: DateTime(now.year + 1),
-    );
-
-    if (date != null) {
-      final TimeOfDay? time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(now),
-        builder: (BuildContext context, Widget? child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-            child: child!,
-          );
-        },
-      );
-
-      if (time != null) {
+  void _pickDateTime() {
+    BottomPicker.dateTime(
+      pickerTitle: Text(
+        "Vaqtni tanlang",
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      onSubmit: (date) {
         setState(() {
-          _selectedDateTime = DateTime(
-            date.year,
-            date.month,
-            date.day,
-            time.hour,
-            time.minute,
-          );
+          _selectedDateTime = date;
         });
-      }
-    }
+      },
+      bottomPickerTheme: BottomPickerTheme.blue,
+    ).show(context);
   }
 
   Future<void> _submitData() async {
@@ -167,16 +84,14 @@ class _TaxiPageState extends State<TaxiPage> {
       'toLocation': toLocation,
       'phoneNumber': phoneNumber,
       'peopleCount': int.parse(_selectedPeople),
-      'orderTime': _selectedDateTime != null
-          ? Timestamp.fromDate(_selectedDateTime!)
-          : Timestamp.fromDate(DateTime.now()),
+      'orderTime': _selectedDateTime ?? DateTime.now(),
       'status': 'pending',
-      'orderType': 'taksi', // Buyurtma turi qo'shildi
+      'orderType': 'taksi',
       'driverId': null,
       'driverPhoneNumber': null,
     };
 
-    await FirebaseFirestore.instance.collection('orders').add(orderData);
+    print(orderData);
 
     _showSnackBar('Ma\'lumotlar yuborildi!');
 
@@ -198,130 +113,71 @@ class _TaxiPageState extends State<TaxiPage> {
   }
 
   @override
-  void dispose() {
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      backgroundColor: AppColors.ui,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildLocationContainer('Qayerdan', fromLocation),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _swapLocations,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.taxi,
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(16),
-              ),
-              child: const Icon(
-                Icons.swap_calls,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildLocationContainer('Qayerga', toLocation),
-            const SizedBox(height: 20),
-            _buildDropdown(
-              label: 'Vaqtni tanlang',
-              value: _selectedPeriod,
-              items: _periodOptions,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedPeriod = newValue!;
-                  _selectedDateTime = null;
-                });
-                if (_selectedPeriod == 'Boshqa vaqt') {
-                  _pickDateTime();
-                } else if (_selectedPeriod == 'Bugun' ||
-                    _selectedPeriod == 'Ertaga') {
-                  _pickTime();
-                }
-              },
-            ),
-            if ((_selectedPeriod == 'Bugun' ||
-                    _selectedPeriod == 'Ertaga' ||
-                    _selectedPeriod == 'Boshqa vaqt') &&
-                _selectedDateTime != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: _buildDateTimeDisplay(),
-              ),
-            const SizedBox(height: 20),
-            _buildDropdown(
-              label: 'Odamlar soni',
-              value: _selectedPeople,
-              items: _peopleOptions,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedPeople = newValue!;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              controller: _phoneController,
-              hintText: 'Telefon raqamingizni kiriting',
-              keyboardType: TextInputType.phone,
-              inputFormatters: [
-                _phoneNumberFormatter
-              ], // Apply phone formatter here
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _submitData,
-              style: ElevatedButton.styleFrom(
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(15))),
-                backgroundColor: AppColors.taxi,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                textStyle: const TextStyle(fontSize: 18),
-              ),
-              child: Text(
-                'Yuborish',
-                style: AppStyle.fontStyle.copyWith(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold),
+      appBar: AppBar(title: const Text("Taksi Buyurtma")),
+      body: isLoadingRegions
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _buildLocationContainer('Qayerdan', fromLocation),
+                  const SizedBox(height: 20),
+                  _buildLocationContainer('Qayerga', toLocation),
+                  const SizedBox(height: 20),
+                  _buildDropdown(
+                    label: 'Vaqtni tanlang',
+                    value: _selectedPeriod,
+                    items: _periodOptions,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedPeriod = newValue!;
+                        _selectedDateTime = null;
+                      });
+                      if (_selectedPeriod == 'Boshqa vaqt') {
+                        _pickDateTime();
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  if (_selectedDateTime != null)
+                    Text(
+                      "Tanlangan vaqt: ${_selectedDateTime.toString()}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  const SizedBox(height: 20),
+                  _buildDropdown(
+                    label: 'Odamlar soni',
+                    value: _selectedPeople,
+                    items: _peopleOptions,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedPeople = newValue!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _submitData,
+                    child: const Text('Yuborish'),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(
-              height: 150,
-            )
-          ],
-        ),
-      ),
     );
   }
 
   Widget _buildLocationContainer(String label, String location) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: AppColors.taxi,
+        color: Colors.blue,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.taxi.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
       child: Text(
         '$label: $location',
-        style: const TextStyle(
-            color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        style: const TextStyle(color: Colors.white, fontSize: 18),
       ),
     );
   }
@@ -340,86 +196,19 @@ class _TaxiPageState extends State<TaxiPage> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.grey.shade400),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: DropdownButton<String>(
-            value: value,
-            isExpanded: true,
-            underline: const SizedBox(),
-            items: items.map<DropdownMenuItem<String>>((String item) {
-              return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              );
-            }).toList(),
-            onChanged: onChanged,
-          ),
+        DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          underline: const SizedBox(),
+          items: items.map<DropdownMenuItem<String>>((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(item),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
       ],
-    );
-  }
-
-  Widget _buildDateTimeDisplay() {
-    final formattedDate =
-        DateFormat('yyyy-MM-dd – HH:mm').format(_selectedDateTime!);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Tanlangan vaqt:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          formattedDate,
-          style: const TextStyle(fontSize: 16),
-        ),
-        if (_selectedPeriod == 'Boshqa vaqt')
-          IconButton(
-            icon: const Icon(
-              Icons.edit,
-              color: AppColors.taxi,
-            ),
-            onPressed: _pickDateTime,
-          )
-        else
-          IconButton(
-            icon: const Icon(
-              Icons.edit,
-              color: AppColors.taxi,
-            ),
-            onPressed: _pickTime,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    TextInputType keyboardType = TextInputType.text,
-    List<TextInputFormatter>? inputFormatters,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      decoration: InputDecoration(
-        prefixIcon: const Icon(
-          Icons.phone,
-          color: AppColors.taxi,
-        ),
-        hintText: hintText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-      ),
     );
   }
 }

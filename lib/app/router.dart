@@ -163,7 +163,7 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routes.taxiPage,
-      builder: (context, state) => const TaxiPage(),
+      builder: (context, state) => TaxiPage(),
     ),
     GoRoute(
       path: Routes.taxiDeliveryPage,

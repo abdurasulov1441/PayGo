@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:elegant_notification/elegant_notification.dart';
@@ -6,9 +5,7 @@ import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 import 'package:taksi/app/router.dart';
-import 'package:taksi/pages/sign/signup_screen.dart';
 import 'package:taksi/services/gradientbutton.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/style/app_colors.dart';
