@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 
 class MyCustomButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -9,17 +11,21 @@ class MyCustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+    return Container(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.backgroundColor,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        child: Text(
+          text,
+          style: AppStyle.fontStyle.copyWith(color: AppColors.grade1),
+        ),
       ),
     );
   }

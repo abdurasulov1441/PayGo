@@ -1,4 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:elegant_notification/elegant_notification.dart';
+import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/pages/civil/taksi_create_order/botom_shet_for_peoples.dart';
@@ -31,6 +33,47 @@ class _TaxiPageState extends State<TaxiPage> {
     super.initState();
     fetchRegions();
     fetchTimes();
+  }
+
+  Future<void> createOrderTaxi() async {
+    try {
+      final response = await requestHelper.postWithAuth(
+          '/services/zyber/api/orders/make-taxi-order',
+          {
+            "from_location": 12,
+            "to_location": 9,
+            "passenger_count": 2,
+            "pochta": "Pochta bor Quqonga",
+            "time_id": 1
+          },
+          log: true);
+      if (response['status'] == 'success') {
+        ElegantNotification.success(
+          width: 360,
+          isDismissable: false,
+          animationCurve: Curves.easeInOut,
+          position: Alignment.topCenter,
+          animation: AnimationType.fromTop,
+          description: Text('succes'.tr()),
+          onDismiss: () {},
+          onNotificationPressed: () {},
+          shadow: BoxShadow(
+            color: Colors.green,
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 4),
+          ),
+        ).show(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [Text('error'.tr()), Text(" $e")],
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> fetchRegions() async {
@@ -116,7 +159,7 @@ class _TaxiPageState extends State<TaxiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: AppColors.ui,
       appBar: AppBar(
         centerTitle: true,
         leading: IconButton(
@@ -129,7 +172,8 @@ class _TaxiPageState extends State<TaxiPage> {
             )),
         backgroundColor: AppColors.grade1,
         title: Text(
-          'Taksiga buyurtma berish',
+          'TEST',
+          //  'Taksiga buyurtma berish',
           style: AppStyle.fontStyle
               .copyWith(fontSize: 20, color: AppColors.backgroundColor),
         ),
@@ -183,6 +227,11 @@ class _TaxiPageState extends State<TaxiPage> {
                 hintText: 'Odamlar sonini kiriting',
               ),
             const SizedBox(height: 20),
+            ElevatedButton(
+                onPressed: () {
+                  createOrderTaxi();
+                },
+                child: Text('Buyurtma berish'))
           ],
         ),
       ),
