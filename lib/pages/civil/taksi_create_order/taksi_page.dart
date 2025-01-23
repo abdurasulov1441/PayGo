@@ -173,7 +173,6 @@ class _TaxiPageState extends State<TaxiPage> {
         backgroundColor: AppColors.grade1,
         title: Text(
           'TEST',
-          //  'Taksiga buyurtma berish',
           style: AppStyle.fontStyle
               .copyWith(fontSize: 20, color: AppColors.backgroundColor),
         ),
@@ -203,7 +202,10 @@ class _TaxiPageState extends State<TaxiPage> {
             ),
             const SizedBox(height: 20),
             SwitchListTile(
-              title: const Text('Odamlar sonini qo‘lda kiritish'),
+              activeColor: AppColors.grade1,
+              inactiveThumbColor: AppColors.grade1,
+              inactiveTrackColor: AppColors.ui,
+              title: const Text('Pochta berib yuborish'),
               value: isCustomPeople,
               onChanged: (value) {
                 setState(() {
@@ -213,6 +215,9 @@ class _TaxiPageState extends State<TaxiPage> {
                   }
                 });
               },
+            ),
+            SizedBox(
+              height: 10,
             ),
             if (!isCustomPeople)
               MyCustomButton(
@@ -224,10 +229,18 @@ class _TaxiPageState extends State<TaxiPage> {
             else
               MyCustomTextField(
                 controller: _peopleController,
-                hintText: 'Odamlar sonini kiriting',
+                hintText: 'Buyum nomini yozing',
               ),
             const SizedBox(height: 20),
             ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.backgroundColor,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 onPressed: () {
                   createOrderTaxi();
                 },
