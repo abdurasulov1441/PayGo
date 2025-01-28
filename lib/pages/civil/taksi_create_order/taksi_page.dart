@@ -4,6 +4,7 @@ import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/pages/civil/taksi_create_order/botom_shet_for_peoples.dart';
+import 'package:taksi/pages/civil/taksi_create_order/my_button_send.dart';
 import 'package:taksi/pages/civil/taksi_create_order/my_custom_bottom_sheet.dart';
 import 'package:taksi/pages/civil/taksi_create_order/my_custom_button.dart';
 import 'package:taksi/pages/civil/taksi_create_order/my_custom_text_field.dart';
@@ -36,17 +37,43 @@ class _TaxiPageState extends State<TaxiPage> {
   }
 
   Future<void> createOrderTaxi() async {
+    if (selectedFromRegion == null ||
+        selectedToRegion == null ||
+        selectedTime == null ||
+        (!isCustomPeople && selectedPeople == null)) {
+      ElegantNotification.error(
+        width: 360,
+        isDismissable: false,
+        animationCurve: Curves.easeInOut,
+        position: Alignment.topCenter,
+        animation: AnimationType.fromTop,
+        description: Text('Barcha maydonlar to‘ldirilishi shart!'),
+        onDismiss: () {},
+        onNotificationPressed: () {},
+        shadow: BoxShadow(
+          color: Colors.red,
+          spreadRadius: 2,
+          blurRadius: 5,
+          offset: const Offset(0, 4),
+        ),
+      ).show(context);
+      return;
+    }
+
     try {
       final response = await requestHelper.postWithAuth(
-          '/services/zyber/api/orders/make-taxi-order',
-          {
-            "from_location": 12,
-            "to_location": 9,
-            "passenger_count": 2,
-            "pochta": "Pochta bor Quqonga",
-            "time_id": 1
-          },
-          log: true);
+        '/services/zyber/api/orders/make-taxi-order',
+        {
+          "from_location": selectedFromRegion,
+          "to_location": selectedToRegion,
+          "passenger_count": isCustomPeople
+              ? int.tryParse(_peopleController.text) ?? 0
+              : selectedPeople,
+          "pochta": isCustomPeople ? _peopleController.text : null,
+          "time_id": selectedTime,
+        },
+        log: true,
+      );
       if (response['status'] == 'success') {
         ElegantNotification.success(
           width: 360,
@@ -54,7 +81,7 @@ class _TaxiPageState extends State<TaxiPage> {
           animationCurve: Curves.easeInOut,
           position: Alignment.topCenter,
           animation: AnimationType.fromTop,
-          description: Text('succes'.tr()),
+          description: Text('Buyurtma muvaffaqiyatli jo‘natildi!'),
           onDismiss: () {},
           onNotificationPressed: () {},
           shadow: BoxShadow(
@@ -64,12 +91,13 @@ class _TaxiPageState extends State<TaxiPage> {
             offset: const Offset(0, 4),
           ),
         ).show(context);
+        context.pop();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
-            children: [Text('error'.tr()), Text(" $e")],
+            children: [Text('Xatolik yuz berdi:'), Text(" $e")],
           ),
         ),
       );
@@ -177,80 +205,92 @@ class _TaxiPageState extends State<TaxiPage> {
               .copyWith(fontSize: 20, color: AppColors.backgroundColor),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            MyCustomButton(
-              onPressed: regions.isNotEmpty
-                  ? () => showRegionPicker('Qayerdan', true)
-                  : null,
-              text: selectedFromRegion ?? 'Qayerdan tanlang',
-              icon: Icons.location_on,
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Icon(
-                Icons.arrow_downward,
-                color: AppColors.grade1,
-                size: 30,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 20,
+                  ),
+                  MyCustomButton(
+                    onPressed: regions.isNotEmpty
+                        ? () => showRegionPicker('Qayerdan', true)
+                        : null,
+                    text: selectedFromRegion ?? 'Qayerdan tanlang',
+                    icon: Icons.location_on,
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Icon(
+                      Icons.arrow_downward,
+                      color: AppColors.grade1,
+                      size: 30,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  MyCustomButton(
+                    onPressed: regions.isNotEmpty
+                        ? () => showRegionPicker('Qayerga', false)
+                        : null,
+                    text: selectedToRegion ?? 'Qayerga tanlang',
+                    icon: Icons.location_on,
+                  ),
+                  const SizedBox(height: 20),
+                  MyCustomButton(
+                    onPressed: times.isNotEmpty ? () => showTimePicker() : null,
+                    text: selectedTime ?? 'Vaqtni tanlang',
+                    icon: Icons.timeline,
+                  ),
+                  const SizedBox(height: 20),
+                  SwitchListTile(
+                    activeColor: AppColors.grade1,
+                    inactiveThumbColor: AppColors.grade1,
+                    inactiveTrackColor: AppColors.ui,
+                    title: const Text('Pochta berib yuborish'),
+                    value: isCustomPeople,
+                    onChanged: (value) {
+                      setState(() {
+                        isCustomPeople = value;
+                        if (!value) {
+                          _peopleController.clear();
+                        }
+                      });
+                    },
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  if (!isCustomPeople)
+                    MyCustomButton(
+                      onPressed: () => showPeoplePicker(),
+                      text: selectedPeople != null
+                          ? '$selectedPeople odam tanlandi'
+                          : 'Odamlar sonini tanlang',
+                      icon: Icons.people,
+                    )
+                  else
+                    MyCustomTextField(
+                      controller: _peopleController,
+                      hintText: 'Buyum nomini yozing',
+                    ),
+                  const SizedBox(height: 20),
+                ],
               ),
-            ),
-            const SizedBox(height: 20),
-            MyCustomButton(
-              onPressed: regions.isNotEmpty
-                  ? () => showRegionPicker('Qayerga', false)
-                  : null,
-              text: selectedToRegion ?? 'Qayerga tanlang',
-              icon: Icons.location_on,
-            ),
-            const SizedBox(height: 20),
-            MyCustomButton(
-              onPressed: times.isNotEmpty ? () => showTimePicker() : null,
-              text: selectedTime ?? 'Vaqtni tanlang',
-              icon: Icons.timeline,
-            ),
-            const SizedBox(height: 20),
-            SwitchListTile(
-              activeColor: AppColors.grade1,
-              inactiveThumbColor: AppColors.grade1,
-              inactiveTrackColor: AppColors.ui,
-              title: const Text('Pochta berib yuborish'),
-              value: isCustomPeople,
-              onChanged: (value) {
-                setState(() {
-                  isCustomPeople = value;
-                  if (!value) {
-                    _peopleController.clear();
-                  }
-                });
-              },
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            if (!isCustomPeople)
-              MyCustomButton(
-                onPressed: () => showPeoplePicker(),
-                text: selectedPeople != null
-                    ? '$selectedPeople odam tanlangan'
-                    : 'Odamlar sonini tanlang',
-                icon: Icons.people,
-              )
-            else
-              MyCustomTextField(
-                controller: _peopleController,
-                hintText: 'Buyum nomini yozing',
+              SizedBox(
+                height: 20,
               ),
-            const SizedBox(height: 20),
-            Spacer(),
-            MyCustomButton(
-              onPressed: () => createOrderTaxi(),
-              text: ' Buyurtma berish',
-              icon: null,
-            ),
-          ],
+              MyCustomButtonForSend(
+                onPressed: () => createOrderTaxi(),
+                text: ' Buyurtma berish',
+                icon: null,
+              ),
+            ],
+          ),
         ),
       ),
     );
