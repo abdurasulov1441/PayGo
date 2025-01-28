@@ -49,58 +49,6 @@ final class RequestHelper {
     return response.data;
   }
 
-  Future<dynamic> getNews(
-    String path, {
-    bool log = false,
-    CancelToken? cancelToken,
-  }) async {
-    final response = await dio.get(
-      "https://qbb.uz$path",
-      cancelToken: cancelToken,
-    );
-
-    if (log) {
-      logger.d([
-        'GET',
-        path,
-        response.statusCode,
-        response.statusMessage,
-        response.data,
-      ]);
-
-      logMethod(jsonEncode(response.data));
-    }
-
-    return response.data;
-  }
-
-  Future<dynamic> getHeaderStatistic(String path,
-      {bool log = false,
-      CancelToken? cancelToken,
-      Map<String, dynamic>? headers}) async {
-    final options = Options(headers: headers);
-
-    final response = await dio.get(
-      "$baseUrl$path",
-      cancelToken: cancelToken,
-      options: options,
-    );
-
-    if (log) {
-      logger.d([
-        'GET',
-        path,
-        response.statusCode,
-        response.statusMessage,
-        response.data,
-      ]);
-
-      logMethod(jsonEncode(response.data));
-    }
-
-    return response.data;
-  }
-
   Future<dynamic> getWithAuth(
     String path, {
     bool log = false,

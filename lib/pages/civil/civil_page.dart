@@ -2,17 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
-import 'package:taksi/services/db/cache.dart';
-
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
 class MainCivilPage extends StatelessWidget {
   const MainCivilPage({super.key});
-  Future<void> _signOut() async {
-    cache.clear();
-    router.go(Routes.selsctLanguagePage);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +16,7 @@ class MainCivilPage extends StatelessWidget {
         actions: [
           ElevatedButton(
               onPressed: () {
-                _signOut;
+                context.push(Routes.civilAccountPage);
               },
               child: SvgPicture.asset(
                 'assets/images/user.svg',

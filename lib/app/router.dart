@@ -21,6 +21,8 @@ import 'package:taksi/pages/sign/signup_screen.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/language/language_select_page.dart';
 
+import '../pages/civil/civil_account.dart';
+
 abstract class Routes {
   static const selsctLanguagePage = '/selsctLanguagePage';
 
@@ -34,6 +36,7 @@ abstract class Routes {
   static const civilPage = '/civilPage';
   static const taxiPage = '/taxiPage';
   static const taxiDeliveryPage = '/taxiDeliveryPage';
+  static const civilAccountPage = '/civilAccountPage';
 
 ///////////////////////////////////////////////////////
   static const roleSelect = '/roleSelect';
@@ -172,6 +175,10 @@ final router = GoRouter(
     GoRoute(
       path: Routes.accountDetailInfoPage,
       builder: (context, state) => const AccountDetailInfoTaksi(),
+    ),
+    GoRoute(
+      path: Routes.civilAccountPage,
+      builder: (context, state) => const CivilAccount(),
     ),
   ],
 );
