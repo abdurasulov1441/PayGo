@@ -151,12 +151,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
         ).show(context);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Row(
-          children: [Text('error'.tr()), Text("$e")],
-        )),
-      );
+      ElegantNotification.error(
+        width: 360,
+        isDismissable: false,
+        animationCurve: Curves.easeInOut,
+        position: Alignment.topCenter,
+        animation: AnimationType.fromTop,
+        description: Text('error'.tr()),
+        onDismiss: () {},
+        onNotificationPressed: () {},
+        shadow: BoxShadow(
+          color: Colors.red,
+          spreadRadius: 2,
+          blurRadius: 5,
+          offset: const Offset(0, 4),
+        ),
+      ).show(context);
     } finally {
       setState(() {
         isLoading = false;

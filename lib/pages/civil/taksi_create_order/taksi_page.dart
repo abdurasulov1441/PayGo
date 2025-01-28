@@ -172,7 +172,7 @@ class _TaxiPageState extends State<TaxiPage> {
             )),
         backgroundColor: AppColors.grade1,
         title: Text(
-          'TEST',
+          'Taksi buyurtma qilish',
           style: AppStyle.fontStyle
               .copyWith(fontSize: 20, color: AppColors.backgroundColor),
         ),
@@ -187,6 +187,15 @@ class _TaxiPageState extends State<TaxiPage> {
                   ? () => showRegionPicker('Qayerdan', true)
                   : null,
               text: selectedFromRegion ?? 'Qayerdan tanlang',
+              icon: Icons.location_on,
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: Icon(
+                Icons.arrow_downward,
+                color: AppColors.grade1,
+                size: 30,
+              ),
             ),
             const SizedBox(height: 20),
             MyCustomButton(
@@ -194,11 +203,13 @@ class _TaxiPageState extends State<TaxiPage> {
                   ? () => showRegionPicker('Qayerga', false)
                   : null,
               text: selectedToRegion ?? 'Qayerga tanlang',
+              icon: Icons.location_on,
             ),
             const SizedBox(height: 20),
             MyCustomButton(
               onPressed: times.isNotEmpty ? () => showTimePicker() : null,
               text: selectedTime ?? 'Vaqtni tanlang',
+              icon: Icons.timeline,
             ),
             const SizedBox(height: 20),
             SwitchListTile(
@@ -225,6 +236,7 @@ class _TaxiPageState extends State<TaxiPage> {
                 text: selectedPeople != null
                     ? '$selectedPeople odam tanlangan'
                     : 'Odamlar sonini tanlang',
+                icon: Icons.people,
               )
             else
               MyCustomTextField(
@@ -232,19 +244,12 @@ class _TaxiPageState extends State<TaxiPage> {
                 hintText: 'Buyum nomini yozing',
               ),
             const SizedBox(height: 20),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.backgroundColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: () {
-                  createOrderTaxi();
-                },
-                child: Text('Buyurtma berish'))
+            Spacer(),
+            MyCustomButton(
+              onPressed: () => createOrderTaxi(),
+              text: ' Buyurtma berish',
+              icon: null,
+            ),
           ],
         ),
       ),

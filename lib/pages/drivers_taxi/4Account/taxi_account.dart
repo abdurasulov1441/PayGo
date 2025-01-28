@@ -60,6 +60,8 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
         name = response['name'];
         phoneNumber = response['phone_number'];
         balance = response['balance'];
+        final accessToken = cache.getString('user_token');
+        print(accessToken);
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
