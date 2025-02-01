@@ -55,6 +55,7 @@ dependencies:
   flutter_rating_bar: ^4.0.1
   flutter_gradient_animation_text: ^1.0.2
   bottom_picker: ^2.10.1
+  animated_toggle_switch: ^0.8.4
 
 
 dev_dependencies:
@@ -87,9 +88,9 @@ flutter:
     - assets/translations/   
     - .env
   fonts:
-    - family: Poppins
+    - family: Jost
       fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Jost-Regular.ttf
     - family: Number
       fonts:
         - asset: assets/fonts/FE-FONT.TTF

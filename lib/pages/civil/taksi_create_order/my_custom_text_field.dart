@@ -14,7 +14,7 @@ class MyCustomTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      keyboardType: TextInputType.number,
+      keyboardType: TextInputType.text,
       decoration: InputDecoration(
         hintText: hintText,
         border: OutlineInputBorder(

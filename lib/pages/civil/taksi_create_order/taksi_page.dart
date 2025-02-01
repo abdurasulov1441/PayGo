@@ -1,3 +1,4 @@
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:elegant_notification/elegant_notification.dart';
 import 'package:elegant_notification/resources/arrays.dart';
@@ -27,6 +28,12 @@ class _TaxiPageState extends State<TaxiPage> {
   String? selectedTime;
   int? selectedPeople;
   bool isCustomPeople = false;
+
+  int value = 0;
+  int? nullableValue;
+  bool positive = false;
+  bool loading = false;
+
   final TextEditingController _peopleController = TextEditingController();
 
   @override
@@ -46,7 +53,6 @@ class _TaxiPageState extends State<TaxiPage> {
         isDismissable: false,
         animationCurve: Curves.easeInOut,
         position: Alignment.topCenter,
-        animation: AnimationType.fromTop,
         description: Text('Barcha maydonlar to‘ldirilishi shart!'),
         onDismiss: () {},
         onNotificationPressed: () {},
@@ -80,7 +86,6 @@ class _TaxiPageState extends State<TaxiPage> {
           isDismissable: false,
           animationCurve: Curves.easeInOut,
           position: Alignment.topCenter,
-          animation: AnimationType.fromTop,
           description: Text('Buyurtma muvaffaqiyatli jo‘natildi!'),
           onDismiss: () {},
           onNotificationPressed: () {},
@@ -201,77 +206,113 @@ class _TaxiPageState extends State<TaxiPage> {
         backgroundColor: AppColors.grade1,
         title: Text(
           'Taksi buyurtma qilish',
-          style: AppStyle.fontStyle
-              .copyWith(fontSize: 20, color: AppColors.backgroundColor),
+          style: AppStyle.fontStyle.copyWith(
+              fontSize: 20,
+              color: AppColors.backgroundColor,
+              fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: AppColors.backgroundColor,
+          ),
+          padding: EdgeInsets.all(10),
+          margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 20,
-                  ),
                   MyCustomButton(
+                    labelIcon: 'location',
                     onPressed: regions.isNotEmpty
                         ? () => showRegionPicker('Qayerdan', true)
                         : null,
-                    text: selectedFromRegion ?? 'Qayerdan tanlang',
-                    icon: Icons.location_on,
-                  ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Icon(
-                      Icons.arrow_downward,
-                      color: AppColors.grade1,
-                      size: 30,
-                    ),
+                    text: selectedFromRegion ?? 'Qayerdan',
+                    isDropdown: true,
                   ),
                   const SizedBox(height: 20),
                   MyCustomButton(
+                    labelIcon: 'location',
+                    isDropdown: true,
                     onPressed: regions.isNotEmpty
                         ? () => showRegionPicker('Qayerga', false)
                         : null,
-                    text: selectedToRegion ?? 'Qayerga tanlang',
-                    icon: Icons.location_on,
+                    text: selectedToRegion ?? 'Qayerga',
                   ),
                   const SizedBox(height: 20),
                   MyCustomButton(
+                    isDropdown: false,
                     onPressed: times.isNotEmpty ? () => showTimePicker() : null,
                     text: selectedTime ?? 'Vaqtni tanlang',
-                    icon: Icons.timeline,
+                    labelIcon: 'time',
                   ),
                   const SizedBox(height: 20),
-                  SwitchListTile(
-                    activeColor: AppColors.grade1,
-                    inactiveThumbColor: AppColors.grade1,
-                    inactiveTrackColor: AppColors.ui,
-                    title: const Text('Pochta berib yuborish'),
-                    value: isCustomPeople,
-                    onChanged: (value) {
-                      setState(() {
-                        isCustomPeople = value;
-                        if (!value) {
-                          _peopleController.clear();
-                        }
-                      });
-                    },
-                  ),
                   SizedBox(
-                    height: 10,
+                    width: double.infinity,
+                    child: AnimatedToggleSwitch.size(
+                      iconList: [
+                        Text(
+                          'Pochta jo\'natish',
+                          style: AppStyle.fontStyle.copyWith(
+                              fontSize: 12,
+                              color: value == 0
+                                  ? AppColors.backgroundColor
+                                  : AppColors.textColor),
+                        ),
+                        Text(
+                          'Yo\'lovchi tashish',
+                          style: AppStyle.fontStyle.copyWith(
+                              fontSize: 12,
+                              color: value == 1
+                                  ? AppColors.backgroundColor
+                                  : AppColors.textColor),
+                        ),
+                      ],
+                      current: value,
+                      values: const [
+                        0,
+                        1,
+                      ],
+                      iconOpacity: 0.2,
+                      indicatorSize: const Size.fromWidth(400),
+                      style: ToggleStyle(
+                        indicatorColor: AppColors.grade1,
+                        backgroundColor: AppColors.ui,
+                        borderColor: AppColors.ui,
+                        borderRadius: BorderRadius.circular(10.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            spreadRadius: 1,
+                            blurRadius: 2,
+                            offset: Offset(0, 1.5),
+                          ),
+                        ],
+                      ),
+                      onChanged: (v) {
+                        setState(() {
+                          isCustomPeople = v == 0;
+                          if (!isCustomPeople) {
+                            _peopleController.clear();
+                          }
+                          value = v;
+                        });
+                      },
+                    ),
                   ),
+                  SizedBox(height: 20),
                   if (!isCustomPeople)
                     MyCustomButton(
+                      isDropdown: false,
                       onPressed: () => showPeoplePicker(),
                       text: selectedPeople != null
                           ? '$selectedPeople odam tanlandi'
                           : 'Odamlar sonini tanlang',
-                      icon: Icons.people,
+                      labelIcon: 'arrow',
                     )
                   else
                     MyCustomTextField(
