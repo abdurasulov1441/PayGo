@@ -1,38 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:taksi/pages/drivers_taxi/3History/order_history_widget.dart';
+import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
-class TaxiOrdersHistoryPage extends StatelessWidget {
+class TaxiOrdersHistoryPage extends StatefulWidget {
   const TaxiOrdersHistoryPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final orders = [
-      {
-        'orderNumber': '2132',
-        'status': 'Yakunlangan',
-        'customer': 'Abdulaziz',
-        'fromLocation': 'Namangan',
-        'fromDateTime': '24.10.2024 12:37',
-        'toLocation': 'Toshkent',
-        'toDateTime': '24.10.2024 15:37',
-        'cargoWeight': '400 kg',
-        'cargoName': 'Paxta simga oralgan'
-      },
-      {
-        'orderNumber': '2133',
-        'status': 'Yakunlangan',
-        'customer': 'Anvar',
-        'fromLocation': 'Andijon',
-        'fromDateTime': '25.10.2024 10:00',
-        'toLocation': 'Samarqand',
-        'toDateTime': '25.10.2024 15:00',
-        'cargoWeight': '300 kg',
-        'cargoName': 'Meva yuklangan'
-      },
-    ];
+  State<TaxiOrdersHistoryPage> createState() => _TaxiOrdersHistoryPageState();
+}
 
+class _TaxiOrdersHistoryPageState extends State<TaxiOrdersHistoryPage> {
+  List<Map<String, dynamic>> order = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _getOrderHistory();
+  }
+
+  Future<void> _getOrderHistory() async {
+    try {
+      final response = await requestHelper
+          .getWithAuth('/services/zyber/api/orders/get-my-orders', log: true);
+
+      setState(() {
+        order = List<Map<String, dynamic>>.from(response['orders'])
+            .where((o) => o['status_id'] == 3)
+            .toList();
+        print(order);
+      });
+
+      print(response);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _updateOrderRating(int orderId, double rating) {
+    setState(() {
+      for (var o in order) {
+        if (o['id'] == orderId) {
+          o['rating'] = rating;
+          break;
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
@@ -45,23 +63,26 @@ class TaxiOrdersHistoryPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView.builder(
-        itemCount: orders.length,
+        itemCount: order.length,
         itemBuilder: (context, index) {
-          final order = orders[index];
+          final currentOrder = order[index];
           return OrderHistoryWidget(
-            orderNumber: order['orderNumber']!,
-            status: order['status']!,
-            customer: order['customer']!,
-            fromLocation: order['fromLocation']!,
-            fromDateTime: order['fromDateTime']!,
-            toLocation: order['toLocation']!,
-            toDateTime: order['toDateTime']!,
-            cargoWeight: order['cargoWeight']!,
-            cargoName: order['cargoName']!,
+            orderNumber: currentOrder['id'] ?? '',
+            status: currentOrder['status']!,
+            customer: currentOrder['name'] ?? '',
+            fromLocation: currentOrder['from_location']!,
+            fromDateTime: currentOrder['time']?.toString() ?? '',
+            toLocation: currentOrder['to_location']!,
+            toDateTime: currentOrder['time']!,
+            peopleCount: currentOrder['passenger_count']?.toString(),
+            cargoName: currentOrder['pochta']?.toString(),
+            rating: currentOrder['rating'] != null
+                ? double.tryParse(currentOrder['rating'].toString())
+                : null,
+            onRatingUpdated: _updateOrderRating,
           );
         },
       ),
     );
   }
 }
-

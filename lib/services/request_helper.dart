@@ -200,7 +200,7 @@ final class RequestHelper {
       if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
         router.go(Routes.roleSelect);
         if (path == "/services/platon-core/api/mobile/v1/auth/legal/register") {
-          router.go(Routes.roleSelect);
+          router.go(Routes.loginScreen);
           throw Unauthenticated();
         }
         throw UnauthenticatedError();
@@ -263,7 +263,7 @@ final class RequestHelper {
       ]);
 
       if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-        router.go(Routes.roleSelect);
+        router.go(Routes.loginScreen);
         throw UnauthenticatedError();
       }
 
@@ -377,7 +377,7 @@ final class RequestHelper {
       ]);
 
       if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-        router.go(Routes.roleSelect);
+        router.go(Routes.loginScreen);
         throw UnauthenticatedError();
       }
 
@@ -468,7 +468,7 @@ final class RequestHelper {
       ]);
 
       if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-        router.go(Routes.roleSelect);
+        router.go(Routes.loginScreen);
         throw UnauthenticatedError();
       }
 

@@ -3,9 +3,9 @@ import 'package:elegant_notification/elegant_notification.dart';
 import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 import 'package:otp_timer_button/otp_timer_button.dart';
 import 'package:pinput/pinput.dart';
+import 'package:smart_auth/smart_auth.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/request_helper.dart';
@@ -25,6 +25,7 @@ class VerificationScreen extends StatefulWidget {
 
 class _VerificationScreenState extends State<VerificationScreen> {
   final TextEditingController _smsController = TextEditingController();
+
   late PinTheme currentPinTheme;
   bool isLoading = false;
 
@@ -35,6 +36,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   void initState() {
     super.initState();
+    _startUserConsentListener();
     currentPinTheme = defaultPinTheme;
   }
 
@@ -48,6 +50,41 @@ class _VerificationScreenState extends State<VerificationScreen> {
     setState(() {
       currentPinTheme = defaultPinTheme;
     });
+  }
+
+  Future<void> _startUserConsentListener() async {
+    final smartAuth = SmartAuth.instance;
+
+    try {
+      final res = await smartAuth.getSmsWithUserConsentApi();
+
+      if (res.hasData) {
+        final fullMessage = res.requireData.sms;
+        debugPrint('Full Message: $fullMessage');
+
+        final code = extractCode(fullMessage);
+        if (code != null) {
+          debugPrint('Extracted Code: $code');
+          setState(() {
+            _smsController.text = code;
+          });
+          _verifyCode();
+        } else {
+          debugPrint('Code not found in SMS.');
+        }
+      } else if (res.isCanceled) {
+        debugPrint('User canceled the consent dialog.');
+      } else {
+        debugPrint('Sms User Consent API failed.');
+      }
+    } catch (e) {
+      debugPrint('Error using Sms User Consent API: $e');
+    }
+  }
+
+  String? extractCode(String message) {
+    final RegExp regExp = RegExp(r'\b\d{6}\b');
+    return regExp.stringMatch(message);
   }
 
   Future<void> resendVerificationCode(String phoneNumber) async {
@@ -84,6 +121,56 @@ class _VerificationScreenState extends State<VerificationScreen> {
     }
   }
 
+  final PinTheme focusedPinTheme = PinTheme(
+    width: 56,
+    height: 56,
+    textStyle: AppStyle.fontStyle.copyWith(
+        color: AppColors.backgroundColor, fontWeight: FontWeight.bold),
+    decoration: BoxDecoration(
+      color: const Color.fromARGB(68, 11, 97, 114),
+      shape: BoxShape.circle,
+    ),
+  );
+
+  final PinTheme defaultPinTheme = PinTheme(
+    width: 56,
+    height: 56,
+    textStyle: AppStyle.fontStyle.copyWith(color: AppColors.backgroundColor),
+    decoration: BoxDecoration(
+      color: Color.fromARGB(190, 11, 97, 114),
+      shape: BoxShape.circle,
+      // boxShadow: [
+      //   BoxShadow(
+      //     color: AppColors.grade1,
+      //     blurRadius: 10,
+      //     spreadRadius: 1,
+      //     offset: const Offset(0, 4),
+      //   ),
+      // ],
+    ),
+  );
+
+  final PinTheme errorPinTheme = PinTheme(
+    width: 56,
+    height: 56,
+    textStyle: const TextStyle(
+      fontSize: 20,
+      color: Colors.red,
+      fontWeight: FontWeight.w600,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.red.shade100,
+      shape: BoxShape.circle,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.red.shade300,
+          blurRadius: 10,
+          spreadRadius: 1,
+          offset: const Offset(0, 4), // Тень вниз
+        ),
+      ],
+    ),
+  );
   Future<void> _verifyCode() async {
     String enteredCode = _smsController.text.trim();
 
@@ -187,11 +274,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                height: 90,
+                height: 200,
               ),
-              Lottie.asset('assets/lottie/sms_verify.json',
-                  width: 200, height: 200),
-              SizedBox(height: 20),
               Text(
                 'enter_sms',
                 style: AppStyle.fontStyle
@@ -232,8 +316,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
               Pinput(
                 length: 6,
                 controller: _smsController,
-                defaultPinTheme: currentPinTheme,
-                followingPinTheme: followPinTheme,
+                defaultPinTheme: defaultPinTheme,
+                followingPinTheme: focusedPinTheme,
                 errorPinTheme: errorPinTheme,
                 onChanged: _onCodeChanged,
                 onCompleted: (_) => _verifyCode(),
@@ -320,7 +404,7 @@ final PinTheme successPinTheme = PinTheme(
 
 String maskPhoneNumber(String phoneNumber) {
   if (phoneNumber.length >= 11) {
-    return phoneNumber.replaceRange(4, 10, '******');
+    return phoneNumber.replaceRange(9, 16, '******');
   }
   return phoneNumber;
 }

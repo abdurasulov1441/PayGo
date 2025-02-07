@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/style/app_colors.dart';
 
-class OrderHistoryWidget extends StatelessWidget {
-  final String orderNumber;
+class OrderHistoryWidget extends StatefulWidget {
+  final int orderNumber;
   final String status;
   final String customer;
   final String fromLocation;
   final String fromDateTime;
   final String toLocation;
   final String toDateTime;
-  final String cargoWeight;
-  final String cargoName;
+  final String? peopleCount;
+  final String? cargoName;
+  final double? rating;
+  final Function(int orderId, double rating)? onRatingUpdated;
 
   const OrderHistoryWidget({
     super.key,
@@ -22,9 +25,86 @@ class OrderHistoryWidget extends StatelessWidget {
     required this.fromDateTime,
     required this.toLocation,
     required this.toDateTime,
-    required this.cargoWeight,
-    required this.cargoName,
+    this.peopleCount,
+    this.cargoName,
+    this.rating,
+    this.onRatingUpdated,
   });
+
+  @override
+  State<OrderHistoryWidget> createState() => _OrderHistoryWidgetState();
+}
+
+class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
+  double? _rating;
+
+  @override
+  void initState() {
+    super.initState();
+    _rating = widget.rating;
+  }
+
+  Future<void> _updateRating(String orderId, double rating) async {
+    try {
+      final response = await requestHelper.postWithAuth(
+        '/services/zyber/api/orders/add-rating',
+        {'order_id': orderId, 'rate': rating, "comment_id": 2},
+        log: true,
+      );
+      setState(() {
+        _rating = rating;
+      });
+      if (widget.onRatingUpdated != null) {
+        widget.onRatingUpdated!(widget.orderNumber, rating);
+      }
+      print(response);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _showRatingDialog(context) async {
+    double selectedRating = 0.0;
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Buyurtmani baholash'),
+          content: RatingBar.builder(
+            initialRating: 0,
+            minRating: 1,
+            direction: Axis.horizontal,
+            allowHalfRating: true,
+            itemCount: 5,
+            itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+            itemBuilder: (context, _) => const Icon(
+              Icons.star,
+              color: Colors.amber,
+            ),
+            onRatingUpdate: (rating) {
+              selectedRating = rating;
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Bekor qilish'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _updateRating(widget.orderNumber.toString(), selectedRating);
+                Navigator.of(context).pop();
+                print(selectedRating);
+              },
+              child: const Text('Saqlash'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +112,7 @@ class OrderHistoryWidget extends StatelessWidget {
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: AppColors.backgroundColor,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(width: 1, color: AppColors.backgroundColor),
         boxShadow: [
@@ -49,55 +129,51 @@ class OrderHistoryWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildTag('Buyurtma raqami № $orderNumber', Colors.orange),
-              _buildTag(status, Colors.green),
+              _buildTag(
+                  'Buyurtma raqami № ${widget.orderNumber}', Colors.orange),
+              _buildTag(widget.status, Colors.green),
             ],
           ),
           const Divider(thickness: 1, height: 20),
           Text(
-            'Buyurtmachi: $customer',
+            'Buyurtmachi: ${widget.customer}',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildLocation('Qayerdan', fromLocation, fromDateTime),
+              _buildLocation('Qayerdan', widget.fromLocation),
               const Icon(
                 Icons.arrow_forward,
                 color: AppColors.grade1,
                 size: 30,
               ),
-              _buildLocation('Qayerga', toLocation, toDateTime),
+              _buildLocation('Qayerga', widget.toLocation),
             ],
           ),
           const SizedBox(height: 15),
-          Text(
-            'Yuk vazni: $cargoWeight',
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            'Yuk nomi: $cargoName',
-            style: const TextStyle(fontSize: 16),
-          ),
-          Center(
-            child: RatingBar.builder(
-              initialRating: 3,
-              minRating: 1,
-              direction: Axis.horizontal,
-              allowHalfRating: true,
-              itemCount: 5,
-              itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-              itemBuilder: (context, _) => Icon(
-                Icons.star,
-                color: Colors.amber,
-              ),
-              onRatingUpdate: (rating) {
-                print(rating);
-              },
+          if (widget.peopleCount != '0')
+            Text(
+              'Odam soni: ${widget.peopleCount}',
+              style: const TextStyle(fontSize: 16),
+            )
+          else
+            Text(
+              'Yuk nomi: ${widget.cargoName}',
+              style: const TextStyle(fontSize: 16),
             ),
-          )
+          if (widget.rating != null)
+            Text(
+              'Qo\'yilgan baho: ${widget.rating}'.toString(),
+              style: const TextStyle(fontSize: 16),
+            )
+          else
+            ElevatedButton(
+                onPressed: () {
+                  _showRatingDialog(context);
+                },
+                child: Text('Buyurtmani baholash')),
         ],
       ),
     );
@@ -120,26 +196,24 @@ class OrderHistoryWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLocation(String label, String location, String dateTime) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style:
-              const TextStyle(fontWeight: FontWeight.w600, color: Colors.grey),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          location,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          dateTime,
-          style: const TextStyle(color: Colors.black54),
-        ),
-      ],
+  Widget _buildLocation(String label, String location) {
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, color: Colors.grey),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            location,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 5),
+        ],
+      ),
     );
   }
 }

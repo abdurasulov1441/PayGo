@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:taksi/style/app_colors.dart';
 
 class OrderAcceptedWidget extends StatelessWidget {
-  final String orderNumber;
+  final int orderNumber;
   final String status;
   final String customer;
   final String fromLocation;
   final String fromDateTime;
   final String toLocation;
   final String toDateTime;
-  final String cargoWeight;
-  final String cargoName;
+  final String? peopleCount;
+  final String? cargoName;
 
   const OrderAcceptedWidget({
     super.key,
@@ -21,8 +21,8 @@ class OrderAcceptedWidget extends StatelessWidget {
     required this.fromDateTime,
     required this.toLocation,
     required this.toDateTime,
-    required this.cargoWeight,
-    required this.cargoName,
+    this.peopleCount,
+    this.cargoName,
   });
 
   @override
@@ -31,7 +31,7 @@ class OrderAcceptedWidget extends StatelessWidget {
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: AppColors.backgroundColor,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(width: 1, color: AppColors.backgroundColor),
         boxShadow: [
@@ -61,25 +61,26 @@ class OrderAcceptedWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildLocation('Qayerdan', fromLocation, fromDateTime),
+              _buildLocation('Qayerdan', fromLocation),
               const Icon(
                 Icons.arrow_forward,
                 color: AppColors.grade1,
                 size: 30,
               ),
-              _buildLocation('Qayerga', toLocation, toDateTime),
+              _buildLocation('Qayerga', toLocation),
             ],
           ),
           const SizedBox(height: 15),
-          Text(
-            'Yuk vazni: $cargoWeight',
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            'Yuk nomi: $cargoName',
-            style: const TextStyle(fontSize: 16),
-          ),
+          if (peopleCount != '0')
+            Text(
+              'Odam soni: $peopleCount',
+              style: const TextStyle(fontSize: 16),
+            )
+          else
+            Text(
+              'Yuk nomi: $cargoName',
+              style: const TextStyle(fontSize: 16),
+            ),
         ],
       ),
     );
@@ -102,26 +103,24 @@ class OrderAcceptedWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLocation(String label, String location, String dateTime) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style:
-              const TextStyle(fontWeight: FontWeight.w600, color: Colors.grey),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          location,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          dateTime,
-          style: const TextStyle(color: Colors.black54),
-        ),
-      ],
+  Widget _buildLocation(String label, String location) {
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, color: Colors.grey),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            location,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 5),
+        ],
+      ),
     );
   }
 }

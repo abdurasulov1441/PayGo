@@ -40,19 +40,29 @@ class MyCustomButton extends StatelessWidget {
                   SvgPicture.asset(
                     'assets/icons/$labelIcon.svg',
                     height: 20,
+                    color: AppColors.uiText,
                   ),
                   SizedBox(
                     width: 5,
                   ),
-                  Text(
-                    text,
-                    style: AppStyle.fontStyle
-                        .copyWith(fontSize: 16, color: AppColors.uiText),
-                  ),
+                  if (text == 'Qayerdan' ||
+                      text == 'Qayerga' ||
+                      text == 'Vaqtni tanlang')
+                    Text(
+                      text,
+                      style: AppStyle.fontStyle
+                          .copyWith(fontSize: 16, color: AppColors.uiText),
+                    )
+                  else
+                    Text(
+                      text,
+                      style: AppStyle.fontStyle
+                          .copyWith(fontSize: 16, color: AppColors.iconColor),
+                    ),
                 ],
               ),
               SvgPicture.asset(
-                'assets/icons/${isDropdown ? 'dropdown' : 'arrow'}.svg',
+                'assets/icons/${isDropdown ? 'arrow' : 'arrow'}.svg',
                 height: 20,
                 color: isDropdown ? AppColors.uiText : AppColors.ui,
               ),

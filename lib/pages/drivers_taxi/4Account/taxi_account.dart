@@ -75,7 +75,7 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
 
   Future<void> _signOut() async {
     cache.clear();
-    router.go(Routes.selsctLanguagePage);
+    router.go(Routes.loginScreen);
   }
 
   @override

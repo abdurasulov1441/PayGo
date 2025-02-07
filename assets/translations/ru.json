@@ -5,11 +5,14 @@
   "chosen_language": "Выбранный язык:",
   
 
-  "welcome": "Добро пожаловать",
+  "welcome": "Добро пожаловать!",
   "login": "Вход",
   "dont_have_account": "Нет аккаунта?",
   "registration": "Регистрация",
   "have_account": "Есть аккаунт?",
+
+  "enter_pin_code": "Введите пин-код",
+  "confirm_pin_code": "Подтвердите пин-код",
 
   "phone_verify": "Проверка номера",
   "enter_sms": "Введите СМС",

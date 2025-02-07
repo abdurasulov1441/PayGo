@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/style/app_colors.dart';
@@ -7,7 +8,7 @@ class CivilAccount extends StatelessWidget {
   const CivilAccount({super.key});
   Future<void> _signOut() async {
     cache.clear();
-    router.go(Routes.selsctLanguagePage);
+    router.go(Routes.loginScreen);
   }
 
   @override
@@ -15,11 +16,16 @@ class CivilAccount extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        leading: IconButton(
+            onPressed: () {
+              context.pop();
+            },
+            icon: Icon(Icons.arrow_back, color: Colors.white)),
+        backgroundColor: AppColors.grade1,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.black),
+            icon: const Icon(Icons.notifications, color: Colors.white),
             onPressed: () {},
           ),
         ],
@@ -70,7 +76,22 @@ class CivilAccount extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    switch (title) {
+                      case 'Akkunt ma\'lumotlari':
+                        context.push(Routes.civilTaksiHistoryPage);
+                        break;
+                      case 'Taksi tarixi':
+                        context.push(Routes.civilTaksiHistoryPage);
+                        break;
+                      case 'Yuk tarixi':
+                        context.push(Routes.civilTaksiHistoryPage);
+                        break;
+                      case 'Sozlamalar':
+                        context.push(Routes.civilTaksiHistoryPage);
+                        break;
+                    }
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(

@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:taksi/style/app_colors.dart';
 
 class OrderWidget extends StatelessWidget {
-  final String orderNumber;
+  final int orderNumber;
   final String status;
   final String customer;
   final String fromLocation;
   final String fromDateTime;
   final String toLocation;
   final String toDateTime;
-  final String cargoWeight;
-  final String cargoName;
+  final String? peopleCount;
+  final String? cargoName;
 
   const OrderWidget({
     super.key,
@@ -21,8 +21,8 @@ class OrderWidget extends StatelessWidget {
     required this.fromDateTime,
     required this.toLocation,
     required this.toDateTime,
-    required this.cargoWeight,
-    required this.cargoName,
+    this.peopleCount,
+    this.cargoName,
   });
 
   @override
@@ -71,15 +71,16 @@ class OrderWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 15),
-          Text(
-            'Yuk vazni: $cargoWeight',
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            'Yuk nomi: $cargoName',
-            style: const TextStyle(fontSize: 16),
-          ),
+          if (peopleCount != '0')
+            Text(
+              'Odam soni: $peopleCount',
+              style: const TextStyle(fontSize: 16),
+            )
+          else
+            Text(
+              'Yuk nomi: $cargoName',
+              style: const TextStyle(fontSize: 16),
+            ),
         ],
       ),
     );

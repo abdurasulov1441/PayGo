@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taksi/pages/civil/civil_account_page/taksi_history_page.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
 import 'package:taksi/pages/civil/delivery_page.dart';
 import 'package:taksi/pages/civil/taksi_create_order/taksi_page.dart';
@@ -10,22 +11,22 @@ import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_page.dart'
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_verify_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_tarifs/tarifs_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/payment_history/payment_history.dart';
+import 'package:taksi/pages/drivers_taxi/4Account/settings/taxiDriverSettings.dart';
 import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
 import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
 import 'package:taksi/pages/home_screen.dart';
 import 'package:taksi/pages/new_user/enter_detail_info.dart';
 import 'package:taksi/pages/new_user/role_select.dart';
 import 'package:taksi/pages/sign/login_screen.dart';
-import 'package:taksi/pages/sign/sign_up_verify.dart';
+import 'package:taksi/pages/sign/smsverify.dart';
 import 'package:taksi/pages/sign/signup_screen.dart';
 import 'package:taksi/services/db/cache.dart';
-import 'package:taksi/services/language/language_select_page.dart';
 
-import '../pages/civil/civil_account.dart';
+import '../pages/civil/civil_account_page/civil_account.dart';
 
 abstract class Routes {
-  static const selsctLanguagePage = '/selsctLanguagePage';
-
+  static const passCodePage = '/passCodePage';
+  static const initialPassCodePage = '/initialPassCodePage';
   static const homeScreen = '/homeScreen';
 ///////////////////////////////////////////////////////
   static const loginScreen = '/loginScreen';
@@ -37,6 +38,7 @@ abstract class Routes {
   static const taxiPage = '/taxiPage';
   static const taxiDeliveryPage = '/taxiDeliveryPage';
   static const civilAccountPage = '/civilAccountPage';
+  static const civilTaksiHistoryPage = '/civilTaksiHistoryPage';
 
 ///////////////////////////////////////////////////////
   static const roleSelect = '/roleSelect';
@@ -49,6 +51,7 @@ abstract class Routes {
   static const paymentHistory = '/paymentHistory';
   static const accountDetailInfoPage = '/accountDetailInfoPage';
   static const tarifsPage = '/tarifsPage';
+  static const settingsPage = '/settingsPage';
 
   ///////////////////////////////////////////////////////
 
@@ -59,14 +62,14 @@ abstract class Routes {
 }
 
 String _initialLocation() {
-  // return Routes.selsctLanguagePage;
+  // return Routes.settingsPage;
 
   final userToken = cache.getString("user_token");
 
   if (userToken != null) {
     return Routes.homeScreen;
   } else {
-    return Routes.selsctLanguagePage;
+    return Routes.loginScreen;
   }
 }
 
@@ -78,10 +81,6 @@ final router = GoRouter(
   initialLocation: _initialLocation(),
   initialExtra: _initialExtra(),
   routes: [
-    GoRoute(
-      path: Routes.selsctLanguagePage,
-      builder: (context, state) => const LanguageSelectionPage(),
-    ),
     GoRoute(
       path: Routes.homeScreen,
       builder: (context, state) => const HomeScreen(),
@@ -179,6 +178,23 @@ final router = GoRouter(
     GoRoute(
       path: Routes.civilAccountPage,
       builder: (context, state) => const CivilAccount(),
+    ),
+    GoRoute(
+      path: Routes.civilTaksiHistoryPage,
+      builder: (context, state) => const CivilTaksiHistoryPage(),
+    ),
+    // GoRoute(
+    //   path: Routes.passCodePage,
+    //   builder: (context, state) => const PasscodeScreen(),
+    // ),
+    // GoRoute(
+    //   path: Routes.initialPassCodePage,
+    //   builder: (context, state) => const InitialPasscode(),
+    // ),
+
+    GoRoute(
+      path: Routes.settingsPage,
+      builder: (context, state) => const Taxidriversettings(),
     ),
   ],
 );

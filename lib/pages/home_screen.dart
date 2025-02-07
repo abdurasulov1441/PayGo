@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return Scaffold(
             backgroundColor: Colors.white,
             body: Center(
-              child: LottieBuilder.asset('assets/lottie/loading.json'),
+              child: Image.asset('assets/images/logo.png', width: 200),
             ),
           );
         } else if (!snapshot.hasData || snapshot.data == null) {
@@ -64,8 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Center(
-                  child:
-                      LottieBuilder.asset('assets/lottie/payment_error.json'),
+                  child: Image.asset('assets/images/logo.png', width: 200),
                 ),
                 Text('Internet bilan aloqa yo\'q'),
                 ElevatedButton(

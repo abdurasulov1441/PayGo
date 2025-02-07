@@ -13,6 +13,7 @@ class MainCivilPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.ui,
       appBar: AppBar(
+        
         actions: [
           ElevatedButton(
               onPressed: () {

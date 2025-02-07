@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 
 class GradientButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -13,29 +15,21 @@ class GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color.fromARGB(255, 11, 97, 114),
-            Color.fromARGB(255, 36, 220, 212),
-          ],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.grade1,
+        borderRadius: BorderRadius.circular(5),
       ),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(5),
         child: Container(
           height: 50,
           alignment: Alignment.center,
           child: Text(
             text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppStyle.fontStyle.copyWith(
+                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
       ),
