@@ -17,7 +17,6 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  String? _fcmToken;
   final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -44,9 +43,7 @@ class _AppState extends State<App> {
       debugPrint("FCM Token: $token");
       cache.setString('fcm_token', '$token');
 
-      setState(() {
-        _fcmToken = token;
-      });
+      setState(() {});
 
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint(
