@@ -36,12 +36,9 @@ class OrderHistoryWidget extends StatefulWidget {
 }
 
 class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
-  double? _rating;
-
   @override
   void initState() {
     super.initState();
-    _rating = widget.rating;
   }
 
   Future<void> _updateRating(String orderId, double rating) async {
@@ -51,9 +48,7 @@ class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
         {'order_id': orderId, 'rate': rating, "comment_id": 2},
         log: true,
       );
-      setState(() {
-        _rating = rating;
-      });
+      setState(() {});
       if (widget.onRatingUpdated != null) {
         widget.onRatingUpdated!(widget.orderNumber, rating);
       }

@@ -57,7 +57,7 @@ class MyCustomButton extends StatelessWidget {
                     Text(
                       text,
                       style: AppStyle.fontStyle
-                          .copyWith(fontSize: 16, color: AppColors.iconColor),
+                          .copyWith(fontSize: 16, color: AppColors.grade1),
                     ),
                 ],
               ),

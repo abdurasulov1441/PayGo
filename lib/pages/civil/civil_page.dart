@@ -12,169 +12,160 @@ class MainCivilPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.ui,
-      appBar: AppBar(
-        
-        actions: [
-          ElevatedButton(
-              onPressed: () {
-                context.push(Routes.civilAccountPage);
-              },
-              child: SvgPicture.asset(
-                'assets/images/user.svg',
-                width: 20,
-                height: 20,
-              ))
-        ],
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: AppColors.grade1,
-        elevation: 0,
-      ),
-      body: Stack(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: double.infinity,
-            height: 250,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color.fromARGB(255, 11, 97, 114), // Начальный цвет
-                  Color.fromARGB(255, 36, 220, 212), // Конечный цвет
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/civil_main.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/logo.png',
+                        width: 150,
+                        height: 150,
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'PayGo',
+                        style: AppStyle.fontStyle.copyWith(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'Harakatlanish va yuk jo‘natish endi tez,',
+                        style: AppStyle.fontStyle.copyWith(
+                          fontSize: 13,
+                          color: Colors.white,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        maxLines: 1,
+                      ),
+                      Text('qulay va xavfsiz!',
+                          style: AppStyle.fontStyle.copyWith(
+                            fontSize: 13,
+                            color: Colors.white,
+                          ))
+                    ],
+                  ),
                 ],
-                begin: Alignment.topCenter, // Начало градиента
-                end: Alignment.bottomCenter, // Конец градиента
+              )),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'Sizga yaqin transportlar',
+                      style: AppStyle.fontStyle.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.grade1),
+                    ),
+                  ),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1.2,
+                    shrinkWrap: true,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          context.push(
+                            Routes.nearTrucks,
+                          );
+                        },
+                        child: transportCard(
+                          'Yuk mashinalar',
+                          'truck',
+                          Colors.green,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          context.push(
+                            Routes.nearCars,
+                          );
+                        },
+                        child: transportCard(
+                          'Yengi avto mashinalar',
+                          'car',
+                          Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'Buyurtma berish',
+                      style: AppStyle.fontStyle.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.grade1),
+                    ),
+                  ),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1.2,
+                    shrinkWrap: true,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          context.push(
+                            Routes.taxiPage,
+                          );
+                        },
+                        child: transportCard(
+                          'Yuk mashinalar',
+                          'truck',
+                          Colors.green,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          context.push(
+                            Routes.taxiPage,
+                          );
+                        },
+                        child: transportCard(
+                          'Yengi avto mashinalar',
+                          'car',
+                          Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(15),
-                bottomRight: Radius.circular(15),
-              ),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: Column(
-              children: [
-                Text(
-                  'Tizimga xush kelibsiz!',
-                  style: AppStyle.fontStyle.copyWith(
-                    color: Colors.white,
-                    fontSize: 20,
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    color: Colors.white,
-                  ),
-                  width: 100,
-                  height: 100,
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    width: 100,
-                    height: 100,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding:
-                EdgeInsets.only(top: 170), // Adjust this for grid placement
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'Barcha transportlar',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                GridView.count(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.2,
-                  shrinkWrap: true,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  physics: NeverScrollableScrollPhysics(),
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        context.push(
-                          Routes.yandex_map_truck,
-                        );
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //       builder: (context) => DeliveryPage()),
-                        // );
-                      },
-                      child: transportCard(
-                        'Yuk mashinasi',
-                        Icons.local_shipping,
-                        Colors.teal,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: transportCard(
-                        'Taksi',
-                        Icons.local_taxi,
-                        Colors.orange,
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'Buyurtma berish',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                GridView.count(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.2,
-                  shrinkWrap: true,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  physics: NeverScrollableScrollPhysics(),
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        context.push(Routes.taxiDeliveryPage);
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //       builder: (context) => CreateOrderTruck()),
-                        // );
-                      },
-                      child: transportCard(
-                        'Yuk mashinasi',
-                        Icons.local_shipping,
-                        Colors.teal,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        context.push(Routes.taxiPage);
-                      },
-                      child: transportCard(
-                        'Taksi',
-                        Icons.local_taxi,
-                        Colors.orange,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ),
           ),
         ],
@@ -182,7 +173,7 @@ class MainCivilPage extends StatelessWidget {
     );
   }
 
-  Widget transportCard(String title, IconData icon, Color color) {
+  Widget transportCard(String title, String icon, Color color) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -200,16 +191,20 @@ class MainCivilPage extends StatelessWidget {
         children: [
           CircleAvatar(
             backgroundColor: color.withOpacity(0.1),
-            radius: 30,
-            child: Icon(icon, color: color, size: 30),
+            radius: 40,
+            child: SvgPicture.asset(
+              'assets/icons/$icon.svg',
+              height: 30,
+              width: 30,
+            ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
             title,
             style: AppStyle.fontStyle.copyWith(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.uiText),
           ),
         ],
       ),

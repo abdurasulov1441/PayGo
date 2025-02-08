@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:taksi/pages/civil/civil_account_page/taksi_history_page.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
 import 'package:taksi/pages/civil/delivery_page.dart';
+import 'package:taksi/pages/civil/near_cars/near_cars.dart';
+import 'package:taksi/pages/civil/near_truck/near_truck.dart';
 import 'package:taksi/pages/civil/taksi_create_order/taksi_page.dart';
 import 'package:taksi/pages/civil/test_page.dart';
 import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
@@ -39,6 +41,8 @@ abstract class Routes {
   static const taxiDeliveryPage = '/taxiDeliveryPage';
   static const civilAccountPage = '/civilAccountPage';
   static const civilTaksiHistoryPage = '/civilTaksiHistoryPage';
+  static const nearCars = '/nearCars';
+  static const nearTrucks = '/nearTrucks';
 
 ///////////////////////////////////////////////////////
   static const roleSelect = '/roleSelect';
@@ -195,6 +199,14 @@ final router = GoRouter(
     GoRoute(
       path: Routes.settingsPage,
       builder: (context, state) => const Taxidriversettings(),
+    ),
+    GoRoute(
+      path: Routes.nearCars,
+      builder: (context, state) => const CivilNearCars(),
+    ),
+    GoRoute(
+      path: Routes.nearTrucks,
+      builder: (context, state) => const CivilNearTruck(),
     ),
   ],
 );

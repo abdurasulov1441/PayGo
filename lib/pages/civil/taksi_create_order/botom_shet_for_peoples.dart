@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:taksi/style/app_colors.dart';
 
 class MyCustomBottomSheetForPeoples {
@@ -35,7 +36,7 @@ class MyCustomBottomSheetForPeoples {
                     title: Text(item),
                     onTap: () {
                       onItemSelected(item);
-                      Navigator.pop(context);
+                    context.pop();
                     },
                   );
                 },

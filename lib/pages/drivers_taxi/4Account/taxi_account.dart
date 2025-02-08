@@ -164,7 +164,9 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
                     onTap: () => router.push(Routes.paymentHistory),
                     child: _buildOption(
                         'transaction_history', 'To\'lovlar tarixi')),
-                _buildOption('sozlamalar', 'Sozlamalar'),
+                GestureDetector(
+                    onTap: () => router.push(Routes.settingsPage),
+                    child: _buildOption('sozlamalar', 'Sozlamalar')),
                 GestureDetector(
                     onTap: () {
                       _showLogoutDialog(context);

@@ -1,21 +1,82 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluid_bottom_nav_bar/fluid_bottom_nav_bar.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:taksi/pages/drivers_taxi/1Order/taxi_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/2Accepted/taxi_accpeted_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/3History/taxi_orders_history_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/taxi_account.dart';
+import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/style/app_colors.dart';
 
 class DriverTaxiHome extends StatefulWidget {
   const DriverTaxiHome({super.key});
 
   @override
-  State createState() => _FluidNavBarDemoState();
+  State createState() => _DriverTaxiHomeState();
 }
 
-class _FluidNavBarDemoState extends State<DriverTaxiHome> {
+class _DriverTaxiHomeState extends State<DriverTaxiHome> {
   Widget _child = TaxiOrdersPage();
+  Timer? _gpsTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startSendingGPS();
+  }
+
+  @override
+  void dispose() {
+    _gpsTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startSendingGPS() {
+    _gpsTimer = Timer.periodic(const Duration(minutes: 1), (timer) async {
+      await _sendLocationToServer();
+    });
+  }
+
+  Future<void> _sendLocationToServer() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      debugPrint("GPS yoqilmagan!");
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint("GPS ruxsat berilmagan!");
+        return;
+      }
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    try {
+      final response = await requestHelper.putWithAuth(
+        '/services/zyber/api/users/update-location',
+        {
+          'lat': position.latitude.toString(),
+          'long': position.longitude.toString(),
+        },
+        log: false,
+      );
+      print(position.latitude.toString());
+      print(position.longitude.toString());
+    } catch (e) {
+      debugPrint("Failed to send location: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
