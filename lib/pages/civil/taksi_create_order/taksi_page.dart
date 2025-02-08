@@ -1,6 +1,5 @@
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/pages/civil/taksi_create_order/botom_shet_for_peoples.dart';

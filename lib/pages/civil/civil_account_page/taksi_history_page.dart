@@ -53,7 +53,7 @@ class _CivilTaksiHistoryPageState extends State<CivilTaksiHistoryPage> {
                       Text(orders['id'].toString()),
                       Text(orders['from_location']),
                       Text(orders['to_location']),
-                      Text(orders['passenger_count'].toString() ?? ''),
+                      Text(orders['passenger_count'].toString()),
                       Text(orders['status']),
                       Text(orders['time']),
                       Text(orders['pochta'] ?? ''),

@@ -71,6 +71,7 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
         },
         log: false,
       );
+      print(response);
       print(position.latitude.toString());
       print(position.longitude.toString());
     } catch (e) {
