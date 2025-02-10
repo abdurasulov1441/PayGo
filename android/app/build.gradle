@@ -7,6 +7,7 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -15,15 +16,14 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode', '1')
+def flutterVersionName = localProperties.getProperty('flutter.versionName', '1.0')
 
 android {
     namespace = "uz.paygo"
@@ -31,36 +31,41 @@ android {
     ndkVersion = "31.0.0"
 
     compileOptions {
-         sourceCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
         jvmTarget = "11" // Correct JVM target value
     }
- sourceSets {
+
+    sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
     defaultConfig {
-        // Specify your unique Application ID
         applicationId = "uz.paygo"
-        // Update the following values to match your application needs
-        minSdkVersion 26 // flutter.minSdkVersion
-        targetSdkVersion 34 // flutter.targetSdkVersion
+        minSdkVersion 26
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-
-        // Ensure multiDex is enabled for apps with many dependencies
         multiDexEnabled true
+    }
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+        }
     }
 
     buildTypes {
         release {
-            // Enable ProGuard or R8 for release builds if needed
-            
-            // Signing config (use debug keys for testing)
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
+            minifyEnabled true // Оптимизация кода (ProGuard)
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -69,13 +74,9 @@ flutter {
     source = "../.."
 }
 
-// Ensure the dependencies include Yandex Maps or other required libraries
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "androidx.core:core-ktx:1.12.0"
     implementation "com.google.android.gms:play-services-location:21.1.0"
 }
-
-
-

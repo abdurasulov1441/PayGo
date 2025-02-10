@@ -116,10 +116,10 @@ final router = GoRouter(
       path: Routes.testPage,
       builder: (context, state) => const TestPage(),
     ),
-    GoRoute(
-      path: Routes.yandex_map_truck,
-      builder: (context, state) => const MapkitFlutterApp(),
-    ),
+    // GoRoute(
+    //   path: Routes.yandex_map_truck,
+    //   builder: (context, state) => const MapkitFlutterApp(),
+    // ),
     GoRoute(
       path: Routes.truckDriverPage,
       builder: (context, state) => const DriverTruckHome(),

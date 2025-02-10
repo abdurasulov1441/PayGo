@@ -4,7 +4,7 @@ description: "PayGo"
 publish_to: 'none' 
 
 
-version: 1.0.0+1
+version: 2.0.0+2
 
 environment:
   sdk: '>=3.2.6 <4.0.0'
@@ -68,8 +68,8 @@ dev_dependencies:
   freezed: ^2.5.7
   build_runner: ^2.4.13
   json_serializable: ^6.8.0
-  common:
-    path: lib/common
+  # common:
+  #   path: lib/common
     
 icons_launcher:
   image_path: "assets/images/logo.png"
