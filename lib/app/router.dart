@@ -7,7 +7,7 @@ import 'package:taksi/pages/civil/near_cars/near_cars.dart';
 import 'package:taksi/pages/civil/near_truck/near_truck.dart';
 import 'package:taksi/pages/civil/taksi_create_order/taksi_page.dart';
 import 'package:taksi/pages/civil/test_page.dart';
-import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
+// import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/account_detail_info/account_detail_info_taksi.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_verify_page.dart';
