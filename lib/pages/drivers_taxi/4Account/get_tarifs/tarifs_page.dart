@@ -130,7 +130,7 @@ class _TariffsPageState extends State<TariffsPage> {
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                await _getTarif(true, tariffId); // Передаем tariffId
+                await _getTarif(true, tariffId);
               },
               child: const Text('Ha'),
             ),

@@ -45,7 +45,9 @@ class _TaxiOrdersPageState extends State<TaxiOrdersPage> {
         },
         log: true,
       );
-
+      setState(() {
+        order.removeWhere((order) => order['id'] == orderId);
+      });
       print(response);
     } catch (e) {
       print(e);
@@ -55,65 +57,38 @@ class _TaxiOrdersPageState extends State<TaxiOrdersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.ui,
-      appBar: AppBar(
-        backgroundColor: AppColors.grade1,
-        title: Text(
-          'Buyurtmalar',
-          style: AppStyle.fontStyle
-              .copyWith(color: AppColors.backgroundColor, fontSize: 20),
+        backgroundColor: AppColors.ui,
+        appBar: AppBar(
+          backgroundColor: AppColors.grade1,
+          title: Text(
+            'Buyurtmalar',
+            style: AppStyle.fontStyle
+                .copyWith(color: AppColors.backgroundColor, fontSize: 20),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: RefreshIndicator(
-        color: AppColors.grade1,
-        onRefresh: () async {
-          await _getOrders();
-        },
-        child: ListView.builder(
-          itemCount: order.length,
-          itemBuilder: (context, index) {
-            final orders = order[index];
+        body: RefreshIndicator(
+          color: AppColors.grade1,
+          onRefresh: _getOrders,
+          child: ListView.builder(
+            itemCount: order.length,
+            itemBuilder: (context, index) {
+              final currentOrder = order[index];
 
-            return Dismissible(
-              key: Key(orders['orderNumber']?.toString() ?? ''),
-              direction: DismissDirection.startToEnd,
-              onDismissed: (direction) {
-                _acceptOrders(orders['id']);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Buyurtma ${orders['orderNumber']} qabul qilindi!',
-                    ),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              background: Container(
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 20),
-                color: Colors.green,
-                child: const Icon(
-                  Icons.check_circle,
-                  color: Colors.white,
-                  size: 30,
-                ),
-              ),
-              child: OrderWidget(
-                orderNumber: orders['id'] ?? '',
-                status: orders['status'] ?? '',
-                customer: orders['name'] ?? '',
-                fromLocation: orders['from_location']!,
-                fromDateTime: orders['time']?.toString() ?? '',
-                toLocation: orders['to_location']!,
-                toDateTime: orders['time']!,
-                peopleCount: orders['passenger_count']?.toString(),
-                cargoName: orders['pochta']?.toString(),
-              ),
-            );
-          },
-        ),
-      ),
-    );
+              return OrderWidget(
+                orderNumber: currentOrder['id'] ?? 0,
+                status: currentOrder['status'] ?? '',
+                customer: currentOrder['name'] ?? '',
+                fromLocation: currentOrder['from_location']!,
+                toLocation: currentOrder['to_location']!,
+                peopleCount: currentOrder['passenger_count']?.toString(),
+                cargoName: currentOrder['pochta']?.toString(),
+                onAccept: () => _acceptOrders(currentOrder['id']),
+                fromDateTime: currentOrder['from_date_time'] ?? '',
+                toDateTime: currentOrder['to_date_time'] ?? '',
+              );
+            },
+          ),
+        ));
   }
 }

@@ -39,7 +39,7 @@ class _TaxiAcceptedOrdersPageState extends State<TaxiAcceptedOrdersPage> {
     }
   }
 
-  Future<void> _rejectOrder(String orderId) async {
+  Future<void> _rejectOrder(int orderId) async {
     try {
       final response = await requestHelper.putWithAuth(
         '/services/zyber/api/orders/accept-taxi-order',
@@ -48,13 +48,16 @@ class _TaxiAcceptedOrdersPageState extends State<TaxiAcceptedOrdersPage> {
         },
         log: true,
       );
+      setState(() {
+        order.removeWhere((order) => order['id'] == orderId);
+      });
       print(response);
     } catch (e) {
       print(e);
     }
   }
 
-  Future<void> _finishOrder(String orderId) async {
+  Future<void> _finishOrder(int orderId) async {
     try {
       final response = await requestHelper.putWithAuth(
         '/services/zyber/api/orders/complete-journey',
@@ -63,6 +66,10 @@ class _TaxiAcceptedOrdersPageState extends State<TaxiAcceptedOrdersPage> {
         },
         log: true,
       );
+
+      setState(() {
+        order.removeWhere((order) => order['id'] == orderId);
+      });
       print(response);
     } catch (e) {
       print(e);
@@ -86,63 +93,19 @@ class _TaxiAcceptedOrdersPageState extends State<TaxiAcceptedOrdersPage> {
         itemCount: order.length,
         itemBuilder: (context, index) {
           final currentOrder = order[index];
-          return Dismissible(
-            key: Key(currentOrder['orderNumber']?.toString() ?? ''),
-            direction: DismissDirection.horizontal,
-            onDismissed: (direction) {
-              if (direction == DismissDirection.startToEnd) {
-                _finishOrder(currentOrder['id']?.toString() ?? '');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Buyurtma ${currentOrder['orderNumber']} qabul qilindi!',
-                    ),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } else if (direction == DismissDirection.endToStart) {
-                _rejectOrder(currentOrder['id']?.toString() ?? '');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Buyurtma ${currentOrder['orderNumber']} rad etildi!',
-                    ),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            background: Container(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.only(left: 20),
-              color: Colors.green,
-              child: const Icon(
-                Icons.check_circle,
-                color: Colors.white,
-                size: 30,
-              ),
-            ),
-            secondaryBackground: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              color: Colors.red,
-              child: const Icon(
-                Icons.cancel,
-                color: Colors.white,
-                size: 30,
-              ),
-            ),
-            child: OrderAcceptedWidget(
-              orderNumber: currentOrder['id'] ?? '',
-              status: currentOrder['status']!,
-              customer: currentOrder['name'] ?? '',
-              fromLocation: currentOrder['from_location']!,
-              fromDateTime: currentOrder['time']?.toString() ?? '',
-              toLocation: currentOrder['to_location']!,
-              toDateTime: currentOrder['time']!,
-              peopleCount: currentOrder['passenger_count']?.toString(),
-              cargoName: currentOrder['pochta']?.toString(),
-            ),
+
+          return OrderAcceptedWidget(
+            orderNumber: currentOrder['id'] ?? 0,
+            status: currentOrder['status'] ?? '',
+            customer: currentOrder['name'] ?? '',
+            fromLocation: currentOrder['from_location']!,
+            toLocation: currentOrder['to_location']!,
+            peopleCount: currentOrder['passenger_count']?.toString(),
+            cargoName: currentOrder['pochta']?.toString(),
+            onReject: () => _rejectOrder(currentOrder['id']),
+            onFinish: () => _finishOrder(currentOrder['id']),
+            fromDateTime: currentOrder['from_date_time'] ?? '',
+            toDateTime: currentOrder['to_date_time'] ?? '',
           );
         },
       ),

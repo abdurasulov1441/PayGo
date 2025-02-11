@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluid_bottom_nav_bar/fluid_bottom_nav_bar.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/pages/drivers_taxi/1Order/taxi_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/2Accepted/taxi_accpeted_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/3History/taxi_orders_history_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/taxi_account.dart';
+import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/style/app_colors.dart';
 
@@ -20,10 +23,13 @@ class DriverTaxiHome extends StatefulWidget {
 class _DriverTaxiHomeState extends State<DriverTaxiHome> {
   Widget _child = TaxiOrdersPage();
   Timer? _gpsTimer;
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
     super.initState();
+    _setupNotifications();
     _startSendingGPS();
   }
 
@@ -33,13 +39,31 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
     super.dispose();
   }
 
+  Future<void> _setupNotifications() async {
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings initSettings =
+        InitializationSettings(android: androidSettings);
+
+    await _notificationsPlugin.initialize(initSettings);
+  }
+
   void _startSendingGPS() {
-    _gpsTimer = Timer.periodic(const Duration(minutes: 1), (timer) async {
+    _gpsTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
       await _sendLocationToServer();
     });
   }
 
   Future<void> _sendLocationToServer() async {
+    final prefs = cache.getBool('isGPS') ?? false;
+    bool isGPSEnabled = prefs;
+
+    if (!isGPSEnabled) {
+      debugPrint("GPS yuborish o‘chirib qo‘yilgan.");
+      return;
+    }
+
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -58,6 +82,8 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
       }
     }
 
+    _showLocationNotification();
+
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
@@ -74,9 +100,39 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
       print(response);
       print(position.latitude.toString());
       print(position.longitude.toString());
+
+      Future.delayed(const Duration(seconds: 10), () {
+        _hideNotification();
+      });
     } catch (e) {
       debugPrint("Failed to send location: $e");
     }
+  }
+
+  Future<void> _showLocationNotification() async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'gps_channel_id',
+      'Joylashuv xabarnomalari',
+      channelDescription: 'Joylashuv ishlatilayotganligi haqida xabar berish',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails);
+
+    await _notificationsPlugin.show(
+      0,
+      'Joylashuv ishlatilmoqda',
+      'Yo\'lovchilar sizni topish uchun joylashuvingizni yuborayapti',
+      notificationDetails,
+    );
+  }
+
+  /// 🔹 Bildirishnomani o‘chirish
+  Future<void> _hideNotification() async {
+    await _notificationsPlugin.cancel(0);
   }
 
   @override

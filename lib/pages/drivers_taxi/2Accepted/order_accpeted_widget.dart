@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 
 class OrderAcceptedWidget extends StatelessWidget {
   final int orderNumber;
@@ -11,6 +12,8 @@ class OrderAcceptedWidget extends StatelessWidget {
   final String toDateTime;
   final String? peopleCount;
   final String? cargoName;
+  final VoidCallback onReject;
+  final VoidCallback onFinish;
 
   const OrderAcceptedWidget({
     super.key,
@@ -23,6 +26,8 @@ class OrderAcceptedWidget extends StatelessWidget {
     required this.toDateTime,
     this.peopleCount,
     this.cargoName,
+    required this.onReject,
+    required this.onFinish,
   });
 
   @override
@@ -48,39 +53,108 @@ class OrderAcceptedWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildTag('Buyurtma raqami № $orderNumber', Colors.orange),
+              Text(
+                '# $orderNumber',
+                style: AppStyle.fontStyle.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.grade1,
+                ),
+              ),
               _buildTag(status, Colors.green),
             ],
           ),
           const Divider(thickness: 1, height: 20),
-          Text(
-            'Buyurtmachi: $customer',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Text(
+                'Buyurtmachi:',
+                style: AppStyle.fontStyle.copyWith(color: AppColors.uiText),
+              ),
+              Text(
+                ' $customer',
+                style: AppStyle.fontStyle.copyWith(
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildLocation('Qayerdan', fromLocation),
-              const Icon(
-                Icons.arrow_forward,
-                color: AppColors.grade1,
-                size: 30,
-              ),
+              Image.asset('assets/images/next.png', width: 30, height: 30),
               _buildLocation('Qayerga', toLocation),
             ],
           ),
           const SizedBox(height: 15),
           if (peopleCount != '0')
-            Text(
-              'Odam soni: $peopleCount',
-              style: const TextStyle(fontSize: 16),
+            Container(
+              child: Row(
+                children: [
+                  Image.asset('assets/images/team.png', width: 30, height: 30),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    'Odam soni: $peopleCount',
+                    style: AppStyle.fontStyle.copyWith(
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             )
           else
-            Text(
-              'Yuk nomi: $cargoName',
-              style: const TextStyle(fontSize: 16),
+            Container(
+              child: Row(
+                children: [
+                  Image.asset('assets/images/package.png',
+                      width: 30, height: 30),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    'Yuk nomi: $cargoName',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
             ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.grade1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: onReject,
+                  child: Text(
+                    'Qabul qilish',
+                    style: AppStyle.fontStyle.copyWith(
+                      color: AppColors.backgroundColor,
+                    ),
+                  )),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.grade1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: onFinish,
+                  child: Text(
+                    'Buyurtmani tugatish',
+                    style: AppStyle.fontStyle.copyWith(
+                      color: AppColors.backgroundColor,
+                    ),
+                  )),
+            ],
+          )
         ],
       ),
     );
@@ -105,22 +179,42 @@ class OrderAcceptedWidget extends StatelessWidget {
 
   Widget _buildLocation(String label, String location) {
     return Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        border: Border.all(width: 1, color: AppColors.uiText),
+        borderRadius: BorderRadius.circular(5),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             label,
             style: const TextStyle(
-                fontWeight: FontWeight.w600, color: Colors.grey),
+                fontWeight: FontWeight.w600, color: Colors.grey, fontSize: 12),
           ),
           const SizedBox(height: 5),
           Text(
             location,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           ),
           const SizedBox(height: 5),
         ],
       ),
+    );
+  }
+
+  Widget _buildButton(
+      String text, Color bgColor, Color textColor, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: bgColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      ),
+      child: Text(text,
+          style: TextStyle(
+              fontSize: 14, fontWeight: FontWeight.bold, color: textColor)),
     );
   }
 }

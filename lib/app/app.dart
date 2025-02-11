@@ -2,8 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/app/router.dart';
-import 'package:taksi/services/db/cache.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint("Фоновое сообщение: ${message.notification?.title}");
@@ -19,12 +19,28 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  bool _isNotificationEnabled = true;
 
   @override
   void initState() {
     super.initState();
-    _setupFirebaseMessaging();
-    _setupLocalNotifications();
+    _loadNotificationPreference();
+  }
+
+  Future<void> _loadNotificationPreference() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isNotification = prefs.getBool('isNotification') ?? true;
+
+    setState(() {
+      _isNotificationEnabled = isNotification;
+    });
+
+    if (_isNotificationEnabled) {
+      _setupFirebaseMessaging();
+      _setupLocalNotifications();
+    } else {
+      debugPrint("Bildirishnomalar o‘chirilgan, FCM ishlamaydi.");
+    }
   }
 
   Future<void> _setupFirebaseMessaging() async {
@@ -41,7 +57,8 @@ class _AppState extends State<App> {
 
       String? token = await messaging.getToken();
       debugPrint("FCM Token: $token");
-      cache.setString('fcm_token', '$token');
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('fcm_token', '$token');
 
       setState(() {});
 
@@ -49,10 +66,12 @@ class _AppState extends State<App> {
         debugPrint(
             'Получено сообщение в активном состоянии: ${message.notification?.title}');
 
-        _showLocalNotification(
-          title: message.notification?.title ?? 'Yangi xabar',
-          body: message.notification?.body ?? 'Нет описания',
-        );
+        if (_isNotificationEnabled) {
+          _showLocalNotification(
+            title: message.notification?.title ?? 'Yangi xabar',
+            body: message.notification?.body ?? 'Нет описания',
+          );
+        }
       });
 
       FirebaseMessaging.onBackgroundMessage(
@@ -78,6 +97,8 @@ class _AppState extends State<App> {
     required String title,
     required String body,
   }) async {
+    if (!_isNotificationEnabled) return;
+
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
       'default_channel_id',
