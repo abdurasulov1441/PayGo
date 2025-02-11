@@ -4,7 +4,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluid_bottom_nav_bar/fluid_bottom_nav_bar.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/pages/drivers_taxi/1Order/taxi_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/2Accepted/taxi_accpeted_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/3History/taxi_orders_history_page.dart';

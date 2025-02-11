@@ -202,19 +202,4 @@ class OrderAcceptedWidget extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildButton(
-      String text, Color bgColor, Color textColor, VoidCallback onPressed) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: bgColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      ),
-      child: Text(text,
-          style: TextStyle(
-              fontSize: 14, fontWeight: FontWeight.bold, color: textColor)),
-    );
-  }
 }
