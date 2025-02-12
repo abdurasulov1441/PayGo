@@ -1,6 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:elegant_notification/elegant_notification.dart';
-import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:otp_timer_button/otp_timer_button.dart';
@@ -11,6 +9,8 @@ import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/request_helper.dart';
 
 import 'package:taksi/services/snack_bar.dart';
+import 'package:taksi/services/utils/toats/error.dart';
+import 'package:taksi/services/utils/toats/succes.dart';
 import 'package:taksi/style/app_style.dart';
 import 'package:taksi/style/app_colors.dart';
 
@@ -96,22 +96,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
       if (response['statusCode'] == 200 || response['statusCode'] == 201) {
         String status = response['message'];
-        ElegantNotification.success(
-          width: 360,
-          isDismissable: false,
-          animationCurve: Curves.easeInOut,
-          position: Alignment.topCenter,
-          animation: AnimationType.fromTop,
-          title: Text('Tarif'),
-          description: Text(status),
-          onDismiss: () {},
-          onNotificationPressed: () {},
-          shadow: BoxShadow(
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 4),
-          ),
-        ).show(context);
+        showSuccessToast(context, 'PayGo', status);
       } else {
         SnackBarService.showSnackBar(context, response['message'], false);
       }
@@ -200,60 +185,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (response['accessToken'] != null && response['refreshToken'] != null) {
         cache.setString('user_token', response['accessToken']);
         cache.setString('refresh_token', response['refreshToken']);
-        ElegantNotification.success(
-          width: 360,
-          isDismissable: false,
-          animationCurve: Curves.easeInOut,
-          position: Alignment.topCenter,
-          animation: AnimationType.fromTop,
-          description: Text('verification_succes'.tr()),
-          onDismiss: () {},
-          onNotificationPressed: () {},
-          shadow: BoxShadow(
-            color: Colors.green,
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 4),
-          ),
-        ).show(context);
+        showSuccessToast(context, 'PayGo', 'verification_succes'.tr());
         context.go(
           Routes.homeScreen,
         );
       } else {
-        ElegantNotification.error(
-          width: 360,
-          isDismissable: false,
-          animationCurve: Curves.easeInOut,
-          position: Alignment.topCenter,
-          animation: AnimationType.fromTop,
-          description: Text('error_token'.tr()),
-          onDismiss: () {},
-          onNotificationPressed: () {},
-          shadow: BoxShadow(
-            color: Colors.red,
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 4),
-          ),
-        ).show(context);
+        showErrorToast(context, 'PayGo', 'error_token'.tr());
       }
     } catch (e) {
-      ElegantNotification.error(
-        width: 360,
-        isDismissable: false,
-        animationCurve: Curves.easeInOut,
-        position: Alignment.topCenter,
-        animation: AnimationType.fromTop,
-        description: Text('error'.tr()),
-        onDismiss: () {},
-        onNotificationPressed: () {},
-        shadow: BoxShadow(
-          color: Colors.red,
-          spreadRadius: 2,
-          blurRadius: 5,
-          offset: const Offset(0, 4),
-        ),
-      ).show(context);
+      showErrorToast(context, 'PayGo', e.toString());
     } finally {
       setState(() {
         isLoading = false;

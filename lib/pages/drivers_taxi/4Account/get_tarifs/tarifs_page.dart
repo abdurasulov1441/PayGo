@@ -1,8 +1,8 @@
-import 'package:elegant_notification/elegant_notification.dart';
-import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/services/request_helper.dart';
+import 'package:taksi/services/utils/toats/error.dart';
+import 'package:taksi/services/utils/toats/succes.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -34,10 +34,10 @@ class _TariffsPageState extends State<TariffsPage> {
           isLoading = false;
         });
       } else {
-        _showErrorSnackBar('Tariflarni yuklashda xatolik!');
+        showErrorToast(context, 'Tarif', 'Tariflarni yuklashda xatolik!');
       }
     } catch (e) {
-      _showErrorSnackBar('Tarmoq xatoligi!');
+      showErrorToast(context, 'Tarif', 'Tarmoq xatoligi!');
     }
   }
 
@@ -56,61 +56,17 @@ class _TariffsPageState extends State<TariffsPage> {
       final String ssssssss = response['message'];
 
       if (status == 1) {
-        ElegantNotification.success(
-          width: 360,
-          isDismissable: false,
-          animationCurve: Curves.easeInOut,
-          position: Alignment.topCenter,
-          animation: AnimationType.fromTop,
-          title: Text('Tarif'),
-          description: Text(ssssssss),
-          onDismiss: () {},
-          onNotificationPressed: () {},
-          shadow: BoxShadow(
-            color: Colors.green,
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 4),
-          ),
-        ).show(context);
+        showSuccessToast(context, 'Tarif', ssssssss);
       } else if (status == 3) {
-        ElegantNotification.error(
-          width: 360,
-          isDismissable: false,
-          animationCurve: Curves.easeInOut,
-          position: Alignment.topCenter,
-          animation: AnimationType.fromTop,
-          title: Text('Tarif'),
-          description: Text(ssssssss),
-          onDismiss: () {},
-          onNotificationPressed: () {},
-          shadow: BoxShadow(
-            color: Colors.red,
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 4),
-          ),
-        ).show(context);
+        showSuccessToast(context, 'Tarif', ssssssss);
       } else if (status == 2) {
         _showLogoutDialog(response['message'], tariffId);
       } else {
-        _showErrorSnackBar('Tariflarni yuklashda xatolik!');
+        showErrorToast(context, 'Tarif', 'Xatolik!');
       }
     } catch (e) {
-      _showErrorSnackBar('Tarmoq xatoligi!');
+      showErrorToast(context, 'Tarif', 'Tarmoq xatoligi!');
     }
-  }
-
-  void _showErrorSnackBar(String message) {
-    setState(() {
-      isLoading = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 
   void _showLogoutDialog(String message, int tariffId) {

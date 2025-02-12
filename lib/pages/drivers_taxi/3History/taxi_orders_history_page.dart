@@ -71,9 +71,7 @@ class _TaxiOrdersHistoryPageState extends State<TaxiOrdersHistoryPage> {
             status: currentOrder['status']!,
             customer: currentOrder['name'] ?? '',
             fromLocation: currentOrder['from_location']!,
-            fromDateTime: currentOrder['time']?.toString() ?? '',
             toLocation: currentOrder['to_location']!,
-            toDateTime: currentOrder['time']!,
             peopleCount: currentOrder['passenger_count']?.toString(),
             cargoName: currentOrder['pochta']?.toString(),
             rating: currentOrder['rating'] != null

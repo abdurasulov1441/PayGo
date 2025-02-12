@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 
 class Taxidriversettings extends StatefulWidget {
   const Taxidriversettings({super.key});
@@ -44,14 +45,15 @@ class _TaxidriversettingsState extends State<Taxidriversettings> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Sozlamalar',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: AppStyle.fontStyle.copyWith(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.grade1,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
