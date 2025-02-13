@@ -4,7 +4,7 @@ description: "PayGo"
 publish_to: 'none' 
 
 
-version: 4.0.0+4
+version: 5.0.0+5
 
 environment:
   sdk: '>=3.2.6 <4.0.0'
@@ -56,8 +56,8 @@ dependencies:
   bottom_picker: ^2.10.1
   animated_toggle_switch: ^0.8.4
   smart_auth: ^3.2.0
-  workmanager: ^0.5.2
   toastification: ^2.3.0
+  expansion_tile_card: ^3.0.0
 
 
 dev_dependencies:

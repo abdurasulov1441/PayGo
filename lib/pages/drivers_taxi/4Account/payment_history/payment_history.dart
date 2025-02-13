@@ -99,66 +99,105 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                     final isTarif = payment['tarif_id'] == 0;
                     final balance = payment['balance'];
                     final tarifName = payment['tariff_name'];
-                    return Card(
-                      elevation: 5,
-                      color: AppColors.backgroundColor,
+                    return Container(
                       margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isTarif
-                                  ? 'Balansni to‘ldirish'
-                                  : 'Tarif sotib olish',
-                              style: AppStyle.fontStyle.copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                      decoration: BoxDecoration(
+                        color: AppColors.ui,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      padding: EdgeInsets.all(10),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                isTarif
+                                    ? 'Balansni to‘ldirish'
+                                    : 'Tarif sotib olish',
+                                style: AppStyle.fontStyle.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              isTarif
-                                  ? 'To‘lov muvaffaqiyatli amalga oshirildi'
-                                  : 'Tarif uchun to\'lov $tarifName',
-                              style: AppStyle.fontStyle.copyWith(
-                                fontSize: 14,
-                                color: Colors.grey,
+                              Text(
+                                '$balance so\'m',
+                                style: AppStyle.fontStyle.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: isTarif ? Colors.green : Colors.red,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '$balance UZS',
+                            ],
+                          ),
+                          Divider(
+                            color: Colors.grey,
+                            thickness: 1,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('To‘lov xolati: ',
                                   style: AppStyle.fontStyle.copyWith(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: isTarif ? Colors.green : Colors.red,
-                                  ),
-                                ),
-                                Text(
-                                  '№ ${payment['transaction_id']}',
-                                  style: AppStyle.fontStyle.copyWith(
-                                    fontSize: 14,
                                     color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              payment['date'],
-                              style: AppStyle.fontStyle.copyWith(
-                                fontSize: 12,
-                                color: Colors.grey,
+                                  )),
+                              Text(
+                                isTarif
+                                    ? 'Balans to‘ldirildi'
+                                    : 'Tarif sotib olindi $tarifName',
+                                style: AppStyle.fontStyle.copyWith(
+                                    fontSize: 16,
+                                    color: AppColors.grade1,
+                                    fontWeight: FontWeight.bold),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('To‘lov vaqti: ',
+                                  style: AppStyle.fontStyle.copyWith(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  )),
+                              Text(
+                                payment['date'],
+                                style: AppStyle.fontStyle.copyWith(
+                                  fontSize: 16,
+                                  color: AppColors.grade1,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Tranzaksiya raqami: ',
+                                  style: AppStyle.fontStyle.copyWith(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  )),
+                              Text(
+                                '№ ${payment['transaction_id']}',
+                                style: AppStyle.fontStyle.copyWith(
+                                  fontSize: 16,
+                                  color: AppColors.grade1,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     );
                   },

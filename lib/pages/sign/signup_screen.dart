@@ -10,6 +10,7 @@ import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/snack_bar.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -24,6 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       TextEditingController(text: '+998 ');
 
   final formKey = GlobalKey<FormState>();
+  bool _isTermsAccepted = false;
 
   final _phoneNumberFormatter = TextInputFormatter.withFunction(
     (oldValue, newValue) {
@@ -67,6 +69,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     nameTextInputController.dispose();
     phoneTextInputController.dispose();
     super.dispose();
+  }
+
+  void _launchPrivacyPolicy() async {
+    final Uri url = Uri.parse("http://appdata.uz/paygo_privacy.pdf");
+
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception('Не удалось открыть $url');
+    }
   }
 
   Future<void> signUp() async {
@@ -114,29 +124,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    GestureDetector(
-                      onTap: () => showLanguageBottomSheet(context),
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        radius: 25,
-                        child: Text(
-                          currentFlag,
-                          style: const TextStyle(fontSize: 24),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+                // Логотип
                 Image.asset(
                   'assets/images/logo.png',
-                  // fit: BoxFit.cover,
                   width: 200,
                   height: 200,
                 ),
+
                 Text(
                   'registration'.tr(),
                   style: AppStyle.fontStyle.copyWith(
@@ -145,7 +139,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     color: AppColors.grade1,
                   ),
                 ),
+
                 const SizedBox(height: 30),
+
                 buildTextField(
                   nameTextInputController,
                   'enter_name'.tr(),
@@ -157,7 +153,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 15),
+
                 buildTextField(
                   phoneTextInputController,
                   'phone_number'.tr(),
@@ -174,12 +172,51 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 20),
-                GradientButton(
-                  onPressed: signUp,
-                  text: 'registration'.tr(),
+
+                CheckboxListTile(
+                  title: GestureDetector(
+                    onTap:
+                        _launchPrivacyPolicy, // Вызываем метод для открытия ссылки
+                    child: Text(
+                      'Я принимаю условия конфиденциальности',
+                      style: AppStyle.fontStyle.copyWith(
+                        fontSize: 14,
+                        color: AppColors.grade1,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  value: _isTermsAccepted,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isTermsAccepted = value ?? false;
+                    });
+                  },
+                  activeColor: AppColors.grade1,
                 ),
+
+                Container(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.grade1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                    onPressed: _isTermsAccepted ? () => signUp() : null,
+                    child: Text('registration'.tr(),
+                        style: AppStyle.fontStyle.copyWith(
+                          color: AppColors.backgroundColor,
+                          fontSize: 16,
+                        )),
+                  ),
+                ),
+
                 const SizedBox(height: 20),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -237,5 +274,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
     );
+  }
+}
+
+class TermsAndConditionsPage extends StatelessWidget {
+  const TermsAndConditionsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/services/request_helper.dart';
@@ -99,6 +100,7 @@ class _TariffsPageState extends State<TariffsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         centerTitle: true,
         leading: IconButton(
@@ -133,110 +135,89 @@ class _TariffsPageState extends State<TariffsPage> {
   }
 
   Widget _buildTariffCard(Map<String, dynamic> tariff, int index) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: index == 2 ? AppColors.grade1 : Colors.grey.shade300,
-          width: 2,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ExpansionTileCard(
+        elevation: 2,
+        baseColor: AppColors.ui,
+        expandedColor: AppColors.ui,
+        initiallyExpanded: index == 2,
+        title: Text(
+          tariff['name'],
+          style: AppStyle.fontStyle.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 6,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        trailing: Icon(Icons.expand_more),
         children: [
-          Text(
-            '${tariff['name']}',
-            style: AppStyle.fontStyle.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(5),
+          Divider(thickness: 1.0, height: 1.0),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildPriceRow(
+                  "Ta’rif narxi (oyiga)",
+                  tariff['monthly'],
+                ),
+                _buildPriceRow("Chegirma narxi", tariff['description'],
+                    isDiscount: true),
+                Divider(),
+                _buildPriceRow("Jami", tariff['price'], isTotal: true),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    _getTarif(false, tariff['id']);
+                    print(
+                        "Выбран тариф: ${tariff['name']}, ID: ${tariff['id']}");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.grade1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                  ),
+                  child: Center(
                     child: Text(
-                      '${tariff['description']} so\'m tejaladi',
+                      'Obuna bo\'lish',
                       style: AppStyle.fontStyle.copyWith(
-                        color: Colors.green,
-                        fontSize: 12,
+                        color: AppColors.backgroundColor,
+                        fontSize: 16,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${tariff['price']} so\'m',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.grade1,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  Text(
-                    '30 000',
-                    style: AppStyle.fontStyle.copyWith(
-                      decoration: TextDecoration.lineThrough,
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  Text(
-                    '${tariff['monthly']} so\'m oyiga',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              _getTarif(false, tariff['id']); // Передаем tariff['id']
-              print("Выбран тариф: ${tariff['name']}, ID: ${tariff['id']}");
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.grade1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Center(
-              child: Text(
-                'Obuna bo\'lish',
-                style: AppStyle.fontStyle.copyWith(
-                  color: AppColors.backgroundColor,
-                  fontSize: 16,
                 ),
-              ),
+              ],
             ),
-          )
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceRow(String label, dynamic amount,
+      {bool isDiscount = false, bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: TextStyle(
+                  color: isDiscount ? Colors.grey : Colors.black,
+                  fontSize: 16)),
+          Text(
+            "${amount.toString()} so’m",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isTotal
+                  ? Colors.teal[900]
+                  : isDiscount
+                      ? Colors.grey
+                      : Colors.black,
+            ),
+          ),
         ],
       ),
     );

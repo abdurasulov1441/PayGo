@@ -28,7 +28,7 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName', '1.0
 android {
     namespace = "uz.paygo"
     compileSdk = 35
-    ndkVersion = "31.0.0"
+    ndkVersion = "25.1.8937393"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
