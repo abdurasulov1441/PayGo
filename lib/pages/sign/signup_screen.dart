@@ -177,8 +177,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 CheckboxListTile(
                   title: GestureDetector(
-                    onTap:
-                        _launchPrivacyPolicy, // Вызываем метод для открытия ссылки
+                    onTap: _launchPrivacyPolicy,
                     child: Text(
                       'Я принимаю условия конфиденциальности',
                       style: AppStyle.fontStyle.copyWith(

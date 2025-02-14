@@ -1,7 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:taksi/app/router.dart';
+import 'package:taksi/pages/new_user/widgets/davlat_raqami.dart';
 import 'package:taksi/services/request_helper.dart';
+import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
 
 class EnterDetailInfo extends StatefulWidget {
   final int roleId;
@@ -13,21 +16,14 @@ class EnterDetailInfo extends StatefulWidget {
 }
 
 class _EnterDetailInfoState extends State<EnterDetailInfo> {
-  // Controllers
   final TextEditingController carNumberController = TextEditingController();
-
-  // Dropdown data
   List<dynamic> carBrands = [];
   List<dynamic> carModels = [];
   List<dynamic> regions = [];
-
-  // Selected values
   int? selectedCarBrandId;
   int? selectedCarModelId;
   int? selectedFromRegionId;
   int? selectedToRegionId;
-
-  // Loading states
   bool isLoadingBrands = true;
   bool isLoadingModels = false;
   bool isLoadingRegions = true;
@@ -41,81 +37,105 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
 
   Future<void> fetchCarBrands() async {
     try {
-      final response = await requestHelper.getWithAuth(
-        '/services/zyber/api/ref/get-car-brands',
-      );
+      final response = await requestHelper
+          .getWithAuth('/services/zyber/api/ref/get-car-brands');
       setState(() {
         carBrands = response;
         isLoadingBrands = false;
       });
-    } catch (e) {
-      print('Ошибка загрузки брендов: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> fetchCarModels(int brandId) async {
-    setState(() {
-      isLoadingModels = true;
-    });
+    setState(() => isLoadingModels = true);
     try {
       final response = await requestHelper.getWithAuth(
-        '/services/zyber/api/ref/get-car-models?brand_id=$brandId',
-      );
+          '/services/zyber/api/ref/get-car-models?brand_id=$brandId');
       setState(() {
         carModels = response;
         isLoadingModels = false;
       });
-    } catch (e) {
-      print('Ошибка загрузки моделей: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> fetchRegions() async {
     try {
-      final response = await requestHelper.getWithAuth(
-        '/services/zyber/api/ref/get-regions',
-      );
+      final response = await requestHelper
+          .getWithAuth('/services/zyber/api/ref/get-regions');
       setState(() {
         regions = response;
         isLoadingRegions = false;
       });
-    } catch (e) {
-      print('Ошибка загрузки регионов: $e');
-    }
+    } catch (e) {}
+  }
+
+  bool isFormValid() {
+    return selectedCarBrandId != null &&
+        selectedCarModelId != null &&
+        carNumberController.text.isNotEmpty &&
+        selectedFromRegionId != null &&
+        selectedToRegionId != null &&
+        selectedFromRegionId != selectedToRegionId;
+  }
+
+  void showSelectionSheet(
+      List<dynamic> items, String title, Function(int) onSelect) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.5,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) => ListTile(
+                  title: Text(items[index]['name']),
+                  onTap: () {
+                    onSelect(items[index]['id']);
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _updateCarNumber(
+      String region, String letter, String number, String suffix) {
+    setState(() {
+      carNumberController.text = "$region $letter $number $suffix";
+    });
   }
 
   Future<void> sendData() async {
-    if (selectedFromRegionId == selectedToRegionId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error_locations'.tr())),
-      );
-      return;
-    }
+    if (!isFormValid()) return;
 
     try {
-      // Отправка роли
       await requestHelper.putWithAuth(
-        '/services/zyber/api/users/update-user-role',
-        {'role_id': widget.roleId},
-      );
-
-      // Отправка данных
+          '/services/zyber/api/users/update-user-role',
+          {'role_id': widget.roleId});
       final response = await requestHelper.postWithAuth(
         '/services/zyber/api/users/add-vehicle',
         {
           'brand_id': selectedCarBrandId,
           'model_id': selectedCarModelId,
-          'plate_number': carNumberController.text,
+          'plate_number': carNumberController.text.trim(),
           'from_location': selectedFromRegionId,
           'to_location': selectedToRegionId,
         },
       );
-
       if (response['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'] ?? 'succes_send'.tr())),
-        );
-        print(widget.roleId);
+            SnackBar(content: Text(response['message'] ?? 'succes_send'.tr())));
         if (widget.roleId == 2) {
           router.go(Routes.taxiDriverPage);
         } else if (widget.roleId == 3) {
@@ -123,123 +143,166 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'] ?? 'Ошибка отправки.')),
-        );
+            SnackBar(content: Text(response['message'] ?? 'Ошибка отправки.')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error_conection'.tr())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('error_conection'.tr())));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('enter_data'.tr())),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: SingleChildScrollView(
+      backgroundColor: AppColors.backgroundColor,
+      appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: AppColors.grade1,
+          title: Text('enter_data'.tr(),
+              style: AppStyle.fontStyle
+                  .copyWith(color: Colors.white, fontSize: 20))),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              isLoadingBrands
-                  ? const CircularProgressIndicator()
-                  : DropdownButton<int>(
-                      isExpanded: true,
-                      hint: Text('select_car_brand'.tr()),
-                      value: selectedCarBrandId,
-                      items: carBrands.map<DropdownMenuItem<int>>((brand) {
-                        return DropdownMenuItem<int>(
-                          value: brand['id'],
-                          child: Text(brand['name']),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCarBrandId = value;
-                          selectedCarModelId = null;
-                          carModels = [];
-                        });
-                        fetchCarModels(value!);
-                      },
+              Container(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.ui,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-
-              const SizedBox(height: 20),
-
-              isLoadingModels
-                  ? const CircularProgressIndicator()
-                  : DropdownButton<int>(
-                      isExpanded: true,
-                      hint: Text('select_car_model'.tr()),
-                      value: selectedCarModelId,
-                      items: carModels.map<DropdownMenuItem<int>>((model) {
-                        return DropdownMenuItem<int>(
-                          value: model['id'],
-                          child: Text(model['name']),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCarModelId = value;
-                        });
-                      },
-                    ),
-
-              const SizedBox(height: 20),
-
-              TextField(
-                controller: carNumberController,
-                decoration: InputDecoration(labelText: 'car_number'.tr()),
+                    elevation: 0,
+                  ),
+                  onPressed: isLoadingBrands
+                      ? null
+                      : () => showSelectionSheet(
+                              carBrands, 'select_car_brand'.tr(), (id) {
+                            setState(() {
+                              selectedCarBrandId = id;
+                              selectedCarModelId = null;
+                              carModels = [];
+                            });
+                            fetchCarModels(id);
+                          }),
+                  child: Text(
+                    selectedCarBrandId == null
+                        ? 'select_car_brand'.tr()
+                        : carBrands.firstWhere((brand) =>
+                            brand['id'] == selectedCarBrandId)['name'],
+                    style: AppStyle.fontStyle.copyWith(color: AppColors.uiText),
+                  ),
+                ),
               ),
-
               const SizedBox(height: 20),
-
-              isLoadingRegions
-                  ? const CircularProgressIndicator()
-                  : DropdownButton<int>(
-                      isExpanded: true,
-                      hint: Text('select_from_location'.tr()),
-                      value: selectedFromRegionId,
-                      items: regions.map<DropdownMenuItem<int>>((region) {
-                        return DropdownMenuItem<int>(
-                          value: region['id'],
-                          child: Text(region['name']),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedFromRegionId = value;
-                        });
-                      },
+              Container(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.ui,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-
+                    elevation: 0,
+                  ),
+                  onPressed: isLoadingModels
+                      ? null
+                      : () => showSelectionSheet(
+                              carModels, 'select_car_model'.tr(), (id) {
+                            setState(() {
+                              selectedCarModelId = id;
+                            });
+                          }),
+                  child: Text(
+                    selectedCarModelId == null
+                        ? 'select_car_model'.tr()
+                        : carModels.firstWhere((model) =>
+                            model['id'] == selectedCarModelId)['name'],
+                    style: AppStyle.fontStyle.copyWith(color: AppColors.uiText),
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
-
-              // To Region Dropdown
-              isLoadingRegions
-                  ? const CircularProgressIndicator()
-                  : DropdownButton<int>(
-                      isExpanded: true,
-                      hint: Text('select_to_location'.tr()),
-                      value: selectedToRegionId,
-                      items: regions.map<DropdownMenuItem<int>>((region) {
-                        return DropdownMenuItem<int>(
-                          value: region['id'],
-                          child: Text(region['name']),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedToRegionId = value;
-                        });
-                      },
+              DavlatRaqami(
+                onChanged: _updateCarNumber,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.ui,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-
+                    elevation: 0,
+                  ),
+                  onPressed: isLoadingRegions
+                      ? null
+                      : () => showSelectionSheet(
+                              regions, 'select_from_location'.tr(), (id) {
+                            setState(() {
+                              selectedFromRegionId = id;
+                            });
+                          }),
+                  child: Text(
+                    selectedFromRegionId == null
+                        ? 'select_from_location'.tr()
+                        : regions.firstWhere((region) =>
+                            region['id'] == selectedFromRegionId)['name'],
+                    style: AppStyle.fontStyle.copyWith(color: AppColors.uiText),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.ui,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: isLoadingRegions
+                        ? null
+                        : () => showSelectionSheet(
+                                regions, 'select_to_location'.tr(), (id) {
+                              setState(() {
+                                selectedToRegionId = id;
+                              });
+                            }),
+                    child: Text(
+                      selectedToRegionId == null
+                          ? 'select_to_location'.tr()
+                          : regions.firstWhere((region) =>
+                              region['id'] == selectedToRegionId)['name'],
+                      style:
+                          AppStyle.fontStyle.copyWith(color: AppColors.uiText),
+                    )),
+              ),
               const SizedBox(height: 40),
-
-              ElevatedButton(
-                onPressed: sendData,
-                child: Text('send'.tr()),
+              Container(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.grade1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: isFormValid() ? sendData : null,
+                  child: Text('send'.tr(),
+                      style: AppStyle.fontStyle.copyWith(color: Colors.white)),
+                ),
               ),
             ],
           ),
