@@ -19,6 +19,7 @@ import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
 import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
 import 'package:taksi/pages/home_screen.dart';
 import 'package:taksi/pages/new_user/enter_detail_info.dart';
+import 'package:taksi/pages/new_user/get_permissions/get_permissions.dart';
 import 'package:taksi/pages/new_user/role_select.dart';
 import 'package:taksi/pages/sign/login_screen.dart';
 import 'package:taksi/pages/sign/smsverify.dart';
@@ -28,6 +29,17 @@ import 'package:taksi/services/db/cache.dart';
 import '../pages/civil/civil_account_page/civil_account.dart';
 
 abstract class Routes {
+  static const smsPermissionPage = '/smsPermissionPage';
+  static const gpsPermissionPage = '/gpsPermissionPage';
+  static const cameraPermissionPage = '/cameraPermissionPage';
+  static const microphonePermissionPage = '/microphonePermissionPage';
+  static const notificationPermissionPage = '/notificationPermissionPage';
+
+
+
+
+
+//////////////////////////////////////////////////////////
   static const passCodePage = '/passCodePage';
   static const initialPassCodePage = '/initialPassCodePage';
   static const homeScreen = '/homeScreen';
