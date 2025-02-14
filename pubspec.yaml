@@ -58,6 +58,7 @@ dependencies:
   smart_auth: ^3.2.0
   toastification: ^2.3.0
   expansion_tile_card: ^3.0.0
+  emoji_picker_flutter: ^4.3.0
 
 
 dev_dependencies:

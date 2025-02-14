@@ -6,7 +6,6 @@ import 'package:taksi/pages/civil/delivery_page.dart';
 import 'package:taksi/pages/civil/near_cars/near_cars.dart';
 import 'package:taksi/pages/civil/near_truck/near_truck.dart';
 import 'package:taksi/pages/civil/taksi_create_order/taksi_page.dart';
-import 'package:taksi/pages/civil/test_page.dart';
 // import 'package:taksi/pages/civil/yandex_maps/yandex_map_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/account_detail_info/account_detail_info_taksi.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_page.dart';
@@ -14,6 +13,8 @@ import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_verify_pag
 import 'package:taksi/pages/drivers_taxi/4Account/get_tarifs/tarifs_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/payment_history/payment_history.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/settings/taxiDriverSettings.dart';
+import 'package:taksi/pages/drivers_taxi/chat_page/chat_page.dart';
+import 'package:taksi/pages/drivers_taxi/chat_page/video_circle/videopage.dart';
 import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
 import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
 import 'package:taksi/pages/home_screen.dart';
@@ -56,6 +57,7 @@ abstract class Routes {
   static const accountDetailInfoPage = '/accountDetailInfoPage';
   static const tarifsPage = '/tarifsPage';
   static const settingsPage = '/settingsPage';
+  static const chatPageTaxi = '/chatPageTaxi';
 
   ///////////////////////////////////////////////////////
 
@@ -112,10 +114,10 @@ final router = GoRouter(
       path: Routes.civilPage,
       builder: (context, state) => const MainCivilPage(),
     ),
-    GoRoute(
-      path: Routes.testPage,
-      builder: (context, state) => const TestPage(),
-    ),
+    // GoRoute(
+    //   path: Routes.testPage,
+    //   builder: (context, state) => TelegramStyleVideoRecorder(),
+    // ),
     // GoRoute(
     //   path: Routes.yandex_map_truck,
     //   builder: (context, state) => const MapkitFlutterApp(),
@@ -207,6 +209,10 @@ final router = GoRouter(
     GoRoute(
       path: Routes.nearTrucks,
       builder: (context, state) => const CivilNearTruck(),
+    ),
+    GoRoute(
+      path: Routes.chatPageTaxi,
+      builder: (context, state) => const ChatPageTaxi(),
     ),
   ],
 );

@@ -112,7 +112,7 @@ class _EnterDetailInfoState extends State<EnterDetailInfo> {
   void _updateCarNumber(
       String region, String letter, String number, String suffix) {
     setState(() {
-      carNumberController.text = "$region $letter $number $suffix";
+      carNumberController.text = "$region$letter$number$suffix";
     });
   }
 

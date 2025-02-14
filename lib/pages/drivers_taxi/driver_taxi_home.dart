@@ -4,6 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluid_bottom_nav_bar/fluid_bottom_nav_bar.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:taksi/app/router.dart';
 import 'package:taksi/pages/drivers_taxi/1Order/taxi_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/2Accepted/taxi_accpeted_orders_page.dart';
 import 'package:taksi/pages/drivers_taxi/3History/taxi_orders_history_page.dart';
@@ -140,7 +142,9 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.grade1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60)),
-        onPressed: () {},
+        onPressed: () {
+          context.push(Routes.chatPageTaxi);
+        },
         child: SvgPicture.asset(
           'assets/images/message.svg',
           color: AppColors.backgroundColor,
