@@ -97,6 +97,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (response['statusCode'] == 200 || response['statusCode'] == 201) {
         String status = response['message'];
         showSuccessToast(context, 'PayGo', status);
+        cache.setBool('isGPS', true);
+        cache.setBool('isNotification', true);
       } else {
         SnackBarService.showSnackBar(context, response['message'], false);
       }
