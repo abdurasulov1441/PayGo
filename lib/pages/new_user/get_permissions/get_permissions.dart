@@ -2,179 +2,160 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:taksi/app/router.dart';
+import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/style/app_style.dart';
+import 'package:easy_localization/easy_localization.dart';
 
-class SmsPermissionPage extends StatelessWidget {
-  const SmsPermissionPage({super.key});
-
-  Future<void> _requestPermission(BuildContext context) async {
-    var status = await Permission.sms.request();
-    if (status.isGranted) {
-      context.go(Routes.gpsPermissionPage);
-    } else {
-      _showError(context);
-    }
-  }
-
-  void _showError(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Разрешение отклонено. Попробуйте снова.')),
-    );
-  }
+class PermissionScreen extends StatefulWidget {
+  const PermissionScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return _buildPage(context, "SMS-доступ", "Разрешите доступ к SMS",
-        () => _requestPermission(context));
-  }
+  _PermissionScreenState createState() => _PermissionScreenState();
 }
 
-class GpsPermissionPage extends StatelessWidget {
-  const GpsPermissionPage({super.key});
+class _PermissionScreenState extends State<PermissionScreen> {
+  final PageController _pageController = PageController();
 
-  Future<void> _requestPermission(BuildContext context) async {
-    var status = await Permission.location.request();
-    if (status.isGranted) {
-      context.go('/camera');
+  final List<Map<String, dynamic>> _permissions = [
+    {
+      "title": tr("sms_title"),
+      "description": tr("sms_description"),
+      "icon": Icons.sms,
+      "permission": Permission.sms,
+      "mandatory": true,
+    },
+    {
+      "title": tr("gps_title"),
+      "description": tr("gps_description"),
+      "icon": Icons.location_on,
+      "permission": Permission.location,
+      "mandatory": false,
+    },
+    {
+      "title": tr("camera_title"),
+      "description": tr("camera_description"),
+      "icon": Icons.camera_alt,
+      "permission": Permission.camera,
+      "mandatory": false,
+    },
+    {
+      "title": tr("microphone_title"),
+      "description": tr("microphone_description"),
+      "icon": Icons.mic,
+      "permission": Permission.microphone,
+      "mandatory": false,
+    },
+    {
+      "title": tr("notifications_title"),
+      "description": tr("notifications_description"),
+      "icon": Icons.notifications,
+      "permission": Permission.notification,
+      "mandatory": false,
+    },
+  ];
+
+  Future<void> _requestPermission(int index) async {
+    Permission permission = _permissions[index]["permission"] as Permission;
+    var status = await permission.request();
+    if (status.isGranted || !_permissions[index]["mandatory"]) {
+      if (index < _permissions.length - 1) {
+        _pageController.nextPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut);
+      } else {
+        context.go(Routes.donePage);
+      }
     } else {
-      _showError(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr('permission_denied_message'))),
+      );
     }
   }
-
-  void _showError(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Разрешение на локацию отклонено. Попробуйте снова.')),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildPage(context, "GPS-доступ",
-        "Разрешите доступ к местоположению", () => _requestPermission(context));
-  }
-}
-
-class CameraPermissionPage extends StatelessWidget {
-  const CameraPermissionPage({super.key});
-
-  Future<void> _requestPermission(BuildContext context) async {
-    var status = await Permission.camera.request();
-    if (status.isGranted) {
-      context.go('/microphone');
-    } else {
-      _showError(context);
-    }
-  }
-
-  void _showError(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Разрешение на камеру отклонено. Попробуйте снова.')),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildPage(context, "Камера", "Разрешите доступ к камере",
-        () => _requestPermission(context));
-  }
-}
-
-class MicrophonePermissionPage extends StatelessWidget {
-  const MicrophonePermissionPage({super.key});
-
-  Future<void> _requestPermission(BuildContext context) async {
-    var status = await Permission.microphone.request();
-    if (status.isGranted) {
-      context.go('/notifications');
-    } else {
-      _showError(context);
-    }
-  }
-
-  void _showError(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Разрешение на микрофон отклонено. Попробуйте снова.')),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildPage(context, "Микрофон", "Разрешите доступ к микрофону",
-        () => _requestPermission(context));
-  }
-}
-
-class NotificationsPermissionPage extends StatelessWidget {
-  const NotificationsPermissionPage({super.key});
-
-  Future<void> _requestPermission(BuildContext context) async {
-    var status = await Permission.notification.request();
-    if (status.isGranted) {
-      context.go('/done');
-    } else {
-      _showError(context);
-    }
-  }
-
-  void _showError(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content:
-              Text('Разрешение на уведомления отклонено. Попробуйте снова.')),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildPage(context, "Уведомления",
-        "Разрешите отправлять уведомления", () => _requestPermission(context));
-  }
-}
-
-class DonePage extends StatelessWidget {
-  const DonePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: PageView.builder(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: _permissions.length,
+        itemBuilder: (context, index) {
+          return _buildPermissionPage(
+            _permissions[index]["title"],
+            _permissions[index]["description"],
+            _permissions[index]["icon"],
+            () => _requestPermission(index),
+            index,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPermissionPage(String title, String description, IconData icon,
+      VoidCallback onPressed, int index) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.grade2, AppColors.grade1],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "✅ Все разрешения получены!",
-              style: TextStyle(fontSize: 20),
+            Icon(icon, size: 100, color: Colors.white),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                description,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16, color: Colors.white70),
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => context.go('/photo'),
-              child: const Text("Открыть просмотр фото"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.deepPurple,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              ),
+              onPressed: onPressed,
+              child: Text(
+                tr("allow_button"),
+                style: AppStyle.fontStyle.copyWith(
+                    color: AppColors.grade1, fontWeight: FontWeight.bold),
+              ),
             ),
+            if (!_permissions[index]["mandatory"]) ...[
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () => _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut),
+                child: Text(tr("skip_button"),
+                    style: const TextStyle(color: Colors.white70)),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
-}
-
-Widget _buildPage(BuildContext context, String title, String description,
-    VoidCallback onPressed) {
-  return Scaffold(
-    appBar: AppBar(title: Text(title)),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(description, style: const TextStyle(fontSize: 18)),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: onPressed,
-            child: const Text("Разрешить"),
-          ),
-        ],
-      ),
-    ),
-  );
 }

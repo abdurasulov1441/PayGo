@@ -14,30 +14,22 @@ import 'package:taksi/pages/drivers_taxi/4Account/get_tarifs/tarifs_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/payment_history/payment_history.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/settings/taxiDriverSettings.dart';
 import 'package:taksi/pages/drivers_taxi/chat_page/chat_page.dart';
-import 'package:taksi/pages/drivers_taxi/chat_page/video_circle/videopage.dart';
 import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
 import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
 import 'package:taksi/pages/home_screen.dart';
 import 'package:taksi/pages/new_user/enter_detail_info.dart';
 import 'package:taksi/pages/new_user/get_permissions/get_permissions.dart';
+import 'package:taksi/pages/new_user/get_permissions/permission_done.dart';
 import 'package:taksi/pages/new_user/role_select.dart';
 import 'package:taksi/pages/sign/login_screen.dart';
 import 'package:taksi/pages/sign/smsverify.dart';
 import 'package:taksi/pages/sign/signup_screen.dart';
 import 'package:taksi/services/db/cache.dart';
-
 import '../pages/civil/civil_account_page/civil_account.dart';
 
 abstract class Routes {
-  static const smsPermissionPage = '/smsPermissionPage';
-  static const gpsPermissionPage = '/gpsPermissionPage';
-  static const cameraPermissionPage = '/cameraPermissionPage';
-  static const microphonePermissionPage = '/microphonePermissionPage';
-  static const notificationPermissionPage = '/notificationPermissionPage';
-
-
-
-
+  static const permissionPage = '/permissionPage';
+  static const donePage = '/donePage';
 
 //////////////////////////////////////////////////////////
   static const passCodePage = '/passCodePage';
@@ -80,13 +72,17 @@ abstract class Routes {
 }
 
 String _initialLocation() {
-  // return Routes.settingsPage;
+  // return Routes.permissionPage;
 
+  final permission = cache.getBool("permission");
   final userToken = cache.getString("user_token");
 
   if (userToken != null) {
     return Routes.homeScreen;
   } else {
+    if (permission == false || permission == null) {
+      return Routes.permissionPage;
+    }
     return Routes.loginScreen;
   }
 }
@@ -225,6 +221,14 @@ final router = GoRouter(
     GoRoute(
       path: Routes.chatPageTaxi,
       builder: (context, state) => const ChatPageTaxi(),
+    ),
+    GoRoute(
+      path: Routes.permissionPage,
+      builder: (context, state) => const PermissionScreen(),
+    ),
+    GoRoute(
+      path: Routes.donePage,
+      builder: (context, state) => const DonePage(),
     ),
   ],
 );

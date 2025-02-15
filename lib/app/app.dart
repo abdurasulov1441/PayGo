@@ -2,8 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/app/router.dart';
+import 'package:taksi/services/db/cache.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint("Фоновое сообщение: ${message.notification?.title}");
@@ -28,8 +28,7 @@ class _AppState extends State<App> {
   }
 
   Future<void> _loadNotificationPreference() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isNotification = prefs.getBool('isNotification') ?? true;
+    bool isNotification = cache.getBool('isNotification') ?? true;
 
     setState(() {
       _isNotificationEnabled = isNotification;
@@ -57,8 +56,8 @@ class _AppState extends State<App> {
 
       String? token = await messaging.getToken();
       debugPrint("FCM Token: $token");
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString('fcm_token', '$token');
+
+      cache.setString('fcm_token', '$token');
 
       setState(() {});
 
