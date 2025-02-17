@@ -176,17 +176,18 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     try {
       final response = await requestHelper.post(
-        '/services/zyber/api/auth/verify',
-        {
-          'phone_number': widget.phoneNumber,
-          'verification_code': enteredCode,
-          'fcm_token': fcm,
-        },
-      );
+          '/services/zyber/api/auth/verify',
+          {
+            'phone_number': widget.phoneNumber,
+            'verification_code': enteredCode,
+            'fcm_token': fcm,
+          },
+          log: true);
       print(fcm);
       if (response['accessToken'] != null && response['refreshToken'] != null) {
         cache.setString('user_token', response['accessToken']);
         cache.setString('refresh_token', response['refreshToken']);
+        cache.setString('user_id', response['id']);
         showSuccessToast(context, 'PayGo', 'verification_succes'.tr());
         context.go(
           Routes.homeScreen,

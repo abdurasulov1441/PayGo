@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
-import 'package:taksi/pages/drivers_taxi/chat_page/chat_buble.dart';
-import 'package:taksi/pages/drivers_taxi/chat_page/chat_data.dart';
+import 'package:taksi/pages/drivers_taxi/chat_page/botom_sheet.dart';
+import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
@@ -14,125 +12,234 @@ class ChatPageTaxi extends StatefulWidget {
   _ChatPageState createState() => _ChatPageState();
 }
 
+class ChatMessage {
+  final String id, text, time, date, senderName;
+  final bool isMe;
+
+  ChatMessage(
+      this.id, this.text, this.time, this.date, this.senderName, this.isMe);
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json, String date) {
+    return ChatMessage(
+      json['id'].toString(),
+      json['message_text'] ?? '',
+      json['created_at'],
+      date,
+      json['sender_name'],
+      json['is_me'],
+    );
+  }
+}
+
 class _ChatPageState extends State<ChatPageTaxi> {
   final TextEditingController _messageController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-  bool isTyping = false;
-  bool isEmojiShowing = false;
-  final List<ChatMessage> _messages = loadChatMessages();
+  List<ChatMessage> messages = [];
+  int? chatRoomId;
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-
-    setState(() {
-      _messages.add(ChatMessage(
-        text: _messageController.text.trim(),
-        time: "11:00",
-        status: "sent",
-      ));
-      _messageController.clear();
-      isTyping = false;
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _messages.last.status = "read";
-      });
-    });
+  @override
+  void initState() {
+    super.initState();
+    _initChat();
   }
 
-  void _toggleEmojiPicker() {
-    setState(() {
-      isEmojiShowing = !isEmojiShowing;
-      if (isEmojiShowing) {
-        _focusNode.unfocus();
-      } else {
-        FocusScope.of(context).requestFocus(_focusNode);
+  Future<void> _initChat() async {
+    chatRoomId = await _createOrJoinChat();
+    if (chatRoomId != null) _loadMessages();
+  }
+
+  Future<int?> _createOrJoinChat() async {
+    final chatId = await _post('/services/zyber/api/chat/create-chat', {}) ??
+        await _post('/services/zyber/api/chat/join-chat', {});
+    return chatId != null ? chatId['chat_room_id'] : null;
+  }
+
+  Future<void> _loadMessages() async {
+    if (chatRoomId == null) return;
+    final response = await _get(
+        '/services/zyber/api/chat/get-messages?chat_room_id=$chatRoomId');
+    if (response == null || response['success'] != true) return;
+
+    List<ChatMessage> loadedMessages = [];
+    for (var group in response['grouped_messages']) {
+      String date = group['date'];
+      for (var msg in group['messages']) {
+        loadedMessages.add(ChatMessage.fromJson(msg, date));
       }
+    }
+
+    setState(() => messages = loadedMessages);
+  }
+
+  Future<void> _sendMessage() async {
+    if (chatRoomId == null || _messageController.text.trim().isEmpty) return;
+    await _post('/services/zyber/api/chat/send-message', {
+      'chat_room_id': chatRoomId,
+      'message_text': _messageController.text.trim()
     });
+
+    _messageController.clear();
+    _loadMessages();
+  }
+
+  Future<dynamic> _post(String url, Map<String, dynamic> data) async {
+    try {
+      final response = await requestHelper.postWithAuth(url, data);
+      return response != null && response['success'] == true ? response : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<dynamic> _get(String url) async {
+    try {
+      return await requestHelper.getWithAuth(url);
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.backgroundColor),
-          onPressed: () => context.pop(),
-        ),
-        centerTitle: true,
-        title: Text("Chat",
-            style:
-                AppStyle.fontStyle.copyWith(fontSize: 20, color: Colors.white)),
+        leading: Icon(Icons.arrow_back_ios, color: Colors.white),
         backgroundColor: AppColors.grade1,
+        title: Text(
+          "Чат",
+          // "Чат с оператором"
+          style: AppStyle.fontStyle.copyWith(color: Colors.white),
+        ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                final isUser = message.status == "sent";
-                return ChatBubble(message: message, isUser: isUser);
-              },
+      backgroundColor: AppColors.backgroundColor,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/images/back.jpg'), fit: BoxFit.cover),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: messages.length,
+                reverse: false,
+                itemBuilder: (context, index) {
+                  bool showDate = index == 0 ||
+                      messages[index].date != messages[index - 1].date;
+                  return Column(
+                    children: [
+                      if (showDate)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(messages[index].date,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ),
+                      _buildChatBubble(messages[index]),
+                    ],
+                  );
+                },
+              ),
+            ),
+            _buildMessageInput(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatBubble(ChatMessage message) {
+    bool isUser = message.isMe;
+    return Row(
+      mainAxisAlignment:
+          isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      children: [
+        if (!isUser)
+          CircleAvatar(
+            backgroundColor: Colors.grey[400],
+            child: Text(
+                message.senderName.isNotEmpty
+                    ? message.senderName[0].toUpperCase()
+                    : "?",
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        Flexible(
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+            decoration: BoxDecoration(
+              color: isUser ? AppColors.grade1 : Colors.grey[300],
+              borderRadius: isUser
+                  ? BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(20),
+                    )
+                  : BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                if (!isUser)
+                  Text(message.senderName,
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isUser ? Colors.white70 : Colors.black87)),
+                if (message.text.isNotEmpty)
+                  Text(message.text,
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: isUser ? Colors.white : Colors.black87)),
+                Text(message.time,
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: isUser ? Colors.white70 : Colors.black54)),
+              ],
             ),
           ),
-          _buildMessageInput(),
-          Offstage(
-            offstage: !isEmojiShowing,
-            child: EmojiPicker(
-              textEditingController: _messageController,
-              onEmojiSelected: (category, emoji) {
-                setState(() {
-                  isTyping = true;
-                });
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildMessageInput() {
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: const BoxDecoration(color: Colors.white, boxShadow: [
-        BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, -2)),
-      ]),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.black12))),
       child: Row(
         children: [
-          IconButton(
-            onPressed: _toggleEmojiPicker,
-            icon: SvgPicture.asset('assets/icons/smile.svg',
-                color: AppColors.uiText),
-          ),
           Expanded(
             child: TextField(
               controller: _messageController,
-              focusNode: _focusNode,
-              onChanged: (text) {
-                setState(() {
-                  isTyping = text.isNotEmpty;
-                });
-              },
-              decoration:
-                  InputDecoration(hintText: "Habar", border: InputBorder.none),
+              decoration: const InputDecoration(
+                  hintText: "Введите сообщение...", border: InputBorder.none),
             ),
           ),
           IconButton(
-            icon: SvgPicture.asset(
-              isTyping
-                  ? 'assets/icons/send.svg'
-                  : 'assets/icons/microphone.svg',
-              color: AppColors.uiText,
-            ),
-            onPressed: _sendMessage,
-          ),
+              icon: SvgPicture.asset('assets/icons/paperclip.svg'),
+              onPressed: () => showAttachmentSheet(context)),
+          IconButton(
+              icon: SvgPicture.asset('assets/icons/send.svg'),
+              onPressed: _sendMessage),
         ],
       ),
     );

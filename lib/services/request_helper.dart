@@ -8,7 +8,7 @@ import 'package:taksi/services/utils/errors.dart';
 
 final class RequestHelper {
   final logger = Logger();
-  // final baseUrl = 'http://10.100.26.2:5050';
+  //final baseUrl = 'http://10.100.26.2:5050';
   final baseUrl = 'https://paygo.app-center.uz';
   final dio = Dio();
 
