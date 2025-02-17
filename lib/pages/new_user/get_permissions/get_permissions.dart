@@ -32,20 +32,6 @@ class _PermissionScreenState extends State<PermissionScreen> {
       "mandatory": false,
     },
     {
-      "title": tr("camera_title"),
-      "description": tr("camera_description"),
-      "icon": Icons.camera_alt,
-      "permission": Permission.camera,
-      "mandatory": false,
-    },
-    {
-      "title": tr("microphone_title"),
-      "description": tr("microphone_description"),
-      "icon": Icons.mic,
-      "permission": Permission.microphone,
-      "mandatory": false,
-    },
-    {
       "title": tr("notifications_title"),
       "description": tr("notifications_description"),
       "icon": Icons.notifications,
