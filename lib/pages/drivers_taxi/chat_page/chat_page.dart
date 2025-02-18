@@ -1,247 +1,188 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:taksi/pages/drivers_taxi/chat_page/botom_sheet.dart';
-import 'package:taksi/services/request_helper.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_bubbles/chat_bubbles.dart';
+import 'package:taksi/pages/drivers_taxi/chat_page/provider/chat_provider.dart';
+import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/style/app_colors.dart';
 import 'package:taksi/style/app_style.dart';
 
-class ChatPageTaxi extends StatefulWidget {
-  const ChatPageTaxi({super.key});
+class ChatScreen extends StatefulWidget {
+  final String chatRoomId;
+  final String userId;
+
+  const ChatScreen({Key? key, required this.chatRoomId, required this.userId})
+      : super(key: key);
 
   @override
-  _ChatPageState createState() => _ChatPageState();
+  _ChatScreenState createState() => _ChatScreenState();
 }
 
-class ChatMessage {
-  final String id, text, time, date, senderName;
-  final bool isMe;
+class _ChatScreenState extends State<ChatScreen> {
+  final ScrollController _scrollController = ScrollController();
 
-  ChatMessage(
-      this.id, this.text, this.time, this.date, this.senderName, this.isMe);
-
-  factory ChatMessage.fromJson(Map<String, dynamic> json, String date) {
-    return ChatMessage(
-      json['id'].toString(),
-      json['message_text'] ?? '',
-      json['created_at'],
-      date,
-      json['sender_name'],
-      json['is_me'],
-    );
-  }
-}
-
-class _ChatPageState extends State<ChatPageTaxi> {
   final TextEditingController _messageController = TextEditingController();
-  List<ChatMessage> messages = [];
-  int? chatRoomId;
 
   @override
   void initState() {
     super.initState();
-    _initChat();
-  }
 
-  Future<void> _initChat() async {
-    chatRoomId = await _createOrJoinChat();
-    if (chatRoomId != null) _loadMessages();
-  }
-
-  Future<int?> _createOrJoinChat() async {
-    final chatId = await _post('/services/zyber/api/chat/create-chat', {}) ??
-        await _post('/services/zyber/api/chat/join-chat', {});
-    return chatId != null ? chatId['chat_room_id'] : null;
-  }
-
-  Future<void> _loadMessages() async {
-    if (chatRoomId == null) return;
-    final response = await _get(
-        '/services/zyber/api/chat/get-messages?chat_room_id=$chatRoomId');
-    if (response == null || response['success'] != true) return;
-
-    List<ChatMessage> loadedMessages = [];
-    for (var group in response['grouped_messages']) {
-      String date = group['date'];
-      for (var msg in group['messages']) {
-        loadedMessages.add(ChatMessage.fromJson(msg, date));
-      }
-    }
-
-    setState(() => messages = loadedMessages);
-  }
-
-  Future<void> _sendMessage() async {
-    if (chatRoomId == null || _messageController.text.trim().isEmpty) return;
-    await _post('/services/zyber/api/chat/send-message', {
-      'chat_room_id': chatRoomId,
-      'message_text': _messageController.text.trim()
-    });
-
-    _messageController.clear();
-    _loadMessages();
-  }
-
-  Future<dynamic> _post(String url, Map<String, dynamic> data) async {
-    try {
-      final response = await requestHelper.postWithAuth(url, data);
-      return response != null && response['success'] == true ? response : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Future<dynamic> _get(String url) async {
-    try {
-      return await requestHelper.getWithAuth(url);
-    } catch (e) {
-      return null;
-    }
+    Provider.of<ChatProvider>(context, listen: false)
+        .fetchMessages(widget.chatRoomId);
   }
 
   @override
   Widget build(BuildContext context) {
+    String? userId = cache.getString("user_id");
+
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(Icons.arrow_back_ios, color: Colors.white),
         backgroundColor: AppColors.grade1,
         title: Text(
-          "Чат",
-          // "Чат с оператором"
-          style: AppStyle.fontStyle.copyWith(color: Colors.white),
+          userId ?? "User ID",
+          style: AppStyle.fontStyle.copyWith(color: AppColors.ui, fontSize: 20),
         ),
+        leading: IconButton(
+            onPressed: () {
+              context.pop();
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: AppColors.ui,
+            )),
       ),
-      backgroundColor: AppColors.backgroundColor,
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-              image: AssetImage('assets/images/back.jpg'), fit: BoxFit.cover),
+            image: AssetImage("assets/images/back.jpg"),
+            fit: BoxFit.fitHeight,
+          ),
         ),
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                itemCount: messages.length,
-                reverse: false,
-                itemBuilder: (context, index) {
-                  bool showDate = index == 0 ||
-                      messages[index].date != messages[index - 1].date;
-                  return Column(
-                    children: [
-                      if (showDate)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(10),
+              child: Consumer<ChatProvider>(
+                builder: (context, chatProvider, child) {
+                  if (chatProvider.groupedMessages.isEmpty) {
+                    return Center(child: Text("Загрузка сообщений..."));
+                  }
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollToBottom();
+                  });
+
+                  return ListView.builder(
+                    reverse: false,
+                    controller: _scrollController,
+                    itemCount: chatProvider.groupedMessages.length,
+                    itemBuilder: (context, index) {
+                      final group = chatProvider.groupedMessages[index];
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: Text(
+                                group["date"],
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                              child: Text(messages[index].date,
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold)),
                             ),
                           ),
-                        ),
-                      _buildChatBubble(messages[index]),
-                    ],
+                          ...group["messages"].map<Widget>((message) {
+                            // Проверка, если сообщение отправлено пользователем
+                            bool isMe = message["sender_id"] == userId;
+
+                            return BubbleNormal(
+                              sent: true,
+                              seen: true,
+                             
+                              leading: CircleAvatar(),
+
+                              text: message["message_text"],
+                              isSender:
+                                  isMe, // Отображаем сообщение справа, если это мое
+                              color:
+                                  isMe ? AppColors.grade1 : Colors.grey[300]!,
+                              tail: true,
+                              textStyle: AppStyle.fontStyle.copyWith(
+                                  fontSize: 16,
+                                  color: isMe ? Colors.white : Colors.black),
+                            );
+                          }).toList(),
+                        ],
+                      );
+                    },
                   );
                 },
               ),
             ),
-            _buildMessageInput(),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 5),
+              color: AppColors.backgroundColor,
+              width: double.infinity,
+              height: 50,
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.backgroundColor,
+                        hintText: "Введите сообщение...",
+                        enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: AppColors.backgroundColor),
+                            borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: AppColors.backgroundColor),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: AppColors.backgroundColor),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: SvgPicture.asset(
+                      "assets/icons/send.svg",
+                      color: AppColors.grade1,
+                    ),
+                    onPressed: () async {
+                      if (_messageController.text.isNotEmpty) {
+                        await Provider.of<ChatProvider>(context, listen: false)
+                            .sendMessage(
+                                widget.chatRoomId, _messageController.text);
+                        _messageController.clear();
+                        _scrollToBottom();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
+      // resizeToAvoidBottomInset: true,
     );
   }
 
-  Widget _buildChatBubble(ChatMessage message) {
-    bool isUser = message.isMe;
-    return Row(
-      mainAxisAlignment:
-          isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: [
-        if (!isUser)
-          CircleAvatar(
-            backgroundColor: Colors.grey[400],
-            child: Text(
-                message.senderName.isNotEmpty
-                    ? message.senderName[0].toUpperCase()
-                    : "?",
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        Flexible(
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-            decoration: BoxDecoration(
-              color: isUser ? AppColors.grade1 : Colors.grey[300],
-              borderRadius: isUser
-                  ? BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                      bottomLeft: Radius.circular(20),
-                    )
-                  : BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
-                    ),
-            ),
-            child: Column(
-              crossAxisAlignment:
-                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              children: [
-                if (!isUser)
-                  Text(message.senderName,
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isUser ? Colors.white70 : Colors.black87)),
-                if (message.text.isNotEmpty)
-                  Text(message.text,
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: isUser ? Colors.white : Colors.black87)),
-                Text(message.time,
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: isUser ? Colors.white70 : Colors.black54)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMessageInput() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.black12))),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                  hintText: "Введите сообщение...", border: InputBorder.none),
-            ),
-          ),
-          IconButton(
-              icon: SvgPicture.asset('assets/icons/paperclip.svg'),
-              onPressed: () => showAttachmentSheet(context)),
-          IconButton(
-              icon: SvgPicture.asset('assets/icons/send.svg'),
-              onPressed: _sendMessage),
-        ],
-      ),
-    );
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 100),
+        curve: Curves.linear,
+      );
+    }
   }
 }

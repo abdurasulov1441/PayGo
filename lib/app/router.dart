@@ -220,7 +220,10 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routes.chatPageTaxi,
-      builder: (context, state) => const ChatPageTaxi(),
+      builder: (context, state) => ChatScreen(
+        chatRoomId: '20',
+        userId: '4',
+      ),
     ),
     GoRoute(
       path: Routes.permissionPage,

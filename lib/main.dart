@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'package:taksi/app/app.dart';
+import 'package:taksi/pages/drivers_taxi/chat_page/provider/chat_provider.dart';
 import 'package:taksi/services/db/cache.dart';
 // import 'package:yandex_maps_mapkit/init.dart' as init;
 
@@ -37,7 +39,12 @@ void main() async {
         Locale('uk'),
       ],
       startLocale: const Locale('uz'),
-      child: const App(),
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ],
+        child: App(),
+      ),
     ),
   );
 }

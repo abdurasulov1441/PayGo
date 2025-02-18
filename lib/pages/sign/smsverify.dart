@@ -187,7 +187,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (response['accessToken'] != null && response['refreshToken'] != null) {
         cache.setString('user_token', response['accessToken']);
         cache.setString('refresh_token', response['refreshToken']);
-        cache.setString('user_id', response['id']);
+        cache.setInt('user_id', response['id']);
+        cache.setInt('role_id', response['role_id']);
         showSuccessToast(context, 'PayGo', 'verification_succes'.tr());
         context.go(
           Routes.homeScreen,
