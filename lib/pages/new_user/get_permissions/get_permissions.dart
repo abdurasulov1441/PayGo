@@ -18,13 +18,6 @@ class _PermissionScreenState extends State<PermissionScreen> {
 
   final List<Map<String, dynamic>> _permissions = [
     {
-      "title": tr("sms_title"),
-      "description": tr("sms_description"),
-      "icon": Icons.sms,
-      "permission": Permission.sms,
-      "mandatory": true,
-    },
-    {
       "title": tr("gps_title"),
       "description": tr("gps_description"),
       "icon": Icons.location_on,
