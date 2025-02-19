@@ -46,7 +46,7 @@ class _TaxiAcceptedOrdersPageState extends State<TaxiAcceptedOrdersPage> {
         {
           'order_id': orderId,
         },
-        log: true,
+        log: false,
       );
       setState(() {
         order.removeWhere((order) => order['id'] == orderId);
@@ -64,7 +64,7 @@ class _TaxiAcceptedOrdersPageState extends State<TaxiAcceptedOrdersPage> {
         {
           'order_id': orderId,
         },
-        log: true,
+        log: false,
       );
 
       setState(() {

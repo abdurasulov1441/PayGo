@@ -46,7 +46,7 @@ class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
           'rate': rating,
           "comment": commentController.text
         },
-        log: true,
+        log: false,
       );
 
       setState(() {});

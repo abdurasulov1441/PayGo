@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
           {
             'phone_number': phoneTextInputController.text.trim(),
           },
-          log: true);
+          log: false);
 
       if (response['status'] == 200) {
         String status = response['message'];

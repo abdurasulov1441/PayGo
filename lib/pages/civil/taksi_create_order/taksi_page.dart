@@ -65,7 +65,7 @@ class _TaxiPageState extends State<TaxiPage> {
           "time_id": times
               .firstWhere((element) => element['name'] == selectedTime)['id'],
         },
-        log: true,
+        log: false,
       );
 
       if (response['status'] == 'success') {
@@ -106,7 +106,7 @@ class _TaxiPageState extends State<TaxiPage> {
     try {
       final response = await requestHelper.getWithAuth(
         '/services/zyber/api/ref/get-times',
-        log: true,
+        log: false,
       );
       setState(() {
         times = response;

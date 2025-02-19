@@ -90,7 +90,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             'name': nameTextInputController.text.trim(),
             'phone_number': phoneTextInputController.text.trim(),
           },
-          log: true);
+          log: false);
 
       SnackBarService.showSnackBar(context, response['message'], false);
 

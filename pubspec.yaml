@@ -4,7 +4,7 @@ description: "PayGo"
 publish_to: 'none' 
 
 
-version: 9.0.0+8
+version: 1.0.0+9
 
 environment:
   sdk: '>=3.2.6 <4.0.0'
@@ -62,7 +62,7 @@ dependencies:
   socket_io_client: ^3.0.2
   provider: ^6.1.2
   chat_bubbles: ^1.6.0
-  audioplayers: ^6.1.2
+  audioplayers: ^6.2.0
   cached_network_image: ^3.4.1
 
 
@@ -93,7 +93,8 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/lottie/ 
-    - assets/translations/   
+    - assets/translations/  
+    - assets/sounds/   
     - .env
   fonts:
     - family: Jost

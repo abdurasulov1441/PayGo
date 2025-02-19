@@ -24,7 +24,7 @@ class _TaxiOrdersPageState extends State<TaxiOrdersPage> {
     try {
       final response = await requestHelper.getWithAuth(
           '/services/zyber/api/orders/get-new-taxi-orders',
-          log: true);
+          log: false);
       setState(() {
         order = List<Map<String, dynamic>>.from(response['orders']);
         print(order);
@@ -43,7 +43,7 @@ class _TaxiOrdersPageState extends State<TaxiOrdersPage> {
         {
           'order_id': orderId,
         },
-        log: true,
+        log: false,
       );
       setState(() {
         order.removeWhere((order) => order['id'] == orderId);

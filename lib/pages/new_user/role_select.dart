@@ -56,7 +56,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
       final response = await requestHelper.putWithAuth(
         '/services/zyber/api/users/update-user-role',
         {'role_id': roleId},
-        log: true,
+        log: false,
       );
 
       context.go(Routes.civilPage);

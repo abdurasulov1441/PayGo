@@ -47,7 +47,7 @@ class _TariffsPageState extends State<TariffsPage> {
       final response = await requestHelper.postWithAuth(
         '/services/zyber/api/payments/subscribe-tariff',
         {"tariff_id": tariffId, "buy": isConfirmed},
-        log: true,
+        log: false,
       );
 
       final int status = response['status'] is int

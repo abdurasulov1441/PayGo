@@ -222,7 +222,6 @@ final router = GoRouter(
       path: Routes.chatPageTaxi,
       builder: (context, state) => ChatScreen(
         chatRoomId: '20',
-        userId: '4',
       ),
     ),
     GoRoute(

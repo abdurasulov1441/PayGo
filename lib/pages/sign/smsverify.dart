@@ -92,7 +92,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       final response = await requestHelper.post(
           '/services/zyber/api/auth/resend',
           {'phone_number': phoneNumber.trim()},
-          log: true);
+          log: false);
 
       if (response['statusCode'] == 200 || response['statusCode'] == 201) {
         String status = response['message'];
@@ -182,7 +182,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
             'verification_code': enteredCode,
             'fcm_token': fcm,
           },
-          log: true);
+          log: false);
       print(fcm);
       if (response['accessToken'] != null && response['refreshToken'] != null) {
         cache.setString('user_token', response['accessToken']);
