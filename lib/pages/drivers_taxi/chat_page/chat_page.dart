@@ -23,7 +23,6 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _messageController = TextEditingController();
-  String? _editingMessageId;
 
   @override
   void initState() {

@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
-import 'package:taksi/services/gradientbutton.dart';
-import 'package:taksi/services/language/language_select_page.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/snack_bar.dart';
 import 'package:taksi/style/app_colors.dart';
@@ -113,6 +111,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         : context.locale == const Locale('ru')
             ? '🇷🇺'
             : '🇺🇿';
+    print(currentFlag);
     return Scaffold(
       backgroundColor: AppColors.ui,
       resizeToAvoidBottomInset: false,
