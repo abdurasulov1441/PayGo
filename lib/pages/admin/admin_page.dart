@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});

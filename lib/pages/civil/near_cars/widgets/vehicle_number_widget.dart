@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/services/style/app_colors.dart';
 
 class VehicleNumberWidget extends StatelessWidget {
   final Map<String, dynamic> vehicleData;

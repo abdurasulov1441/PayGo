@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:taksi/app/router.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class PermissionScreen extends StatefulWidget {

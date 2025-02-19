@@ -5,16 +5,16 @@ import 'package:provider/provider.dart';
 import 'package:taksi/pages/drivers_taxi/chat_page/bubble.dart';
 import 'package:taksi/pages/drivers_taxi/chat_page/provider/chat_provider.dart';
 import 'package:taksi/services/db/cache.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomId;
 
   const ChatScreen({
-    Key? key,
+    super.key,
     required this.chatRoomId,
-  }) : super(key: key);
+  });
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -33,6 +33,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.chatRoomId);
     String? userId = cache.getString("user_id");
     var chatProvider = Provider.of<ChatProvider>(context);
     if (chatProvider.editingMessageText != null) {

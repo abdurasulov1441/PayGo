@@ -12,7 +12,7 @@ import 'package:taksi/pages/drivers_taxi/3History/taxi_orders_history_page.dart'
 import 'package:taksi/pages/drivers_taxi/4Account/taxi_account.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/request_helper.dart';
-import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/services/style/app_colors.dart';
 
 class DriverTaxiHome extends StatefulWidget {
   const DriverTaxiHome({super.key});
@@ -22,6 +22,8 @@ class DriverTaxiHome extends StatefulWidget {
 }
 
 class _DriverTaxiHomeState extends State<DriverTaxiHome> {
+  final chatRoomId = cache.getString("chat_room_id");
+
   Widget _child = TaxiOrdersPage();
   Timer? _gpsTimer;
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -32,12 +34,43 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
     super.initState();
     _setupNotifications();
     _startSendingGPS();
+    if (chatRoomId == null) {
+      _createChat();
+    }
   }
 
   @override
   void dispose() {
     _gpsTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _createChat() async {
+    if (chatRoomId == null) {
+      try {
+        final response = await requestHelper.postWithAuth(
+            '/services/zyber/api/chat/create-chat', {},
+            log: true);
+        if (response["success"] == true) {
+          setState(() {
+            cache.setString("chat_room_id", chatRoomId!);
+          });
+          _joinChat();
+        }
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+
+  Future<void> _joinChat() async {
+    try {
+      final response = await requestHelper.postWithAuth(
+          '/services/zyber/api/chat/join-chat', {"chat_room_id": chatRoomId},
+          log: true);
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _setupNotifications() async {
@@ -83,8 +116,6 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
       }
     }
 
-    _showLocationNotification();
-
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
@@ -102,38 +133,10 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
       print(position.latitude.toString());
       print(position.longitude.toString());
 
-      Future.delayed(const Duration(seconds: 10), () {
-        _hideNotification();
-      });
+      Future.delayed(const Duration(seconds: 10), () {});
     } catch (e) {
       debugPrint("Failed to send location: $e");
     }
-  }
-
-  Future<void> _showLocationNotification() async {
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      'gps_channel_id',
-      'Joylashuv xabarnomalari',
-      channelDescription: 'Joylashuv ishlatilayotganligi haqida xabar berish',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidDetails);
-
-    await _notificationsPlugin.show(
-      0,
-      'Joylashuv ishlatilmoqda',
-      'Yo\'lovchilar sizni topish uchun joylashuvingizni yuborayapti',
-      notificationDetails,
-    );
-  }
-
-  /// 🔹 Bildirishnomani o‘chirish
-  Future<void> _hideNotification() async {
-    await _notificationsPlugin.cancel(0);
   }
 
   @override
@@ -143,7 +146,10 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
         backgroundColor: AppColors.grade1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60)),
         onPressed: () {
-          context.push(Routes.chatPageTaxi);
+          context.push(
+            Routes.chatPageTaxi,
+            extra: chatRoomId,
+          );
         },
         child: SvgPicture.asset(
           'assets/images/message.svg',

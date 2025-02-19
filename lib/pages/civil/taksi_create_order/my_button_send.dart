@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class MyCustomButtonForSend extends StatelessWidget {
   final VoidCallback? onPressed;

@@ -8,7 +8,7 @@ import 'package:taksi/pages/civil/civil_page.dart';
 import 'package:taksi/pages/new_user/role_select.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/utils/errors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

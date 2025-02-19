@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class DeliveryPage extends StatefulWidget {
   const DeliveryPage({super.key});

@@ -12,6 +12,7 @@ import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_page.dart'
 import 'package:taksi/pages/drivers_taxi/4Account/get_balance/balance_verify_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/get_tarifs/tarifs_page.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/payment_history/payment_history.dart';
+import 'package:taksi/pages/drivers_taxi/4Account/settings/app_info.dart';
 import 'package:taksi/pages/drivers_taxi/4Account/settings/taxiDriverSettings.dart';
 import 'package:taksi/pages/drivers_taxi/chat_page/chat_page.dart';
 import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
@@ -69,6 +70,8 @@ abstract class Routes {
 
   static const testPage = '/testPage';
   static const yandex_map_truck = '/yandex_map_truck';
+
+  static const appInfo = '/appInfo';
 }
 
 String _initialLocation() {
@@ -163,7 +166,7 @@ final router = GoRouter(
       builder: (context, state) => const BalancePage(),
     ),
     GoRoute(
-      path: '/paymentStatus',
+      path: Routes.paymentStatus,
       builder: (context, state) {
         final invoiceId = state.extra as String;
         return PaymentStatusPage(invoiceId: invoiceId);
@@ -220,9 +223,12 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routes.chatPageTaxi,
-      builder: (context, state) => ChatScreen(
-        chatRoomId: '20',
-      ),
+      builder: (context, state) {
+        final chatRoomId = state.extra as String;
+        return ChatScreen(
+          chatRoomId: chatRoomId,
+        );
+      },
     ),
     GoRoute(
       path: Routes.permissionPage,
@@ -231,6 +237,10 @@ final router = GoRouter(
     GoRoute(
       path: Routes.donePage,
       builder: (context, state) => const DonePage(),
+    ),
+    GoRoute(
+      path: Routes.appInfo,
+      builder: (context, state) => AppInfo(),
     ),
   ],
 );

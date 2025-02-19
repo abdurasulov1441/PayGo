@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/pages/drivers_taxi/chat_page/provider/chat_provider.dart';
 import 'package:taksi/services/request_helper.dart';
-import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/services/style/app_colors.dart';
 
 class MyChatBubble extends StatelessWidget {
   final String text;

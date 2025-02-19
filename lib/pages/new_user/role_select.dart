@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/request_helper.dart';
-import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/services/style/app_colors.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/services/style/app_colors.dart';
 
 void showAttachmentSheet(BuildContext context) {
   showModalBottomSheet(

@@ -11,8 +11,8 @@ import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/snack_bar.dart';
 import 'package:taksi/services/utils/toats/error.dart';
 import 'package:taksi/services/utils/toats/succes.dart';
-import 'package:taksi/style/app_style.dart';
-import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -97,8 +97,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (response['statusCode'] == 200 || response['statusCode'] == 201) {
         String status = response['message'];
         showSuccessToast(context, 'PayGo', status);
-        cache.setBool('isGPS', true);
-        cache.setBool('isNotification', true);
       } else {
         SnackBarService.showSnackBar(context, response['message'], false);
       }
@@ -189,6 +187,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
         cache.setString('refresh_token', response['refreshToken']);
         cache.setInt('user_id', response['id']);
         cache.setInt('role_id', response['role_id']);
+        cache.setBool('isGPS', true);
+        cache.setBool('isNotification', true);
         showSuccessToast(context, 'PayGo', 'verification_succes'.tr());
         context.go(
           Routes.homeScreen,

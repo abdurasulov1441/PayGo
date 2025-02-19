@@ -5,7 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/request_helper.dart';
-import 'package:taksi/style/app_colors.dart';
+import 'package:taksi/services/style/app_colors.dart';
 
 class TaxiAccountPage extends StatefulWidget {
   const TaxiAccountPage({super.key});
@@ -82,100 +82,104 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(25),
-                  bottomRight: Radius.circular(25)),
-              gradient: LinearGradient(
-                colors: [AppColors.grade2, AppColors.grade1],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      body: RefreshIndicator(
+        onRefresh: _getUserInfo,
+        color: AppColors.grade1,
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(25),
+                    bottomRight: Radius.circular(25)),
+                gradient: LinearGradient(
+                  colors: [AppColors.grade2, AppColors.grade1],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              padding: const EdgeInsets.only(top: 60, bottom: 30),
+              child: Column(
+                children: [
+                  AvatarGlow(
+                    child: Material(
+                      elevation: 8.0,
+                      shape: CircleBorder(),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.grey[100],
+                        radius: 30.0,
+                        child: Image.asset(
+                          'assets/images/car.png',
+                          height: 50,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Balans: $balance so\'m',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                      IconButton(
+                          onPressed: () {
+                            _getUserInfo();
+                          },
+                          icon: Icon(
+                            Icons.refresh,
+                            color: AppColors.backgroundColor,
+                          ))
+                    ],
+                  ),
+                ],
               ),
             ),
-            padding: const EdgeInsets.only(top: 60, bottom: 30),
-            child: Column(
-              children: [
-                AvatarGlow(
-                  child: Material(
-                    elevation: 8.0,
-                    shape: CircleBorder(),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey[100],
-                      radius: 30.0,
-                      child: Image.asset(
-                        'assets/images/car.png',
-                        height: 50,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Balans: $balance so\'m',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
-                    ),
-                    IconButton(
-                        onPressed: () {
-                          _getUserInfo();
-                        },
-                        icon: Icon(
-                          Icons.refresh,
-                          color: AppColors.backgroundColor,
-                        ))
-                  ],
-                ),
-              ],
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                children: [
+                  GestureDetector(
+                      onTap: () => router.push(Routes.taxiBalancePage),
+                      child: _buildOption(
+                          'balansni_toldirish', 'Balansni to\'ldirish')),
+                  GestureDetector(
+                      onTap: () => router.push(Routes.tarifsPage),
+                      child: _buildOption('tariflar', 'Tariflar')),
+                  GestureDetector(
+                      onTap: () => router.push(Routes.accountDetailInfoPage),
+                      child: _buildOption('tariflar', 'Ma\'lumotlar')),
+                  GestureDetector(
+                      onTap: () => router.push(Routes.paymentHistory),
+                      child: _buildOption(
+                          'transaction_history', 'To\'lovlar tarixi')),
+                  GestureDetector(
+                      onTap: () => router.push(Routes.settingsPage),
+                      child: _buildOption('sozlamalar', 'Sozlamalar')),
+                  GestureDetector(
+                      onTap: () {
+                        _showLogoutDialog(context);
+                      },
+                      child: _buildOption('chiqish', 'Chiqish')),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              children: [
-                GestureDetector(
-                    onTap: () => router.push(Routes.taxiBalancePage),
-                    child: _buildOption(
-                        'balansni_toldirish', 'Balansni to\'ldirish')),
-                GestureDetector(
-                    onTap: () => router.push(Routes.tarifsPage),
-                    child: _buildOption('tariflar', 'Tariflar')),
-                GestureDetector(
-                    onTap: () => router.push(Routes.accountDetailInfoPage),
-                    child: _buildOption('tariflar', 'Ma\'lumotlar')),
-                GestureDetector(
-                    onTap: () => router.push(Routes.paymentHistory),
-                    child: _buildOption(
-                        'transaction_history', 'To\'lovlar tarixi')),
-                GestureDetector(
-                    onTap: () => router.push(Routes.settingsPage),
-                    child: _buildOption('sozlamalar', 'Sozlamalar')),
-                GestureDetector(
-                    onTap: () {
-                      _showLogoutDialog(context);
-                    },
-                    child: _buildOption('chiqish', 'Chiqish')),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

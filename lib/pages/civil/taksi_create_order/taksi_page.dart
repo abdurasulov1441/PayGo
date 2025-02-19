@@ -8,8 +8,8 @@ import 'package:taksi/pages/civil/taksi_create_order/my_custom_bottom_sheet.dart
 import 'package:taksi/pages/civil/taksi_create_order/my_custom_button.dart';
 import 'package:taksi/pages/civil/taksi_create_order/my_custom_text_field.dart';
 import 'package:taksi/services/request_helper.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class TaxiPage extends StatefulWidget {
   const TaxiPage({super.key});

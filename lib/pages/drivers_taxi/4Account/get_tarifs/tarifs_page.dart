@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/utils/toats/error.dart';
 import 'package:taksi/services/utils/toats/succes.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class TariffsPage extends StatefulWidget {
   const TariffsPage({super.key});

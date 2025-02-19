@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:taksi/pages/drivers_taxi/1Order/order_widget.dart';
 import 'package:taksi/services/request_helper.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class TaxiOrdersPage extends StatefulWidget {
   const TaxiOrdersPage({super.key});
@@ -13,6 +14,7 @@ class TaxiOrdersPage extends StatefulWidget {
 
 class _TaxiOrdersPageState extends State<TaxiOrdersPage> {
   List<Map<String, dynamic>> order = [];
+  bool isEmpty = false;
 
   @override
   void initState() {
@@ -27,6 +29,11 @@ class _TaxiOrdersPageState extends State<TaxiOrdersPage> {
           log: false);
       setState(() {
         order = List<Map<String, dynamic>>.from(response['orders']);
+        if (order.isEmpty) {
+          isEmpty = true;
+        } else {
+          isEmpty = false;
+        }
         print(order);
       });
 
@@ -70,25 +77,41 @@ class _TaxiOrdersPageState extends State<TaxiOrdersPage> {
         body: RefreshIndicator(
           color: AppColors.grade1,
           onRefresh: _getOrders,
-          child: ListView.builder(
-            itemCount: order.length,
-            itemBuilder: (context, index) {
-              final currentOrder = order[index];
+          child: isEmpty
+              ? SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      Center(
+                          child: LottieBuilder.asset(
+                              'assets/lottie/not_found.json')),
+                      Text(
+                        'Buyurtmalar topilmadi',
+                        style: AppStyle.fontStyle
+                            .copyWith(color: AppColors.grade1, fontSize: 20),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: order.length,
+                  itemBuilder: (context, index) {
+                    final currentOrder = order[index];
 
-              return OrderWidget(
-                orderNumber: currentOrder['id'] ?? 0,
-                status: currentOrder['status'] ?? '',
-                customer: currentOrder['name'] ?? '',
-                fromLocation: currentOrder['from_location']!,
-                toLocation: currentOrder['to_location']!,
-                peopleCount: currentOrder['passenger_count']?.toString(),
-                cargoName: currentOrder['pochta']?.toString(),
-                onAccept: () => _acceptOrders(currentOrder['id']),
-                fromDateTime: currentOrder['from_date_time'] ?? '',
-                toDateTime: currentOrder['to_date_time'] ?? '',
-              );
-            },
-          ),
+                    return OrderWidget(
+                      orderNumber: currentOrder['id'] ?? 0,
+                      status: currentOrder['status'] ?? '',
+                      customer: currentOrder['name'] ?? '',
+                      fromLocation: currentOrder['from_location']!,
+                      toLocation: currentOrder['to_location']!,
+                      peopleCount: currentOrder['passenger_count']?.toString(),
+                      cargoName: currentOrder['pochta']?.toString(),
+                      onAccept: () => _acceptOrders(currentOrder['id']),
+                      fromDateTime: currentOrder['from_date_time'] ?? '',
+                      toDateTime: currentOrder['to_date_time'] ?? '',
+                    );
+                  },
+                ),
         ));
   }
 }

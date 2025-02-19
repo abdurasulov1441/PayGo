@@ -4,7 +4,7 @@ description: "PayGo"
 publish_to: 'none' 
 
 
-version: 1.0.0+9
+version: 1.0.1+9
 
 environment:
   sdk: '>=3.2.6 <4.0.0'
@@ -64,6 +64,8 @@ dependencies:
   chat_bubbles: ^1.6.0
   audioplayers: ^6.2.0
   cached_network_image: ^3.4.1
+  package_info_plus: ^8.2.1
+  in_app_review: ^2.0.10
 
 
 dev_dependencies:

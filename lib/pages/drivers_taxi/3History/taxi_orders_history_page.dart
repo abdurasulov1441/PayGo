@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:taksi/pages/drivers_taxi/3History/order_history_widget.dart';
 import 'package:taksi/services/request_helper.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class TaxiOrdersHistoryPage extends StatefulWidget {
   const TaxiOrdersHistoryPage({super.key});
@@ -13,6 +14,7 @@ class TaxiOrdersHistoryPage extends StatefulWidget {
 
 class _TaxiOrdersHistoryPageState extends State<TaxiOrdersHistoryPage> {
   List<Map<String, dynamic>> order = [];
+  bool isEmpty = false;
 
   @override
   void initState() {
@@ -29,6 +31,11 @@ class _TaxiOrdersHistoryPageState extends State<TaxiOrdersHistoryPage> {
         order = List<Map<String, dynamic>>.from(response['orders'])
             .where((o) => o['status_id'] == 3)
             .toList();
+        if (order.isEmpty) {
+          isEmpty = true;
+        } else {
+          isEmpty = false;
+        }
         print(order);
       });
 
@@ -56,30 +63,51 @@ class _TaxiOrdersHistoryPageState extends State<TaxiOrdersHistoryPage> {
       appBar: AppBar(
         backgroundColor: AppColors.grade1,
         title: Text(
-          'Buyurtmalar',
+          'Buyurtmalar tarixi',
           style: AppStyle.fontStyle
               .copyWith(color: AppColors.backgroundColor, fontSize: 20),
         ),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        itemCount: order.length,
-        itemBuilder: (context, index) {
-          final currentOrder = order[index];
-          return OrderHistoryWidget(
-            orderNumber: currentOrder['id'] ?? '',
-            status: currentOrder['status']!,
-            customer: currentOrder['name'] ?? '',
-            fromLocation: currentOrder['from_location']!,
-            toLocation: currentOrder['to_location']!,
-            peopleCount: currentOrder['passenger_count']?.toString(),
-            cargoName: currentOrder['pochta']?.toString(),
-            rating: currentOrder['rating'] != null
-                ? double.tryParse(currentOrder['rating'].toString())
-                : null,
-            onRatingUpdated: _updateOrderRating,
-          );
-        },
+      body: RefreshIndicator(
+        onRefresh: _getOrderHistory,
+        color: AppColors.grade1,
+        child: isEmpty
+            ? SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    Center(
+                      child:
+                          LottieBuilder.asset('assets/lottie/not_found.json'),
+                    ),
+                    Text(
+                      'Buyurtmalar tarixi topilmadi',
+                      style: AppStyle.fontStyle
+                          .copyWith(color: AppColors.grade1, fontSize: 20),
+                    ),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                itemCount: order.length,
+                itemBuilder: (context, index) {
+                  final currentOrder = order[index];
+                  return OrderHistoryWidget(
+                    orderNumber: currentOrder['id'] ?? '',
+                    status: currentOrder['status']!,
+                    customer: currentOrder['name'] ?? '',
+                    fromLocation: currentOrder['from_location']!,
+                    toLocation: currentOrder['to_location']!,
+                    peopleCount: currentOrder['passenger_count']?.toString(),
+                    cargoName: currentOrder['pochta']?.toString(),
+                    rating: currentOrder['rating'] != null
+                        ? double.tryParse(currentOrder['rating'].toString())
+                        : null,
+                    onRatingUpdated: _updateOrderRating,
+                  );
+                },
+              ),
       ),
     );
   }

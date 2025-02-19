@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/snack_bar.dart';
-import 'package:taksi/style/app_colors.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SignUpScreen extends StatefulWidget {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:taksi/style/app_style.dart';
+import 'package:taksi/services/style/app_style.dart';
 
-import '../../../../style/app_colors.dart';
+import '../../../../services/style/app_colors.dart';
 
 void showModalBottomSheetUser(BuildContext context) {
       List<bool> seatSelections = [
