@@ -133,6 +133,7 @@ class _TaxiAcceptedOrdersPageState extends State<TaxiAcceptedOrdersPage> {
                     onFinish: () => _finishOrder(currentOrder['id']),
                     fromDateTime: currentOrder['from_date_time'] ?? '',
                     toDateTime: currentOrder['to_date_time'] ?? '',
+                    phoneNumber: currentOrder['phone_number'] ?? '',
                   );
                 },
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
 import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
+import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/utils/Errorpage.dart';
 import 'package:taksi/pages/admin/admin_page.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
@@ -22,9 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<Map<String, dynamic>?> checkUserStatus() async {
     try {
-      final response = await requestHelper.getWithAuth(
-        '/services/zyber/api/users/get-user-status',
-      );
+      final response = await requestHelper
+          .getWithAuth('/services/zyber/api/users/get-user-status', log: true);
+
       return response as Map<String, dynamic>?;
     } on UnauthenticatedError {
       return null;

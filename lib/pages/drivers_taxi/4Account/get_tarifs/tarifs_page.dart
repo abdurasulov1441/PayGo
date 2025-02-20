@@ -1,6 +1,8 @@
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:taksi/app/router.dart';
+import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/utils/toats/error.dart';
 import 'package:taksi/services/utils/toats/succes.dart';
@@ -47,7 +49,7 @@ class _TariffsPageState extends State<TariffsPage> {
       final response = await requestHelper.postWithAuth(
         '/services/zyber/api/payments/subscribe-tariff',
         {"tariff_id": tariffId, "buy": isConfirmed},
-        log: false,
+        log: true,
       );
 
       final int status = response['status'] is int
@@ -57,7 +59,12 @@ class _TariffsPageState extends State<TariffsPage> {
       final String ssssssss = response['message'];
 
       if (status == 1) {
+        cache.setInt('user_status', 1);
         showSuccessToast(context, 'Tarif', ssssssss);
+
+        await Future.delayed(const Duration(seconds: 1));
+
+        return context.go(Routes.homeScreen);
       } else if (status == 3) {
         showSuccessToast(context, 'Tarif', ssssssss);
       } else if (status == 2) {
@@ -80,13 +87,14 @@ class _TariffsPageState extends State<TariffsPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
               },
               child: const Text('Yo\'q'),
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop();
+                context.pop();
+
                 await _getTarif(true, tariffId);
               },
               child: const Text('Ha'),
@@ -100,12 +108,12 @@ class _TariffsPageState extends State<TariffsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: AppColors.ui,
       appBar: AppBar(
         centerTitle: true,
         leading: IconButton(
           onPressed: () {
-            context.pop();
+            context.go(Routes.homeScreen);
           },
           icon: Icon(
             Icons.arrow_back,
@@ -139,8 +147,8 @@ class _TariffsPageState extends State<TariffsPage> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ExpansionTileCard(
         elevation: 2,
-        baseColor: AppColors.ui,
-        expandedColor: AppColors.ui,
+        baseColor: AppColors.backgroundColor,
+        expandedColor: AppColors.backgroundColor,
         initiallyExpanded: index == 2,
         title: Text(
           tariff['name'],

@@ -59,7 +59,7 @@ class _TaxiOrdersHistoryPageState extends State<TaxiOrdersHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: AppColors.ui,
       appBar: AppBar(
         backgroundColor: AppColors.grade1,
         title: Text(

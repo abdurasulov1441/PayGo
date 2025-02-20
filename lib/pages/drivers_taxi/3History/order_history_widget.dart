@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/style/app_colors.dart';
 import 'package:taksi/services/style/app_style.dart';
@@ -35,7 +36,6 @@ class OrderHistoryWidget extends StatefulWidget {
 class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
   double selectedRating = 0.0;
   TextEditingController commentController = TextEditingController();
-  List<bool> selectedIcons = [false, false, false];
 
   Future<void> _updateRating(int orderId, double rating) async {
     try {
@@ -64,7 +64,6 @@ class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
   void _showRatingBottomSheet(BuildContext context) {
     setState(() {
       selectedRating = 0.0;
-      selectedIcons = [false, false, false];
     });
 
     showModalBottomSheet(
@@ -127,17 +126,6 @@ class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
                   const SizedBox(height: 10),
 
                   // 😊 Иконки доп.оценок
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildFeedbackIcon(setState, 0, Icons.sentiment_satisfied,
-                          "Shirin so‘z"),
-                      _buildFeedbackIcon(setState, 1, Icons.local_taxi, "Toza"),
-                      _buildFeedbackIcon(
-                          setState, 2, Icons.person, "Yaxshi haydovchi"),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
 
                   // 🟠 Динамическая кнопка
                   Row(
@@ -183,54 +171,6 @@ class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
     );
   }
 
-  Widget _buildLocation(String label, String location) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        border: Border.all(width: 1, color: AppColors.uiText),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, color: Colors.grey, fontSize: 12),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            location,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-          const SizedBox(height: 5),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeedbackIcon(
-      StateSetter setState, int index, IconData icon, String label) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedIcons[index] = !selectedIcons[index];
-            });
-          },
-          child: Icon(
-            icon,
-            size: 30,
-            color: selectedIcons[index] ? Colors.teal : Colors.grey.shade400,
-          ),
-        ),
-        Text(label,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-      ],
-    );
-  }
-
   Widget _buildBottomButton(
       String text, Color bgColor, Color textColor, VoidCallback onPressed) {
     return ElevatedButton(
@@ -251,23 +191,14 @@ class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(10),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundColor,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(width: 1, color: AppColors.backgroundColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 5,
-            offset: const Offset(-4, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        margin: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundColor,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(width: 1, color: AppColors.backgroundColor),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -284,75 +215,102 @@ class _OrderHistoryWidgetState extends State<OrderHistoryWidget> {
           ),
           const Divider(thickness: 1, height: 20),
           Row(
-            children: [
-              Text(
-                'Buyurtmachi:',
-                style: AppStyle.fontStyle.copyWith(color: AppColors.uiText),
-              ),
-              Text(
-                ' ${widget.customer}',
-                style: AppStyle.fontStyle.copyWith(
-                  fontSize: 16,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  children: [
+                    Text(widget.toLocation),
+                    SvgPicture.asset('assets/icons/fromto.svg',
+                        width: 30, height: 120),
+                    Text(widget.fromLocation),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildLocation('Qayerdan', widget.fromLocation),
-              Image.asset('assets/images/next.png', width: 30, height: 30),
-              _buildLocation('Qayerga', widget.toLocation),
-            ],
-          ),
-          const SizedBox(height: 15),
-          if (widget.peopleCount != '0')
-            Container(
-              child: Row(
-                children: [
-                  Image.asset('assets/images/team.png', width: 30, height: 30),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'Odam soni: ${widget.peopleCount}',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 14,
-                    ),
-                  ),
-                  Spacer(),
-                  widget.rating != null
-                      ? Text('Qo‘yilgan baho: ${widget.rating}',
-                          style: const TextStyle(fontSize: 16))
-                      : ElevatedButton(
-                          onPressed: () => _showRatingBottomSheet(context),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal),
-                          child: const Text('Baholash',
-                              style: TextStyle(color: Colors.white)),
+                Expanded(
+                    child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Buyurtmachi: ',
+                          style: AppStyle.fontStyle
+                              .copyWith(color: AppColors.uiText),
                         ),
-                ],
-              ),
-            )
-          else
-            Container(
-              child: Row(
-                children: [
-                  Image.asset('assets/images/package.png',
-                      width: 30, height: 30),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'Yuk nomi: ${widget.cargoName}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
+                        Text(
+                          ' ${widget.customer}',
+                          style: AppStyle.fontStyle
+                              .copyWith(fontSize: 16, color: AppColors.grade1),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    if (widget.peopleCount != '0')
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Odam soni:',
+                            style: AppStyle.fontStyle.copyWith(
+                                fontSize: 14, color: AppColors.uiText),
+                          ),
+                          Text(
+                            ' ${widget.peopleCount}',
+                            style: AppStyle.fontStyle.copyWith(
+                                fontSize: 14, color: AppColors.grade1),
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Yuk nomi:',
+                            style: AppStyle.fontStyle
+                                .copyWith(color: AppColors.uiText),
+                          ),
+                          Text(
+                            ' ${widget.cargoName}',
+                            style: AppStyle.fontStyle
+                                .copyWith(color: AppColors.grade1),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 15),
+                    widget.rating != null
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Qo‘yilgan baho:',
+                                style: AppStyle.fontStyle
+                                    .copyWith(color: AppColors.uiText),
+                              ),
+                              Text(
+                                '${widget.rating}',
+                                style: AppStyle.fontStyle
+                                    .copyWith(color: AppColors.grade1),
+                              ),
+                            ],
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.only(top: 20),
+                            child: ElevatedButton(
+                              onPressed: () => _showRatingBottomSheet(context),
+                              style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  backgroundColor: AppColors.grade1),
+                              child: Text('Baholash',
+                                  style: AppStyle.fontStyle
+                                      .copyWith(color: Colors.white)),
+                            ),
+                          ),
+                  ],
+                ))
+              ])
+        ]));
   }
 }

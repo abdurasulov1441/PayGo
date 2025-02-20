@@ -112,7 +112,7 @@ class ChatProvider with ChangeNotifier {
             }
           }
         }
-        editingMessageId = null; 
+        editingMessageId = null;
         editingMessageText = null;
         notifyListeners();
       } else {
@@ -158,7 +158,7 @@ class ChatProvider with ChangeNotifier {
     try {
       final response = await requestHelper.getWithAuth(
         "/services/zyber/api/chat/get-messages?chat_room_id=$chatRoomId",
-        log: false,
+        log: true,
       );
 
       if (response != null && response["success"] == true) {

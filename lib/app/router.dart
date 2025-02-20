@@ -224,9 +224,10 @@ final router = GoRouter(
     GoRoute(
       path: Routes.chatPageTaxi,
       builder: (context, state) {
-        final chatRoomId = state.extra as String;
+        final chatRoomIdFromCache = cache.getString('chat_room_id');
+        final chatRoomId = state.extra as String?;
         return ChatScreen(
-          chatRoomId: chatRoomId,
+          chatRoomId: chatRoomIdFromCache ?? chatRoomId ?? '',
         );
       },
     ),

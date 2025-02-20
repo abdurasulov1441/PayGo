@@ -61,7 +61,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: AppColors.ui,
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
@@ -102,7 +102,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: AppColors.ui,
+                        color: AppColors.backgroundColor,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
@@ -123,17 +123,19 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                     ? 'Balansni to‘ldirish'
                                     : 'Tarif sotib olish',
                                 style: AppStyle.fontStyle.copyWith(
-                                  fontSize: 20,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                                  color: const Color.fromARGB(255, 55, 71, 79),
                                 ),
                               ),
                               Text(
                                 '$balance so\'m',
                                 style: AppStyle.fontStyle.copyWith(
-                                  fontSize: 20,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: isTarif ? Colors.green : Colors.red,
+                                  color: isTarif
+                                      ? const Color.fromARGB(255, 11, 163, 7)
+                                      : const Color.fromARGB(255, 255, 49, 49),
                                 ),
                               ),
                             ],
@@ -147,15 +149,13 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                             children: [
                               Text('To‘lov xolati: ',
                                   style: AppStyle.fontStyle.copyWith(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: Colors.grey,
                                   )),
                               Text(
-                                isTarif
-                                    ? 'Balans to‘ldirildi'
-                                    : 'Tarif sotib olindi $tarifName',
+                                isTarif ? 'Muvaffaqiyatli' : '$tarifName',
                                 style: AppStyle.fontStyle.copyWith(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: AppColors.grade1,
                                     fontWeight: FontWeight.bold),
                               ),
@@ -166,13 +166,13 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                             children: [
                               Text('To‘lov vaqti: ',
                                   style: AppStyle.fontStyle.copyWith(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: Colors.grey,
                                   )),
                               Text(
                                 payment['date'],
                                 style: AppStyle.fontStyle.copyWith(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: AppColors.grade1,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -184,13 +184,13 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                             children: [
                               Text('Tranzaksiya raqami: ',
                                   style: AppStyle.fontStyle.copyWith(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: Colors.grey,
                                   )),
                               Text(
                                 '№ ${payment['transaction_id']}',
                                 style: AppStyle.fontStyle.copyWith(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: AppColors.grade1,
                                   fontWeight: FontWeight.bold,
                                 ),

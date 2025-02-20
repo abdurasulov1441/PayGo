@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:taksi/services/style/app_colors.dart';
 import 'package:taksi/services/style/app_style.dart';
 
@@ -46,6 +47,7 @@ class OrderWidget extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, // Позволяет Column уменьшаться
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -64,92 +66,101 @@ class OrderWidget extends StatelessWidget {
           ),
           const Divider(thickness: 1, height: 20),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Buyurtmachi:',
-                style: AppStyle.fontStyle.copyWith(color: AppColors.uiText),
+              Column(
+                children: [
+                  Text(toLocation),
+                  SvgPicture.asset('assets/icons/fromto.svg',
+                      width: 30, height: 120),
+                  Text(fromLocation),
+                ],
               ),
-              Text(
-                ' $customer',
-                style: AppStyle.fontStyle.copyWith(
-                  fontSize: 16,
+              Flexible(
+                // ✅ Используем Flexible вместо Expanded
+                fit: FlexFit
+                    .loose, // ✅ Позволяет занимать пространство без ошибок
+                child: Column(
+                  mainAxisSize: MainAxisSize.min, // ✅ Минимальная высота
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Buyurtmachi: ',
+                          style: AppStyle.fontStyle
+                              .copyWith(color: AppColors.uiText),
+                        ),
+                        Text(
+                          ' ${customer}',
+                          style: AppStyle.fontStyle
+                              .copyWith(fontSize: 16, color: AppColors.grade1),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    if (peopleCount != '0')
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Odam soni:',
+                            style: AppStyle.fontStyle.copyWith(
+                                fontSize: 14, color: AppColors.uiText),
+                          ),
+                          Text(
+                            ' ${peopleCount}',
+                            style: AppStyle.fontStyle.copyWith(
+                                fontSize: 14, color: AppColors.grade1),
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Yuk nomi:',
+                            style: AppStyle.fontStyle
+                                .copyWith(color: AppColors.uiText),
+                          ),
+                          Text(
+                            ' ${cargoName}',
+                            style: AppStyle.fontStyle
+                                .copyWith(color: AppColors.grade1),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 15),
+
+                    /// **Spacer заменен на SizedBox(), чтобы избежать ошибки**
+                    const SizedBox(height: 20),
+
+                    /// **Кнопка теперь опускается вниз**
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.grade1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: onAccept,
+                        child: Text(
+                          'Qabul qilish',
+                          style: AppStyle.fontStyle.copyWith(
+                            color: AppColors.backgroundColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildLocation('Qayerdan', fromLocation),
-              Image.asset('assets/images/next.png', width: 30, height: 30),
-              _buildLocation('Qayerga', toLocation),
-            ],
-          ),
-          const SizedBox(height: 15),
-          if (peopleCount != '0')
-            Container(
-              child: Row(
-                children: [
-                  Image.asset('assets/images/team.png', width: 30, height: 30),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'Odam soni: $peopleCount',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 14,
-                    ),
-                  ),
-                  Spacer(),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.grade1,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: onAccept,
-                      child: Text(
-                        'Qabul qilish',
-                        style: AppStyle.fontStyle.copyWith(
-                          color: AppColors.backgroundColor,
-                        ),
-                      )),
-                ],
-              ),
-            )
-          else
-            Container(
-              child: Row(
-                children: [
-                  Image.asset('assets/images/package.png',
-                      width: 30, height: 30),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'Yuk nomi: $cargoName',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  Spacer(),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.grade1,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: onAccept,
-                      child: Text(
-                        'Qabul qilish',
-                        style: AppStyle.fontStyle.copyWith(
-                          color: AppColors.backgroundColor,
-                        ),
-                      )),
-                ],
-              ),
-            ),
         ],
       ),
     );
@@ -168,32 +179,6 @@ class OrderWidget extends StatelessWidget {
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
-      ),
-    );
-  }
-
-  Widget _buildLocation(String label, String location) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        border: Border.all(width: 1, color: AppColors.uiText),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, color: Colors.grey, fontSize: 12),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            location,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-          const SizedBox(height: 5),
-        ],
       ),
     );
   }

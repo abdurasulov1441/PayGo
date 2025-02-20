@@ -190,6 +190,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
         cache.setBool('isGPS', true);
         cache.setBool('isNotification', true);
         showSuccessToast(context, 'PayGo', 'verification_succes'.tr());
+        //delay after 1 second  context.go(Routes.homeScreen,);
+        await Future.delayed(const Duration(seconds: 1));
         context.go(
           Routes.homeScreen,
         );

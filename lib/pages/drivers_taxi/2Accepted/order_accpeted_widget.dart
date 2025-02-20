@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:taksi/services/style/app_colors.dart';
 import 'package:taksi/services/style/app_style.dart';
 
@@ -12,6 +13,7 @@ class OrderAcceptedWidget extends StatelessWidget {
   final String toDateTime;
   final String? peopleCount;
   final String? cargoName;
+  final String? phoneNumber;
   final VoidCallback onReject;
   final VoidCallback onFinish;
 
@@ -26,6 +28,7 @@ class OrderAcceptedWidget extends StatelessWidget {
     required this.toDateTime,
     this.peopleCount,
     this.cargoName,
+    this.phoneNumber,
     required this.onReject,
     required this.onFinish,
   });
@@ -66,95 +69,150 @@ class OrderAcceptedWidget extends StatelessWidget {
           ),
           const Divider(thickness: 1, height: 20),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Buyurtmachi:',
-                style: AppStyle.fontStyle.copyWith(color: AppColors.uiText),
+              Column(
+                children: [
+                  Text(toLocation),
+                  SvgPicture.asset('assets/icons/fromto.svg',
+                      width: 30, height: 120),
+                  Text(fromLocation),
+                ],
               ),
-              Text(
-                ' $customer',
-                style: AppStyle.fontStyle.copyWith(
-                  fontSize: 16,
+              Flexible(
+                // ✅ Используем Flexible вместо Expanded
+                fit: FlexFit
+                    .loose, // ✅ Позволяет занимать пространство без ошибок
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 5),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // ✅ Минимальная высота
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Buyurtmachi: ',
+                            style: AppStyle.fontStyle
+                                .copyWith(color: AppColors.uiText),
+                          ),
+                          Text(
+                            ' ${customer}',
+                            style: AppStyle.fontStyle.copyWith(
+                                fontSize: 16, color: AppColors.grade1),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+                      if (peopleCount != '0')
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Odam soni:',
+                              style: AppStyle.fontStyle.copyWith(
+                                  fontSize: 14, color: AppColors.uiText),
+                            ),
+                            Text(
+                              ' ${peopleCount}',
+                              style: AppStyle.fontStyle.copyWith(
+                                  fontSize: 14, color: AppColors.grade1),
+                            ),
+                          ],
+                        )
+                      else
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Yuk nomi:',
+                              style: AppStyle.fontStyle
+                                  .copyWith(color: AppColors.uiText),
+                            ),
+                            Text(
+                              ' ${cargoName}',
+                              style: AppStyle.fontStyle
+                                  .copyWith(color: AppColors.grade1),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 15),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Telefon raqami:',
+                            style: AppStyle.fontStyle
+                                .copyWith(color: AppColors.uiText),
+                          ),
+                          Text(
+                            ' $phoneNumber',
+                            style: AppStyle.fontStyle.copyWith(
+                                color: AppColors.grade1, fontSize: 14),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      /// **Кнопка теперь опускается вниз**
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: SizedBox(
+                              width: 100,
+                              height: 30,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.grade1,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: onReject,
+                                child: Text(
+                                  'Qaytarish',
+                                  style: AppStyle.fontStyle.copyWith(
+                                    color: AppColors.backgroundColor,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomLeft,
+                            child: SizedBox(
+                              width: 100,
+                              height: 30,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.grade1,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: onFinish,
+                                child: Text(
+                                  'Yakunlash',
+                                  style: AppStyle.fontStyle.copyWith(
+                                      color: AppColors.backgroundColor,
+                                      fontSize: 12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildLocation('Qayerdan', fromLocation),
-              Image.asset('assets/images/next.png', width: 30, height: 30),
-              _buildLocation('Qayerga', toLocation),
-            ],
-          ),
-          const SizedBox(height: 15),
-          if (peopleCount != '0')
-            Container(
-              child: Row(
-                children: [
-                  Image.asset('assets/images/team.png', width: 30, height: 30),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'Odam soni: $peopleCount',
-                    style: AppStyle.fontStyle.copyWith(
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            Container(
-              child: Row(
-                children: [
-                  Image.asset('assets/images/package.png',
-                      width: 30, height: 30),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'Yuk nomi: $cargoName',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.grade1,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: onReject,
-                  child: Text(
-                    'Qabul qilish',
-                    style: AppStyle.fontStyle.copyWith(
-                      color: AppColors.backgroundColor,
-                    ),
-                  )),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.grade1,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: onFinish,
-                  child: Text(
-                    'Buyurtmani tugatish',
-                    style: AppStyle.fontStyle.copyWith(
-                      color: AppColors.backgroundColor,
-                    ),
-                  )),
-            ],
-          )
         ],
       ),
     );
@@ -173,32 +231,6 @@ class OrderAcceptedWidget extends StatelessWidget {
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
-      ),
-    );
-  }
-
-  Widget _buildLocation(String label, String location) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        border: Border.all(width: 1, color: AppColors.uiText),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, color: Colors.grey, fontSize: 12),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            location,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-          const SizedBox(height: 5),
-        ],
       ),
     );
   }

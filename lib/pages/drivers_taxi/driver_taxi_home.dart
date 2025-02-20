@@ -22,7 +22,7 @@ class DriverTaxiHome extends StatefulWidget {
 }
 
 class _DriverTaxiHomeState extends State<DriverTaxiHome> {
-  final chatRoomId = cache.getString("chat_room_id");
+  final chatRoomIdFromCache = cache.getString("chat_room_id");
 
   Widget _child = TaxiOrdersPage();
   Timer? _gpsTimer;
@@ -34,7 +34,7 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
     super.initState();
     _setupNotifications();
     _startSendingGPS();
-    if (chatRoomId == null) {
+    if (chatRoomIdFromCache == null) {
       _createChat();
     }
   }
@@ -46,16 +46,17 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
   }
 
   Future<void> _createChat() async {
-    if (chatRoomId == null) {
+    if (chatRoomIdFromCache == null) {
       try {
         final response = await requestHelper.postWithAuth(
             '/services/zyber/api/chat/create-chat', {},
             log: true);
         if (response["success"] == true) {
+          final chatRoomIdFromServer = response["chat_room_id"];
           setState(() {
-            cache.setString("chat_room_id", chatRoomId!);
+            cache.setString("chat_room_id", chatRoomIdFromServer);
           });
-          _joinChat();
+          _joinChat(chatRoomID: chatRoomIdFromServer);
         }
       } catch (e) {
         print(e);
@@ -63,10 +64,10 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
     }
   }
 
-  Future<void> _joinChat() async {
+  Future<void> _joinChat({required String chatRoomID}) async {
     try {
       final response = await requestHelper.postWithAuth(
-          '/services/zyber/api/chat/join-chat', {"chat_room_id": chatRoomId},
+          '/services/zyber/api/chat/join-chat', {"chat_room_id": chatRoomID},
           log: true);
     } catch (e) {
       print(e);
@@ -148,7 +149,7 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
         onPressed: () {
           context.push(
             Routes.chatPageTaxi,
-            extra: chatRoomId,
+            extra: chatRoomIdFromCache,
           );
         },
         child: SvgPicture.asset(
