@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:taksi/pages/drivers_taxi/driver_taxi_home.dart';
 import 'package:taksi/pages/drivers_truck/driver_truck_home.dart';
-import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/utils/Errorpage.dart';
 import 'package:taksi/pages/admin/admin_page.dart';
 import 'package:taksi/pages/civil/civil_page.dart';

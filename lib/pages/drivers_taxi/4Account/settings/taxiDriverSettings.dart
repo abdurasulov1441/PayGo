@@ -19,7 +19,6 @@ class Taxidriversettings extends StatefulWidget {
 class _TaxidriversettingsState extends State<Taxidriversettings> {
   bool isGpsEnabled = false;
   bool isNotificationEnabled = false;
-  bool _isTermsAccepted = false;
 
   final InAppReview _inAppReview = InAppReview.instance;
 

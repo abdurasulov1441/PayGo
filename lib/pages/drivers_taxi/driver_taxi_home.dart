@@ -68,7 +68,8 @@ class _DriverTaxiHomeState extends State<DriverTaxiHome> {
     try {
       final response = await requestHelper.postWithAuth(
           '/services/zyber/api/chat/join-chat', {"chat_room_id": chatRoomID},
-          log: true);
+          log: false);
+      print(response);
     } catch (e) {
       print(e);
     }
