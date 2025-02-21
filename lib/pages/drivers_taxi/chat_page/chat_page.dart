@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -79,13 +80,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                   child: Text("Загрузка сообщений..."));
                             }
 
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              _scrollToBottom();
-                            });
-
                             return ListView.builder(
-                              reverse: false,
-                              controller: _scrollController,
+                              
+                              dragStartBehavior: DragStartBehavior.down,
+                              reverse: true,
                               itemCount: chatProvider.groupedMessages.length,
                               itemBuilder: (context, index) {
                                 final group =
