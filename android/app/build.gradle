@@ -31,12 +31,14 @@ android {
     ndkVersion = "25.1.8937393"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17 // ✅ Java 17
+        targetCompatibility JavaVersion.VERSION_17 // ✅ Java 17
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
-        jvmTarget = "11" // Correct JVM target value
+        jvmTarget = "17" // Correct JVM target value
+        freeCompilerArgs += ["-Xlint:-options"]
     }
 
     sourceSets {
@@ -79,4 +81,5 @@ dependencies {
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "androidx.core:core-ktx:1.12.0"
     implementation "com.google.android.gms:play-services-location:21.1.0"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
 }
