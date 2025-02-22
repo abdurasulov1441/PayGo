@@ -4,6 +4,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:taksi/services/request_helper.dart';
 
 class ChatProvider with ChangeNotifier {
+  
   IO.Socket? _socket;
   List<Map<String, dynamic>> groupedMessages = [];
 
@@ -61,6 +62,10 @@ class ChatProvider with ChangeNotifier {
       print("❌ Ошибка подключения к WebSocket: $e");
       _reconnectWebSocket();
     }
+  }
+  //web socket turn off
+  void turnOffWebSocket() {
+    _socket?.disconnect();
   }
 
 // add message group
