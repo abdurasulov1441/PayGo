@@ -86,6 +86,56 @@ class _VerificationScreenState extends State<VerificationScreen> {
     final RegExp regExp = RegExp(r'\b\d{6}\b');
     return regExp.stringMatch(message);
   }
+ Future<void> _verifyCode() async {
+    String enteredCode = _smsController.text.trim();
+
+    if (enteredCode.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tasdiqlash kodi 6 raqamdan iborat bo‘lishi kerak.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await requestHelper.post(
+          '/services/zyber/api/auth/verify',
+          {
+            'phone_number': widget.phoneNumber,
+            'verification_code': enteredCode,
+            'fcm_token': fcm,
+          },
+          log: false);
+      print(fcm);
+      if (response['accessToken'] != null && response['refreshToken'] != null) {
+        cache.setString('user_token', response['accessToken']);
+        cache.setString('refresh_token', response['refreshToken']);
+        cache.setInt('user_id', response['id']);
+        cache.setInt('role_id', response['role_id']);
+        cache.setBool('isGPS', true);
+        cache.setBool('isNotification', true);
+        showSuccessToast(context, 'PayGo', 'verification_succes'.tr());
+        //delay after 1 second  context.go(Routes.homeScreen,);
+        await Future.delayed(const Duration(seconds: 1));
+        context.go(
+          Routes.homeScreen,
+        );
+      } else {
+        showErrorToast(context, 'PayGo', 'error_token'.tr());
+      }
+    } catch (e) {
+      showErrorToast(context, 'PayGo', e.toString());
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   Future<void> resendVerificationCode(String phoneNumber) async {
     try {
@@ -156,60 +206,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
       ],
     ),
   );
-  Future<void> _verifyCode() async {
-    String enteredCode = _smsController.text.trim();
-
-    if (enteredCode.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tasdiqlash kodi 6 raqamdan iborat bo‘lishi kerak.'),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final response = await requestHelper.post(
-          '/services/zyber/api/auth/verify',
-          {
-            'phone_number': widget.phoneNumber,
-            'verification_code': enteredCode,
-            'fcm_token': fcm,
-          },
-          log: false);
-      print(fcm);
-      if (response['accessToken'] != null && response['refreshToken'] != null) {
-        cache.setString('user_token', response['accessToken']);
-        cache.setString('refresh_token', response['refreshToken']);
-        cache.setInt('user_id', response['id']);
-        cache.setInt('role_id', response['role_id']);
-        cache.setBool('isGPS', true);
-        cache.setBool('isNotification', true);
-        showSuccessToast(context, 'PayGo', 'verification_succes'.tr());
-        //delay after 1 second  context.go(Routes.homeScreen,);
-        await Future.delayed(const Duration(seconds: 1));
-        context.go(
-          Routes.homeScreen,
-        );
-      } else {
-        showErrorToast(context, 'PayGo', 'error_token'.tr());
-      }
-    } catch (e) {
-      showErrorToast(context, 'PayGo', e.toString());
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(

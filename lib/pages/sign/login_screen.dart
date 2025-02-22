@@ -77,7 +77,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response['status'] == 200) {
         String status = response['message'];
         showSuccessToast(context, 'PayGo', status);
-        context.go(
+        context.push(
+          Routes.verfySMS,
+          extra: phoneTextInputController.text.trim(),
+        );
+        }
+        
+     else if (response['status'] == 400) {
+        String status = response['message'];
+        showSuccessToast(context, 'PayGo', status);
+        context.push(
           Routes.verfySMS,
           extra: phoneTextInputController.text.trim(),
         );

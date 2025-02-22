@@ -93,7 +93,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       SnackBarService.showSnackBar(context, response['message'], false);
 
       if (response['statusCode'] == 200 || response['statusCode'] == 201) {
-        context.go(
+        context.push(
           Routes.verfySMS,
           extra: phoneTextInputController.text.trim(),
         );
