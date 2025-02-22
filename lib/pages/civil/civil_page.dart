@@ -1,13 +1,66 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:taksi/app/router.dart';
+import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/style/app_colors.dart';
 import 'package:taksi/services/style/app_style.dart';
 
-class MainCivilPage extends StatelessWidget {
+class MainCivilPage extends StatefulWidget {
   const MainCivilPage({super.key});
 
+  @override
+  State<MainCivilPage> createState() => _MainCivilPageState();
+  
+}
+
+class _MainCivilPageState extends State<MainCivilPage> {
+    Timer? _locationTimer;
+  
+
+   @override
+  void initState() {
+    super.initState();
+    _startLocationUpdates();
+  }
+
+ void _startLocationUpdates() {
+    _sendLocationToServer(); 
+    _locationTimer = Timer.periodic(const Duration(seconds: 15), (timer) {
+      _sendLocationToServer();
+    });
+  }
+
+
+  Future<void> _sendLocationToServer() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      final response = await requestHelper.putWithAuth(
+        "/services/zyber/api/users/update-location",
+        {
+          "lat": position.latitude.toString(),
+          "long": position.longitude.toString(),
+        },
+        log: true,
+      );
+
+      print("📍 Координаты отправлены: ${position.latitude}, ${position.longitude}");
+    } catch (e) {
+      print("❌ Ошибка отправки координат: $e");
+    }
+  }
+
+    @override
+  void dispose() {
+   
+    super.dispose();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
