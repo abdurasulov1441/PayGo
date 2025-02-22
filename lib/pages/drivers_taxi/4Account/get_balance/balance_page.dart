@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import 'package:taksi/app/router.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/utils/toats/error.dart';
 import 'package:taksi/services/utils/toats/info.dart';
@@ -18,6 +19,7 @@ class BalancePage extends StatefulWidget {
 class _BalancePageState extends State<BalancePage> {
   final TextEditingController _amountController = TextEditingController();
   String? selectedPaymentSystem;
+
   Future<void> _makePayment() async {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount < 1000) {
@@ -38,6 +40,8 @@ class _BalancePageState extends State<BalancePage> {
         if (invoiceId != null) {
           showSuccessToast(context, 'To\'lov tizimi',
               'Sizning raqamingizga hisob jo\'natildi!');
+              router.pop();
+
         } else {
           showErrorToast(
               context, 'To\'lov tizimi', 'Hisob jo\'natishda xatolik!');

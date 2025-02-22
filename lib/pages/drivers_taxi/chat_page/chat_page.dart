@@ -26,20 +26,11 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
 
   @override
- void initState() {
-  super.initState();
-  Provider.of<ChatProvider>(context, listen: false)
-      .fetchMessages(widget.chatRoomId);
-
-  _scrollController.addListener(() {
-    if (_scrollController.position.pixels <=
-        _scrollController.position.minScrollExtent + 100) {
-      // Если достигли верха списка, загружаем еще сообщения
-      Provider.of<ChatProvider>(context, listen: false)
-          .fetchMoreMessages(widget.chatRoomId);
-    }
-  });
-}
+  void initState() {
+    super.initState();
+    Provider.of<ChatProvider>(context, listen: false)
+        .fetchMessages(widget.chatRoomId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,47 +75,64 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Column(
                     children: [
                       Expanded(
-                        child: Consumer<ChatProvider>(
-                          builder: (context, chatProvider, child) {
-                            if (chatProvider.groupedMessages.isEmpty) {
-                              return Center(
-                                  child: Text("Загрузка сообщений..."));
-                            }
+                        child: RefreshIndicator(
+                          color: AppColors.grade1,
 
-                            return ListView.builder(
-  
-  reverse: true, // Это важно для правильного отображения чата
-  itemCount: chatProvider.groupedMessages.length,
-  itemBuilder: (context, index) {
-    final group = chatProvider.groupedMessages[index];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(
-              group["date"],
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        ...group["messages"].map<Widget>((message) {
-          bool isMe = message["sender_id"] == userId;
-          return MyChatBubble(
-            id: message["id"],
-            text: message["message_text"],
-            isSender: isMe,
-            time: message["created_at"],
-            senderName: message["sender_name"],
-          );
-        }).toList(),
-      ],
-    );
-  },
-);
+                          onRefresh: () async {
+                            if (chatProvider.currentPage <= chatProvider.totalPages) {
+                      await chatProvider.fetchMoreMessages(widget.chatRoomId);
+                    }
                           },
+                          child: Consumer<ChatProvider>(
+                            builder: (context, chatProvider, child) {
+                              if (chatProvider.groupedMessages.isEmpty) {
+                                return Center(
+                                    child: Text("Загрузка сообщений..."));
+                              }
+                          
+                              return ListView.builder(
+                                
+                                dragStartBehavior: DragStartBehavior.down,
+                                reverse: true,
+                                itemCount: chatProvider.groupedMessages.length,
+                                itemBuilder: (context, index) {
+                                  final group =
+                                      chatProvider.groupedMessages[index];
+                          
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                     if(group["date"]!="null") Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                          child: Text(
+                                            group["date"]  ,
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      )
+                                      else SizedBox(),
+                                      ...group["messages"].map<Widget>((message) {
+                                        bool isMe =
+                                            message["sender_id"] == userId;
+                          
+                                        return MyChatBubble(
+                                          id: message["id"],
+                                          text: message["message_text"],
+                                          isSender: isMe,
+                                          time: message["created_at"],
+                                          senderName: message["sender_name"],
+                                        );
+                                      }).toList(),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
                         ),
                       ),
                       Container(

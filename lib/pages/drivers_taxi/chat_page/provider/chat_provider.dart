@@ -4,7 +4,14 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:taksi/services/request_helper.dart';
 
 class ChatProvider with ChangeNotifier {
-  
+    int _currentPage = 1;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _totalPages = 1; 
+
+  int get currentPage => _currentPage; // ✅ Добавлен геттер
+  int get totalPages => _totalPages; // ✅ Добавлен геттер
+
   IO.Socket? _socket;
   List<Map<String, dynamic>> groupedMessages = [];
 
@@ -63,12 +70,12 @@ class ChatProvider with ChangeNotifier {
       _reconnectWebSocket();
     }
   }
-  //web socket turn off
+  
   void turnOffWebSocket() {
     _socket?.disconnect();
   }
 
-// add message group
+
   void _addMessageGroup(Map<String, dynamic> newGroup) {
     String date = newGroup["date"];
     List<dynamic> messages = newGroup["messages"];
@@ -88,7 +95,7 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-//delete message group
+
   void deleteMessageGroup(String messageId) {
     for (var group in groupedMessages) {
       group["messages"].removeWhere((message) => message["id"] == messageId);
@@ -96,7 +103,7 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-//edit message group
+
   Future<void> editMessageGroup(String messageId, String newText) async {
     try {
       final response = await requestHelper.putWithAuth(
@@ -178,6 +185,43 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
+
+
+  Future<void> fetchMoreMessages(String chatRoomId) async {
+    if (_isLoadingMore || !_hasMore || _currentPage > _totalPages) return;
+    _isLoadingMore = true;
+    notifyListeners();
+
+    try {
+      final response = await requestHelper.getWithAuth(
+        "/services/zyber/api/chat/get-messages?chat_room_id=$chatRoomId&page=$_currentPage",
+        log: true,
+      );
+
+      if (response != null && response["success"] == true) {
+        List<Map<String, dynamic>> newMessages =
+            List<Map<String, dynamic>>.from(response["grouped_messages"] ?? []);
+
+        _totalPages = response["total_pages"] ?? 1; // Обновляем общее число страниц
+
+        if (newMessages.isNotEmpty) {
+          groupedMessages.addAll(newMessages); // Добавляем в конец списка
+          _currentPage++;
+        } else {
+          _hasMore = false;
+        }
+      } else {
+        _hasMore = false;
+      }
+    } catch (e) {
+      print("❌ Ошибка загрузки сообщений: $e");
+      _hasMore = false;
+    }
+
+    _isLoadingMore = false;
+    notifyListeners();
+  }
+ 
   void _reconnectWebSocket() {
     Future.delayed(Duration(seconds: 3), () {
       _socket?.connect();

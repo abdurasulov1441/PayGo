@@ -6,6 +6,7 @@ import 'package:taksi/app/router.dart';
 import 'package:taksi/services/db/cache.dart';
 import 'package:taksi/services/request_helper.dart';
 import 'package:taksi/services/style/app_colors.dart';
+import 'package:taksi/services/style/app_style.dart';
 
 class TaxiAccountPage extends StatefulWidget {
   const TaxiAccountPage({super.key});
@@ -30,22 +31,41 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Akkauntdan chiqish'),
-          content: const Text('Haqiqatdanham chiqmoqchimisz?'),
+          backgroundColor: AppColors.backgroundColor,
+          title:  Text('Akkuntdan chiqmoqchimisz?',style: AppStyle.fontStyle.copyWith(fontSize: 20),textAlign: TextAlign.center,),
+          content:  Text('Agar chiqsangiz, qayta kirish talab qilinadi, va keshlaringiz o\'chiriladi.',style: AppStyle.fontStyle.copyWith(fontSize: 16),textAlign: TextAlign.center,),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Yo\'q'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _signOut();
-              },
-              child: const Text('Ha'),
-            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  backgroundColor: AppColors.ui),
+                                onPressed: () {
+                  Navigator.of(context).pop();
+                                },
+                                child:  Text('Yo\'q',style: AppStyle.fontStyle.copyWith(fontSize: 16,color: AppColors.textColor),),
+                              ),
+                ),
+                SizedBox(width: 20,),
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  backgroundColor: Colors.red),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _signOut();
+                },
+                child:  Text('Ha',style: AppStyle.fontStyle.copyWith(fontSize: 16,color: AppColors.backgroundColor),),
+              ),
+            ),],)
           ],
         );
       },

@@ -134,14 +134,14 @@ class _TaxidriversettingsState extends State<Taxidriversettings> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: Colors.black54),
+      leading: Icon(icon, color: AppColors.grade1,size: 30,),
       title: Text(
         title,
         style: AppStyle.fontStyle.copyWith(
             fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
       ),
       trailing:
-          const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.black38),
+          const Icon(Icons.arrow_forward_ios, size: 18, color: AppColors.grade1),
       onTap: onTap,
     );
   }
@@ -153,7 +153,7 @@ class _TaxidriversettingsState extends State<Taxidriversettings> {
     required ValueChanged<bool> onChanged,
   }) {
     return ListTile(
-      leading: Icon(icon, color: Colors.black54),
+      leading: Icon(icon, color: AppColors.grade1,size: 30,),
       title: Text(
         title,
         style: AppStyle.fontStyle.copyWith(
