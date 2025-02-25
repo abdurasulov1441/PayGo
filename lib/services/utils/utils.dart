@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -8,6 +7,7 @@ abstract final class Utils {
   static String getPlatformForEOrder() {
     return Platform.isIOS ? 'klient_ios' : 'klient_android';
   }
+
   static String formatLeftSeconds(int seconds) {
     if (seconds < 60) {
       return '00:${seconds.toString().padLeft(2, '0')}';
@@ -15,6 +15,7 @@ abstract final class Utils {
       return '${(seconds ~/ 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
     }
   }
+
   static String imageUrl(String path) {
     return 'https://api.insurance.uz/$path';
   }
@@ -25,7 +26,7 @@ abstract final class Utils {
     decimalDigits: 0,
     name: '',
   );
-  static bool isMarked= false;
+  static bool isMarked = false;
 
   static String formatMoney(num amount) {
     return moneyFormat.format(amount);
@@ -51,7 +52,7 @@ abstract final class Utils {
   }
 
   static ({String? firstName, String? lastName, String? middleName})
-  parseFullName(String? fullName) {
+      parseFullName(String? fullName) {
     String? firstName;
     String? lastName;
     String? middleName;
@@ -71,9 +72,9 @@ abstract final class Utils {
     } catch (_) {}
 
     return (
-    lastName: lastName,
-    firstName: firstName,
-    middleName: middleName,
+      lastName: lastName,
+      firstName: firstName,
+      middleName: middleName,
     );
   }
 
@@ -84,11 +85,11 @@ abstract final class Utils {
 
 class FormatUtil {
   static String formatCurrency(
-      int amount, {
-        String locale = 'uz_UZ',
-        String? symbol,
-        int decimalDigits = 0,
-      }) {
+    int amount, {
+    String locale = 'uz_UZ',
+    String? symbol,
+    int decimalDigits = 0,
+  }) {
     return NumberFormat.currency(
       locale: locale,
       symbol: symbol ?? '',
@@ -101,9 +102,9 @@ class FormatUtil {
 class UpperCaseTextFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue,
-      TextEditingValue newValue,
-      ) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     return TextEditingValue(
       text: newValue.text.toUpperCase(),
       selection: newValue.selection,

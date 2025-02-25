@@ -36,7 +36,7 @@ class MyCustomBottomSheetForPeoples {
                     title: Text(item),
                     onTap: () {
                       onItemSelected(item);
-                    context.pop();
+                      context.pop();
                     },
                   );
                 },

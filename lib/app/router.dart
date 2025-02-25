@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:taksi/pages/civil/civil_account_page/taksi_history_page.dart';
+import 'package:taksi/pages/civil/civil_account_page/taxi_history/taksi_history_page.dart';
 import 'package:taksi/pages/civil/civil_page.dart';
 import 'package:taksi/pages/civil/near_cars/near_cars.dart';
 import 'package:taksi/pages/civil/near_truck/near_truck.dart';
@@ -183,7 +183,7 @@ final router = GoRouter(
       path: Routes.taxiPage,
       builder: (context, state) => TaxiPage(),
     ),
-  
+
     GoRoute(
       path: Routes.accountDetailInfoPage,
       builder: (context, state) => const AccountDetailInfoTaksi(),

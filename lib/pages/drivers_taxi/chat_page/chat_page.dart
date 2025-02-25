@@ -77,11 +77,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       Expanded(
                         child: RefreshIndicator(
                           color: AppColors.grade1,
-
                           onRefresh: () async {
-                            if (chatProvider.currentPage <= chatProvider.totalPages) {
-                      await chatProvider.fetchMoreMessages(widget.chatRoomId);
-                    }
+                            if (chatProvider.currentPage <=
+                                chatProvider.totalPages) {
+                              await chatProvider
+                                  .fetchMoreMessages(widget.chatRoomId);
+                            }
                           },
                           child: Consumer<ChatProvider>(
                             builder: (context, chatProvider, child) {
@@ -89,36 +90,39 @@ class _ChatScreenState extends State<ChatScreen> {
                                 return Center(
                                     child: Text("Загрузка сообщений..."));
                               }
-                          
+
                               return ListView.builder(
-                                
                                 dragStartBehavior: DragStartBehavior.down,
                                 reverse: true,
                                 itemCount: chatProvider.groupedMessages.length,
                                 itemBuilder: (context, index) {
                                   final group =
                                       chatProvider.groupedMessages[index];
-                          
+
                                   return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                     if(group["date"]!="null") Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 10),
-                                          child: Text(
-                                            group["date"]  ,
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
+                                      if (group["date"] != "null")
+                                        Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10),
+                                            child: Text(
+                                              group["date"],
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
                                           ),
-                                        ),
-                                      )
-                                      else SizedBox(),
-                                      ...group["messages"].map<Widget>((message) {
+                                        )
+                                      else
+                                        SizedBox(),
+                                      ...group["messages"]
+                                          .map<Widget>((message) {
                                         bool isMe =
                                             message["sender_id"] == userId;
-                          
+
                                         return MyChatBubble(
                                           id: message["id"],
                                           text: message["message_text"],

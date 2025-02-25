@@ -129,7 +129,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                       selectedItem = item;
                     });
                     widget.onItemSelected(item);
-                   context.pop();
+                    context.pop();
                   },
                 );
               },

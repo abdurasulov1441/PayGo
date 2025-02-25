@@ -67,6 +67,7 @@ dependencies:
   package_info_plus: ^8.2.1
   in_app_review: ^2.0.10
   easy_infinite_pagination: ^0.0.6
+  google_fonts: ^6.2.1
 
 
 dev_dependencies:
@@ -100,9 +101,9 @@ flutter:
     - assets/sounds/   
     - .env
   fonts:
-    - family: Jost
+    - family: Mulish
       fonts:
-        - asset: assets/fonts/Jost-Regular.ttf
+        - asset: assets/fonts/Mulish-Regular.ttf
     - family: Number
       fonts:
-        - asset: assets/fonts/FE-FONT.TTF
+        - asset: assets/fonts/FE-FONT.ttf

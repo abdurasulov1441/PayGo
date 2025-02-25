@@ -40,8 +40,7 @@ class _BalancePageState extends State<BalancePage> {
         if (invoiceId != null) {
           showSuccessToast(context, 'To\'lov tizimi',
               'Sizning raqamingizga hisob jo\'natildi!');
-              router.pop();
-
+          router.pop();
         } else {
           showErrorToast(
               context, 'To\'lov tizimi', 'Hisob jo\'natishda xatolik!');

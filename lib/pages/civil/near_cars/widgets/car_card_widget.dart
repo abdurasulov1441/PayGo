@@ -236,7 +236,7 @@ class CarCardWidget extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Qabul qilish',
+                  'Taklif yuborish',
                   style: AppStyle.fontStyle.copyWith(
                     fontSize: 14,
                     color: Color(0xFF007111),

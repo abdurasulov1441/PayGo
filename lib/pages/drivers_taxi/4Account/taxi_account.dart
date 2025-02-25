@@ -32,40 +32,60 @@ class _TaxiAccountPageState extends State<TaxiAccountPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.backgroundColor,
-          title:  Text('Akkuntdan chiqmoqchimisz?',style: AppStyle.fontStyle.copyWith(fontSize: 20),textAlign: TextAlign.center,),
-          content:  Text('Agar chiqsangiz, qayta kirish talab qilinadi, va keshlaringiz o\'chiriladi.',style: AppStyle.fontStyle.copyWith(fontSize: 16),textAlign: TextAlign.center,),
+          title: Text(
+            'Akkuntdan chiqmoqchimisz?',
+            style: AppStyle.fontStyle.copyWith(fontSize: 20),
+            textAlign: TextAlign.center,
+          ),
+          content: Text(
+            'Agar chiqsangiz, qayta kirish talab qilinadi, va keshlaringiz o\'chiriladi.',
+            style: AppStyle.fontStyle.copyWith(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
           actions: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Expanded(
                   child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        backgroundColor: AppColors.ui),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      'Yo\'q',
+                      style: AppStyle.fontStyle
+                          .copyWith(fontSize: 16, color: AppColors.textColor),
+                    ),
                   ),
-                  backgroundColor: AppColors.ui),
-                                onPressed: () {
-                  Navigator.of(context).pop();
-                                },
-                                child:  Text('Yo\'q',style: AppStyle.fontStyle.copyWith(fontSize: 16,color: AppColors.textColor),),
-                              ),
                 ),
-                SizedBox(width: 20,),
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                SizedBox(
+                  width: 20,
+                ),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        backgroundColor: Colors.red),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await _signOut();
+                    },
+                    child: Text(
+                      'Ha',
+                      style: AppStyle.fontStyle.copyWith(
+                          fontSize: 16, color: AppColors.backgroundColor),
+                    ),
                   ),
-                  backgroundColor: Colors.red),
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await _signOut();
-                },
-                child:  Text('Ha',style: AppStyle.fontStyle.copyWith(fontSize: 16,color: AppColors.backgroundColor),),
-              ),
-            ),],)
+                ),
+              ],
+            )
           ],
         );
       },

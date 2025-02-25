@@ -54,7 +54,8 @@ class DefaultFirebaseOptions {
     appId: '1:36390506656:android:ceb164a8c95664122679c5',
     messagingSenderId: '36390506656',
     projectId: 'taksi-c0c76',
-    databaseURL: 'https://taksi-c0c76-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://taksi-c0c76-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'taksi-c0c76.appspot.com',
   );
 
@@ -63,10 +64,13 @@ class DefaultFirebaseOptions {
     appId: '1:36390506656:ios:52fc6a4f0a01a08c2679c5',
     messagingSenderId: '36390506656',
     projectId: 'taksi-c0c76',
-    databaseURL: 'https://taksi-c0c76-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://taksi-c0c76-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'taksi-c0c76.appspot.com',
-    androidClientId: '36390506656-sbkori727kaoal2f46hnr3kl8terappf.apps.googleusercontent.com',
-    iosClientId: '36390506656-9hj789f55j3n6e4g0aqa8udnpdl2n88u.apps.googleusercontent.com',
+    androidClientId:
+        '36390506656-sbkori727kaoal2f46hnr3kl8terappf.apps.googleusercontent.com',
+    iosClientId:
+        '36390506656-9hj789f55j3n6e4g0aqa8udnpdl2n88u.apps.googleusercontent.com',
     iosBundleId: 'uz.paygo',
   );
 }

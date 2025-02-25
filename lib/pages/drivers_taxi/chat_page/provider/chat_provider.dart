@@ -4,10 +4,10 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:taksi/services/request_helper.dart';
 
 class ChatProvider with ChangeNotifier {
-    int _currentPage = 1;
+  int _currentPage = 1;
   bool _isLoadingMore = false;
   bool _hasMore = true;
-  int _totalPages = 1; 
+  int _totalPages = 1;
 
   int get currentPage => _currentPage; // ✅ Добавлен геттер
   int get totalPages => _totalPages; // ✅ Добавлен геттер
@@ -70,11 +70,10 @@ class ChatProvider with ChangeNotifier {
       _reconnectWebSocket();
     }
   }
-  
+
   void turnOffWebSocket() {
     _socket?.disconnect();
   }
-
 
   void _addMessageGroup(Map<String, dynamic> newGroup) {
     String date = newGroup["date"];
@@ -95,14 +94,12 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-
   void deleteMessageGroup(String messageId) {
     for (var group in groupedMessages) {
       group["messages"].removeWhere((message) => message["id"] == messageId);
     }
     notifyListeners();
   }
-
 
   Future<void> editMessageGroup(String messageId, String newText) async {
     try {
@@ -185,8 +182,6 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-
-
   Future<void> fetchMoreMessages(String chatRoomId) async {
     if (_isLoadingMore || !_hasMore || _currentPage > _totalPages) return;
     _isLoadingMore = true;
@@ -202,7 +197,8 @@ class ChatProvider with ChangeNotifier {
         List<Map<String, dynamic>> newMessages =
             List<Map<String, dynamic>>.from(response["grouped_messages"] ?? []);
 
-        _totalPages = response["total_pages"] ?? 1; // Обновляем общее число страниц
+        _totalPages =
+            response["total_pages"] ?? 1; // Обновляем общее число страниц
 
         if (newMessages.isNotEmpty) {
           groupedMessages.addAll(newMessages); // Добавляем в конец списка
@@ -221,7 +217,7 @@ class ChatProvider with ChangeNotifier {
     _isLoadingMore = false;
     notifyListeners();
   }
- 
+
   void _reconnectWebSocket() {
     Future.delayed(Duration(seconds: 3), () {
       _socket?.connect();

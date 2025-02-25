@@ -17,7 +17,9 @@ final class UnauthenticatedError {
   String toString() {
     return 'unauthenticated'.tr();
   }
-}final class Unauthenticated {
+}
+
+final class Unauthenticated {
   @override
   String toString() {
     return 'Jismoniy shaxsning E imzosi bilan kirish taqiqlanadi';

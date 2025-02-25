@@ -86,7 +86,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
     final RegExp regExp = RegExp(r'\b\d{6}\b');
     return regExp.stringMatch(message);
   }
- Future<void> _verifyCode() async {
+
+  Future<void> _verifyCode() async {
     String enteredCode = _smsController.text.trim();
 
     if (enteredCode.length != 6) {
@@ -206,7 +207,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
       ],
     ),
   );
- 
 
   @override
   Widget build(BuildContext context) {
